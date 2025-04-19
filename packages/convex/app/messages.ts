@@ -7,7 +7,7 @@ export const list = query({
     return await ctx.db
       .query("messages")
       .withIndex("by_timestamp")
-      .order("desc")
+      .order("asc")
       .collect();
   },
 });

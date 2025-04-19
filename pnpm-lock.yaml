@@ -118,6 +118,9 @@ importers:
       convex:
         specifier: ^1.23.0
         version: 1.23.0(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
+      convex-helpers:
+        specifier: ^0.1.79
+        version: 0.1.79(convex@1.23.0(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(react@19.0.0)(typescript@5.7.3)(zod@3.24.2)
       lucide-react:
         specifier: ^0.475.0
         version: 0.475.0(react@19.0.0)
@@ -1483,6 +1486,25 @@ packages:
 
   constant-case@2.0.0:
     resolution: {integrity: sha512-eS0N9WwmjTqrOmR3o83F5vW8Z+9R1HnVz3xmzT2PMFug9ly+Au/fxRWlEBSb6LcZwspSsEn9Xs1uw9YgzAg1EQ==}
+
+  convex-helpers@0.1.79:
+    resolution: {integrity: sha512-jYe2Uhyz6x41diB8t6BTsoUankPQKMGQUyoA4aZQrPOOpu/hyYpA2mnkaNot59GfrnY5fw5METvZaGxIj3fqjQ==}
+    hasBin: true
+    peerDependencies:
+      convex: ^1.13.0
+      hono: ^4.0.5
+      react: ^17.0.2 || ^18.0.0 || ^19.0.0
+      typescript: ^5.5
+      zod: ^3.22.4
+    peerDependenciesMeta:
+      hono:
+        optional: true
+      react:
+        optional: true
+      typescript:
+        optional: true
+      zod:
+        optional: true
 
   convex@1.23.0:
     resolution: {integrity: sha512-Mz2GpCrw3wXR+TWQgUjQPLkZ5ZhnSSJbvZ/+GUdBY4yMwPpoPw5T6DszAFUB2o1SKyhmyes1iYGijueNsZb/Xw==}
@@ -4265,6 +4287,14 @@ snapshots:
     dependencies:
       snake-case: 2.1.0
       upper-case: 1.1.3
+
+  convex-helpers@0.1.79(convex@1.23.0(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(react@19.0.0)(typescript@5.7.3)(zod@3.24.2):
+    dependencies:
+      convex: 1.23.0(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
+    optionalDependencies:
+      react: 19.0.0
+      typescript: 5.7.3
+      zod: 3.24.2
 
   convex@1.23.0(react-dom@19.0.0(react@19.0.0))(react@19.0.0):
     dependencies:

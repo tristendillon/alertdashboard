@@ -1,9 +1,14 @@
-import TaskList from "@/components/task-list";
+import Chat from "@/components/chat";
 
-export default function Home() {
+interface PageProps {
+  searchParams: Promise<{ author: string }>;
+}
+
+export default async function Home({searchParams}: PageProps) {
+  const { author } = await searchParams
   return (
    <div className="h-full">
-    <TaskList />
+    <Chat author={author} />
    </div>
   );
 }

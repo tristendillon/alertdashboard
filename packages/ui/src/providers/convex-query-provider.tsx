@@ -3,6 +3,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ConvexQueryClient } from "@convex-dev/react-query";
 import { ConvexReactClient, ConvexProvider } from "convex/react";
+import { ConvexQueryCacheProvider } from "convex-helpers/react/cache/provider";
 
 const convex = new ConvexReactClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
 const convexQueryClient = new ConvexQueryClient(convex);
@@ -24,13 +25,14 @@ export function TCQueryProvider({
       },
     },
   });
-
   const ConvexProviderAny = ConvexProvider as unknown as React.ComponentType<{ client: ConvexReactClient; children?: React.ReactNode }>;
 
   return (
     <ConvexProviderAny client={convex}>
       <QueryClientProvider client={queryClient}>
-        {children}
+        <ConvexQueryCacheProvider>
+          {children}
+        </ConvexQueryCacheProvider>
       </QueryClientProvider>
     </ConvexProviderAny>
   )
