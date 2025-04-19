@@ -4,8 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "convex dev",
-    "build": "echo 'Build completed'"
+    "dev": "convex dev"
   },
   "keywords": [],
   "author": "",
