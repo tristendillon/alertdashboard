@@ -1,30 +1,41 @@
-# shadcn/ui monorepo template
+# Alert Dashboard
 
-This template is for creating a monorepo with shadcn/ui.
+A real-time alerting dashboard for Fire Departments and EMS stations that integrates with Active 911 and FirstDue platforms to display live alerts and emergency information.
 
-## Usage
+## Project Structure
 
-```bash
-pnpm dlx shadcn@latest init
+This project is built as a monorepo using shadcn/ui components with the following structure:
+
+```
+├── packages/
+│   ├── ui/            - Shared UI components using shadcn/ui
+│   ├── convex/        - Convex backend
+│   └── *-config/        - Shared configuration files
+├── services/
+│   ├── web/           - Main web application
+│   └── dashboards/    - Separate dashboard service
 ```
 
-## Adding components
+## Features
 
-To add components to your app, run the following command at the root of your `web` app:
+- Real-time alert monitoring for emergency services
+- Integration with Active 911 and FirstDue platforms
+- Responsive dashboard for desktop and mobile devices
+- Secure authentication for department personnel
+
+### Adding UI Components
+
+To add components to your app, run the following command:
 
 ```bash
-pnpm dlx shadcn@latest add button -c apps/web
+pnpm dlx shadcn@canary add [COMPONENT]
 ```
 
-This will place the ui components in the `packages/ui/src/components` directory.
+This will place the UI components in the `packages/ui/src/components` directory.
 
-## Tailwind
+### Using Components
 
-Your `tailwind.config.ts` and `globals.css` are already set up to use the components from the `ui` package.
-
-## Using components
-
-To use the components in your app, import them from the `ui` package.
+To use the components in your app, import them from the UI package:
 
 ```tsx
 import { Button } from "@workspace/ui/components/button"
