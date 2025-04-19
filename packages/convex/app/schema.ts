@@ -8,11 +8,6 @@ const applicationTables = {
     author: v.string(),
     timestamp: v.number(),
   }).index("by_timestamp", ["timestamp"]),
-
-  authors: defineTable({
-    name: v.string(),
-    avatarUrl: v.string(),
-  }).index("by_name", ["name"]),
 };
 
 
