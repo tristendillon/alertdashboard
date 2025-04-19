@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
+import "@workspace/ui/styles/globals.css";
+import { TCQueryProvider } from "@workspace/ui/providers/tc-query-provider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -23,11 +24,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" className="dark h-screen w-full">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} w-full h-full antialiased`}
       >
-        {children}
+        <TCQueryProvider>
+          {children}
+        </TCQueryProvider>
       </body>
     </html>
   );

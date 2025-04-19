@@ -1,0 +1,37 @@
+"use client"
+
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { ConvexQueryClient } from "@convex-dev/react-query";
+import { ConvexReactClient, ConvexProvider } from "convex/react";
+
+const convex = new ConvexReactClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
+const convexQueryClient = new ConvexQueryClient(convex);
+
+interface TCQueryProviderProps {
+  children: React.ReactNode;
+ }
+
+
+export function TCQueryProvider({
+  children,
+}: TCQueryProviderProps){
+
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: {
+        queryKeyHashFn: convexQueryClient.hashFn(),
+        queryFn: convexQueryClient.queryFn(),
+      },
+    },
+  });
+
+  const ConvexProviderAny = ConvexProvider as unknown as React.ComponentType<{ client: ConvexReactClient; children?: React.ReactNode }>;
+
+  return (
+    <ConvexProviderAny client={convex}>
+      <QueryClientProvider client={queryClient}>
+        {children}
+      </QueryClientProvider>
+    </ConvexProviderAny>
+  )
+}
