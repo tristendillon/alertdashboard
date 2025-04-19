@@ -10,7 +10,7 @@ This project is built as a monorepo using shadcn/ui components with the followin
 ├── packages/
 │   ├── ui/            - Shared UI components using shadcn/ui
 │   ├── convex/        - Convex backend
-│   └── *-config/        - Shared configuration files
+│   └── *-config/      - Shared configuration files
 ├── services/
 │   ├── web/           - Main web application
 │   └── dashboards/    - Separate dashboard service
