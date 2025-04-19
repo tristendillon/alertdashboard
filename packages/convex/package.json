@@ -1,0 +1,19 @@
+{
+  "name": "convex",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "convex dev",
+    "deploy": "convex deploy"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "packageManager": "pnpm@10.4.1",
+  "type": "module",
+  "dependencies": {
+    "convex": "^1.23.0",
+    "dotenv": "^16.5.0"
+  }
+}
