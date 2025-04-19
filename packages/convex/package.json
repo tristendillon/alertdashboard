@@ -12,6 +12,7 @@
   "packageManager": "pnpm@10.4.1",
   "type": "module",
   "dependencies": {
+    "@auth/core": "^0.38.0",
     "@convex-dev/auth": "^0.0.80",
     "@workspace/convex": "file:",
     "convex": "^1.23.0",
