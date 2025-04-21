@@ -126,7 +126,7 @@ const configurationTables = {
   descriptors: defineTable({
     department: v.id("departments"),
     cadDescriptor: v.string(),
-    descriptor: v.string(),
+    descriptor: v.optional(v.string()),
   }).index("by_department", ["department"]).index("by_cad_descriptor", ["cadDescriptor"]).index("by_descriptor", ["descriptor"]),
 
   // Say on CAD the alert comes in as "E3" but we want to display "E-3 or Engine 3"
@@ -137,7 +137,6 @@ const configurationTables = {
     department: v.id("departments"),
     cadUnit: v.string(),
     unit: v.string(),
-    shortHandUnit: v.optional(v.string()),
   }).index("by_department", ["department"]).index("by_cad_unit", ["cadUnit"]).index("by_unit", ["unit"]),
 };
 
