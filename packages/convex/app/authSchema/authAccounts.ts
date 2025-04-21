@@ -1,10 +1,10 @@
-import { crud } from "convex-helpers/server/crud";
-import { internalMutationWithRLS, mutationWithRLS, queryWithRLS } from "../../middleware/rls.js";
+import { internalMutationWithRLS } from "../../middleware/rls.js";
 import schema from "../schema.js";
 import { v } from "convex/values";
-import { Password } from "@convex-dev/auth/providers/Password";
 import { Scrypt } from "lucia";
+import { doc, partial } from "convex-helpers/validators";
 
+// This is pretty much entirely an internal table.
 export const createAuthAccount = internalMutationWithRLS({
   args: {
     providerAccountId: v.string(),
@@ -24,10 +24,23 @@ export const createAuthAccount = internalMutationWithRLS({
   },
 });
 
+export const deleteAuthAccount = internalMutationWithRLS({
+  args: {
+    id: v.id("authAccounts")
+  },
+  handler: async (ctx, { id }) => {
+    await ctx.db.delete(id);
+  },
+});
 
-export const { update: updateAuthAccount, destroy: deleteAuthAccount } = crud(
-  schema,
-  "authAccounts",
-  queryWithRLS,
-  mutationWithRLS,
-);
+
+export const updateAuthAccount = internalMutationWithRLS({
+  args: { patch: v.object({
+    ...partial(doc(schema, "authAccounts").fields),
+    _id: v.id("authAccounts"),
+  }), },
+  handler: async ({ db }, { patch }) => {
+    const updatedUser = await db.patch(patch._id, patch);
+    return updatedUser;
+  },
+});
