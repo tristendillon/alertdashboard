@@ -61,7 +61,7 @@ const organizationTables = {
 
   // This is completely optional. This would serve a purpose to have given
   // dashboards exist to only certain stations.
-  station: defineTable({
+  stations: defineTable({
     name: v.string(),
     department: v.id("departments"),
     address: v.string(),
@@ -101,7 +101,7 @@ const dashboardTables = {
 }
 
 const configurationTables = {
-  redactionLevel: defineTable({
+  redactionLevels: defineTable({
     department: v.id("departments"),
     // Something like partial, level 1, full, etc.
     level: v.string(),

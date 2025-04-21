@@ -9,6 +9,9 @@ import { doc } from "convex-helpers/validators";
 import { ConvexError } from "convex/values";
 import { internal } from "@workspace/convex/app/_generated/api";
 
+
+
+
 export const me = queryWithAuthedUser({
   handler: async (ctx) => {
     const user = await ctx.db.query("users")
@@ -45,7 +48,6 @@ export const createUser = mutationWithRLS({
     return user
   },
 });
-
 
 // This might actually be better as an Action
 // I dont know what actions are though.
