@@ -17,7 +17,8 @@
     "@workspace/convex": "file:",
     "convex": "^1.23.0",
     "convex-helpers": "^0.1.79",
-    "dotenv": "^16.5.0"
+    "dotenv": "^16.5.0",
+    "lucia": "^3.2.2"
   },
   "devDependencies": {
     "@types/node": "^20"
