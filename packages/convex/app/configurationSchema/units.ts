@@ -5,10 +5,10 @@ import { internalQuery } from "../_generated/server";
 import { v } from "convex/values";
 
 export const mappableUnits = internalQuery({
-  args: { department: v.id("departments") },
+  args: { organization: v.id("organizations") },
   handler: async (ctx, args) => {
     const units = await ctx.db.query("units")
-      .withIndex("by_department", (q) => q.eq("department", args.department))
+      .withIndex("by_organization", (q) => q.eq("organization", args.organization))
       .collect();
     return units;
   },

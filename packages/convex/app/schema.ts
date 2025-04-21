@@ -10,7 +10,7 @@ const coordinates = v.object({
 
 const alerts = defineTable({
   department: v.id("departments"),
-  organization: v.id("organizations"),
+  organization: v.union(v.literal("ALL"), v.id("organizations")),
   // Some departments might not want to have to map their units to display names
   mappedUnits: v.array(v.id("units")),
   // Some departments might not want to have to map their call descriptors for redaction.

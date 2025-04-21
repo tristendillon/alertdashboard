@@ -74,7 +74,10 @@ app.post(
       c.env.runQuery(internal.organizationSchema.organizations.organizationExist, { id: organizationId as Id<"organizations"> }),
     ]);
 
-    if (!departmentIdExists) {
+
+    // We let there exist and ALL departmentId for large scale integrations who might not want to
+    // Have each department use a different url for their alert API.
+    if (!departmentIdExists && departmentId !== "ALL") {
       return c.json({ error: "Department not found" }, 404);
     }
 
@@ -83,8 +86,8 @@ app.post(
     }
 
     const [mappableDescriptors, mappableUnits] = await Promise.all([
-      c.env.runQuery(internal.configurationSchema.descriptors.mappableDescriptors, { department: departmentId as Id<"departments"> }),
-      c.env.runQuery(internal.configurationSchema.units.mappableUnits, { department: departmentId as Id<"departments"> })
+      c.env.runQuery(internal.configurationSchema.descriptors.mappableDescriptors, { organization: organizationId as Id<"organizations"> }),
+      c.env.runQuery(internal.configurationSchema.units.mappableUnits, { organization: organizationId as Id<"organizations"> })
     ]);
 
     const descriptorId = mappableDescriptors.find(d => d.cadDescriptor === descriptor);
