@@ -31,7 +31,7 @@ const TEST_ORG = "ks78vkn4yfgsjmyknnftcmpdt17een79"
 
 export default function LoginPage() {
   const { signIn } = useAuthActions();
-  const emailTaken = useQueryCallback(api.auth.emailTaken)
+  const emailTaken = useQueryCallback(api.users.emailTaken)
 
   const form = useForm({
     defaultValues: {

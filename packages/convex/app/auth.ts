@@ -1,10 +1,7 @@
 import { convexAuth, getAuthUserId } from "@convex-dev/auth/server";
 import { ActionCtx, query } from "./_generated/server";
 import { Password } from "@convex-dev/auth/providers/Password";
-import { ConvexError, v } from "convex/values";
-import { crud } from "convex-helpers/server/crud";
-import schema from "./schema";
-import { queryWithRLS, mutationWithRLS } from "../middleware/rls";
+import { ConvexError } from "convex/values";
 import { DataModel, Id } from "./_generated/dataModel";
 import { internal } from "@workspace/convex/app/_generated/api";
 
@@ -77,6 +74,9 @@ export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
   providers: [CustomPassword],
 });
 
+// We don't change this to use queryWithAuthedUser
+// Since we want to be able to query the loggedInUser
+// Without getting an error.
 export const loggedInUser = query({
   handler: async (ctx) => {
     const userId = await getAuthUserId(ctx);
@@ -90,22 +90,3 @@ export const loggedInUser = query({
     return user;
   },
 });
-
-export const emailTaken = query({
-  args: {
-    email: v.string(),
-  },
-  handler: async (ctx, { email }) => {
-    const user = await ctx.db.query("users")
-      .withIndex("email", (q) => q.eq("email", email))
-      .first();
-    return !!user;
-  },
-});
-
-export const { update: updateUser, create: createUser, destroy: deleteUser, read: readUser } = crud(
-  schema,
-  "users",
-  queryWithRLS,
-  mutationWithRLS,
-);

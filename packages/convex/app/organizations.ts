@@ -2,7 +2,45 @@ import { crud } from "convex-helpers/server/crud";
 import { mutationWithRLS, queryWithRLS } from "../middleware/rls";
 import schema from "./schema";
 import { internalMutation, internalQuery } from "./_generated/server";
-import { v } from "convex/values";
+import { ConvexError, v } from "convex/values";
+import { mutationWithRLSAndUser, queryWithAuthedUser } from "../middleware/user";
+import { doc, partial } from "convex-helpers/validators";
+
+export const readOrganization = queryWithAuthedUser({
+  handler: async ({db, authedUser}) => {
+    const organization = await db.get(authedUser.organization);
+    return organization;
+  },
+})
+
+export function betterOmit<T extends Record<string, any>, Keys extends (keyof T)[]>(
+  obj: T,
+  keys: Keys,
+) {
+  const filtered = Object.fromEntries(
+    Object.entries(obj).filter(([k]) => !keys.includes(k as Keys[number])),
+  );
+  return v.object(filtered)
+}
+export const updateOrganization = mutationWithRLSAndUser({
+  args: { patch: v.object({
+    ...partial(doc(schema, "organizations").fields),
+  }), },
+  handler: async ({ db, authedUser }, { patch }) => {
+    const organization = await db.get(authedUser.organization);
+    if (!organization) {
+      throw new ConvexError("Organization not found");
+    }
+
+    // Optionally validate `authedUser.organization === organization._id`
+    if (organization._id !== authedUser.organization) {
+      throw new ConvexError("Unauthorized update");
+    }
+
+    const updatedOrganization = await db.patch(organization._id, patch);
+    return updatedOrganization;
+  },
+});
 
 export const organizationExist = internalQuery({
   args: { id: v.id("organizations") },
@@ -10,7 +48,7 @@ export const organizationExist = internalQuery({
     const organization = await ctx.db.get(args.id);
     return !!organization;
   },
-});
+})
 
 export const createOrganization = internalMutation({
   args: { name: v.string(), image: v.optional(v.string()) },
@@ -22,10 +60,3 @@ export const createOrganization = internalMutation({
     return organization;
   },
 })
-
-export const { update: updateOrganization, read: readOrganization } = crud(
-  schema,
-  "organizations",
-  queryWithRLS,
-  mutationWithRLS,
-);
