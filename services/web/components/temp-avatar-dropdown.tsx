@@ -18,7 +18,7 @@ import { useAuthActions } from "@convex-dev/auth/react";
 
 export default function TempAvatarDropdown() {
   const { signOut } = useAuthActions();
-  const { data: user, isPending, error } = useQuery(api.auth.loggedInUser)
+  const { data: user, isPending, error } = useQuery(api.authSchema.users.me)
 
   if (error) {
     console.error(error)

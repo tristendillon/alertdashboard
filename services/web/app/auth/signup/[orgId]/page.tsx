@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { useQueryCallback } from '@workspace/ui/hooks/use-query'
 import { api } from '@workspace/convex/app/_generated/api'
 import { ConvexError } from 'convex/values'
+import { useParams } from 'next/navigation'
 
 const loginSchema = z.object({
   email: z.string().email({ message: 'Please enter a valid email address' }),
@@ -27,11 +28,11 @@ const loginSchema = z.object({
   }
 })
 
-const TEST_ORG = "ks78vkn4yfgsjmyknnftcmpdt17een79"
 
 export default function LoginPage() {
+  const { orgId } = useParams()
   const { signIn } = useAuthActions();
-  const emailTaken = useQueryCallback(api.users.emailTaken)
+  const emailTaken = useQueryCallback(api.authSchema.users.emailTaken)
 
   const form = useForm({
     defaultValues: {
@@ -47,7 +48,7 @@ export default function LoginPage() {
     onSubmit: async ({ value }) => {
       const formData = new FormData()
       formData.append("flow", "signUp")
-      formData.append("organizationId", TEST_ORG)
+      formData.append("organizationId", orgId?.toString() || '')
       formData.append('email', value.email)
       formData.append('password', value.password)
       formData.append('confirmPassword', value.confirmPassword)
@@ -67,6 +68,10 @@ export default function LoginPage() {
       }
     },
   })
+
+  if (!orgId) {
+    return <div>Invalid organization</div>
+  }
 
   return (
     <div className="flex min-h-screen items-center justify-center px-4 py-12 sm:px-6 lg:px-8">

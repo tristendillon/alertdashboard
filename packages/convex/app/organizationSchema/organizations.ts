@@ -1,10 +1,8 @@
-import { crud } from "convex-helpers/server/crud";
-import { mutationWithRLS, queryWithRLS } from "../middleware/rls";
-import schema from "./schema";
-import { internalMutation, internalQuery } from "./_generated/server";
+import { internalMutation, internalQuery } from "../_generated/server";
 import { ConvexError, v } from "convex/values";
-import { mutationWithRLSAndUser, queryWithAuthedUser } from "../middleware/user";
+import { mutationWithRLSAndUser, queryWithAuthedUser } from "@workspace/convex/middleware/user";
 import { doc, partial } from "convex-helpers/validators";
+import schema from "../schema";
 
 export const readOrganization = queryWithAuthedUser({
   handler: async ({db, authedUser}) => {
@@ -51,11 +49,13 @@ export const organizationExist = internalQuery({
 })
 
 export const createOrganization = internalMutation({
-  args: { name: v.string(), image: v.optional(v.string()) },
+  args: { name: v.string(), image: v.optional(v.string()), city: v.string(), state: v.string() },
   handler: async (ctx, args) => {
     const organization = await ctx.db.insert("organizations", {
       name: args.name,
       image: args.image,
+      city: args.city,
+      state: args.state,
     });
     return organization;
   },

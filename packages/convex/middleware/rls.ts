@@ -1,6 +1,6 @@
 import { customCtx, customMutation, customQuery } from "convex-helpers/server/customFunctions";
 import { Rules, wrapDatabaseReader, wrapDatabaseWriter } from "convex-helpers/server/rowLevelSecurity";
-import { QueryCtx } from "../app/_generated/server.js";
+import { internalMutation, QueryCtx } from "../app/_generated/server.js";
 import { DataModel } from "../app/_generated/dataModel.js";
 import { mutation, query } from "../app/_generated/server.js";
 import { hasPermission } from "../lib/permissions.js";
@@ -96,4 +96,11 @@ const mutationWithRLS = customMutation(
   })),
 );
 
-export { queryWithRLS, mutationWithRLS }
+const internalMutationWithRLS = customMutation(
+  internalMutation,
+  customCtx(async (ctx) => ({
+    db: wrapDatabaseWriter(ctx, ctx.db, await rlsRules(ctx)),
+  })),
+);
+
+export { queryWithRLS, mutationWithRLS, internalMutationWithRLS }

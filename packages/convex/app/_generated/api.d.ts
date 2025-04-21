@@ -14,11 +14,12 @@ import type {
   FunctionReference,
 } from "convex/server";
 import type * as auth from "../auth.js";
-import type * as departments from "../departments.js";
+import type * as authSchema_authAccounts from "../authSchema/authAccounts.js";
+import type * as authSchema_roles from "../authSchema/roles.js";
+import type * as authSchema_users from "../authSchema/users.js";
 import type * as http from "../http.js";
-import type * as organizations from "../organizations.js";
-import type * as roles from "../roles.js";
-import type * as users from "../users.js";
+import type * as organizationSchema_departments from "../organizationSchema/departments.js";
+import type * as organizationSchema_organizations from "../organizationSchema/organizations.js";
 
 /**
  * A utility for referencing Convex functions in your app's API.
@@ -30,11 +31,12 @@ import type * as users from "../users.js";
  */
 declare const fullApi: ApiFromModules<{
   auth: typeof auth;
-  departments: typeof departments;
+  "authSchema/authAccounts": typeof authSchema_authAccounts;
+  "authSchema/roles": typeof authSchema_roles;
+  "authSchema/users": typeof authSchema_users;
   http: typeof http;
-  organizations: typeof organizations;
-  roles: typeof roles;
-  users: typeof users;
+  "organizationSchema/departments": typeof organizationSchema_departments;
+  "organizationSchema/organizations": typeof organizationSchema_organizations;
 }>;
 export declare const api: FilterApi<
   typeof fullApi,
