@@ -1,9 +1,9 @@
 import { crud } from "convex-helpers/server/crud";
-import { mutationWithRLS, queryWithRLS } from "../../middleware/rls.js";
+import { mutationWithRLS, queryWithRLS } from "@workspace/convex/middleware/rls.js";
 import schema from "../schema.js";
 import { v } from "convex/values";
-import { mutationWithRLSAndUser } from "../../middleware/user.js";
-import { permissionValidator } from "../../lib/permissions.js";
+import { mutationWithRLSAndUser } from "@workspace/convex/middleware/user.js";
+import { permissionValidator } from "@workspace/convex/lib/permissions.js";
 import { Scrypt } from "lucia";
 import { internalQuery } from "../_generated/server.js";
 
@@ -31,11 +31,19 @@ export const readKey = internalQuery({
       return null;
     }
 
-    const apiKey = departmentKeys.find((apiKey) => {
-      const crypt = new Scrypt();
-      const isValid = crypt.verify(apiKey.hash, key);
-      return isValid;
-    });
+    const apiKey = await (async () => {
+      for (const apiKey of departmentKeys) {
+        const crypt = new Scrypt();
+        const isValid = await crypt.verify(apiKey.hash, key);
+        console.log("KEY", key);
+        console.log("APIKEY", apiKey);
+        console.log("isValid", isValid);
+        if (isValid) return apiKey;
+      }
+      return null;
+    })();
+
+    console.log("SELECTED KEY", apiKey)
 
     if (!apiKey) {
       return null;
