@@ -35,15 +35,11 @@ export const readKey = internalQuery({
       for (const apiKey of departmentKeys) {
         const crypt = new Scrypt();
         const isValid = await crypt.verify(apiKey.hash, key);
-        console.log("KEY", key);
-        console.log("APIKEY", apiKey);
-        console.log("isValid", isValid);
         if (isValid) return apiKey;
       }
       return null;
     })();
 
-    console.log("SELECTED KEY", apiKey)
 
     if (!apiKey) {
       return null;
