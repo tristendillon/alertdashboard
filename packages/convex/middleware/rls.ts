@@ -16,7 +16,7 @@ import { pagesRls } from "../rls/dashboardSchema/pages.js";
 import { descriptorsRls } from "../rls/configurationSchema/descriptors.js";
 import { redactionLevelsRls } from "../rls/configurationSchema/redactionLevels.js";
 import { unitsRls } from "../rls/configurationSchema/units.js";
-
+import { apiKeysRls } from "../rls/authSchema/apiKeys.js";
 
 export function rlsRules(_: QueryCtx): Rules<QueryCtx, DataModel> {
   return {
@@ -28,6 +28,7 @@ export function rlsRules(_: QueryCtx): Rules<QueryCtx, DataModel> {
     // authSchema
     users: usersRls,
     roles: rolesRls,
+    apiKeys: apiKeysRls,
 
     //dashboardSchema
     dashboards: dashboardsRls,

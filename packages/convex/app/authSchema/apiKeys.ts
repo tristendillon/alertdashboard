@@ -53,6 +53,14 @@ export const readKey = internalQuery({
   }
 })
 
+function generateApiKey(length: number = 32): string {
+  const byteLength = Math.ceil((length * 3) / 4); // base64 expands by ~4/3
+  const randomBytes = crypto.getRandomValues(new Uint8Array(byteLength));
+  const base64 = btoa(String.fromCharCode(...randomBytes));
+  const urlSafe = base64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  return urlSafe.slice(0, length); // ensure exact length
+}
+
 export const createKey = mutationWithRLSAndUser({
   args: {
     permissions: v.array(permissionValidator),
@@ -62,14 +70,14 @@ export const createKey = mutationWithRLSAndUser({
     const user = ctx.authedUser;
     const organization = user.organization;
 
-    const rawKey = `ad_${Math.random().toString(36).substring(2, 15)}`;
+    const rawKey = `ad_${generateApiKey()}`;
     const crypt = new Scrypt();
     const hash = await crypt.hash(rawKey);
 
     const keyId = await ctx.db.insert("apiKeys", {
       organization,
       department,
-      keyPreview: rawKey.slice(0, 5),
+      keyPreview: rawKey.slice(0, 10),
       hash,
       permissions,
       modifiedAt: Date.now(),
