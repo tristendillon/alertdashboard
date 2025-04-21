@@ -15,6 +15,7 @@ import type {
 } from "convex/server";
 import type * as alerts from "../alerts.js";
 import type * as auth from "../auth.js";
+import type * as authSchema_apiKeys from "../authSchema/apiKeys.js";
 import type * as authSchema_authAccounts from "../authSchema/authAccounts.js";
 import type * as authSchema_roles from "../authSchema/roles.js";
 import type * as authSchema_users from "../authSchema/users.js";
@@ -39,6 +40,7 @@ import type * as organizationSchema_stations from "../organizationSchema/station
 declare const fullApi: ApiFromModules<{
   alerts: typeof alerts;
   auth: typeof auth;
+  "authSchema/apiKeys": typeof authSchema_apiKeys;
   "authSchema/authAccounts": typeof authSchema_authAccounts;
   "authSchema/roles": typeof authSchema_roles;
   "authSchema/users": typeof authSchema_users;

@@ -9,8 +9,8 @@ const coordinates = v.object({
 })
 
 const alerts = defineTable({
-  department: v.id("departments"),
-  organization: v.union(v.literal("ALL"), v.id("organizations")),
+  department: v.union(v.literal("ALL"), v.id("departments")),
+  organization: v.id("organizations"),
   // Some departments might not want to have to map their units to display names
   mappedUnits: v.array(v.id("units")),
   // Some departments might not want to have to map their call descriptors for redaction.
@@ -142,13 +142,28 @@ const configurationTables = {
   }).index("by_organization", ["organization"]).index("by_department", ["department"]).index("by_cad_unit", ["cadUnit"]).index("by_unit", ["unit"]),
 };
 
+
 const authTables = {
   ...convexAuthTables,
+
+  apiKeys: defineTable({
+    organization: v.id("organizations"),
+    department: v.union(v.literal("ALL"), v.id("departments")),
+
+    // Preview of the first few letters of the key since we don't ever show the key again.
+    keyPreview: v.string(),
+    hash: v.string(),
+    permissions: v.array(permissionValidator),
+    modifiedAt: v.number(),
+    modifiedBy: v.id("users"),
+  }).index("by_organization", ["organization"]).index("by_department", ["department"]).index("by_hash", ["hash"]),
+
   roles: defineTable({
     name: v.string(),
     organization: v.id("organizations"),
     permissions: v.array(permissionValidator),
   }).index("by_name", ["name"]),
+
   users: defineTable({
     organization: v.id("organizations"),
     firstName: v.string(),

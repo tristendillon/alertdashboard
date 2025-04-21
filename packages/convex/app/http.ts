@@ -12,6 +12,7 @@ const app: HonoWithConvex<ActionCtx> = new Hono();
 import { logger } from "hono/logger";
 import stripAnsi from "strip-ansi";
 import { Id } from "./_generated/dataModel";
+import { hasPermission } from "../lib/permissions";
 
 app.use(
   "*",
@@ -44,6 +45,12 @@ app.post(
     })
   ),
   async (c) => {
+    const { key } = c.req.query();
+
+    if (!key) {
+      return c.json({ error: "Missing API key" }, 401);
+    }
+
     const { organizationId, departmentId, integration } = c.req.param();
 
     let mappedDescriptor: Id<"descriptors"> | undefined;
@@ -74,7 +81,6 @@ app.post(
       c.env.runQuery(internal.organizationSchema.organizations.organizationExist, { id: organizationId as Id<"organizations"> }),
     ]);
 
-
     // We let there exist and ALL departmentId for large scale integrations who might not want to
     // Have each department use a different url for their alert API.
     if (!departmentIdExists && departmentId !== "ALL") {
@@ -83,6 +89,15 @@ app.post(
 
     if (!organizationIdExists) {
       return c.json({ error: "Organization not found" }, 404);
+    }
+
+    const apiKey = await c.env.runQuery(internal.authSchema.apiKeys.readKey, { key, organization: organizationId as Id<"organizations">, department: departmentId as Id<"departments"> });
+    if (!apiKey) {
+      return c.json({ error: "Invalid API key" }, 401);
+    }
+
+    if (!hasPermission({perms: new Set(apiKey.permissions), required: ["alert:insert"]})) {
+      return c.json({ error: "Unauthorized" }, 401);
     }
 
     const [mappableDescriptors, mappableUnits] = await Promise.all([
