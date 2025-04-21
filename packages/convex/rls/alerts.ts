@@ -1,8 +1,8 @@
-import { QueryCtx } from "../app/_generated/server.js";
+import { QueryCtx } from "@workspace/convex/app/_generated/server.js";
 import { Rules } from "convex-helpers/server/rowLevelSecurity";
-import { DataModel } from "../app/_generated/dataModel.js";
-import { withAuthContext } from "../context/auth-context.js";
-import { hasPermission } from "../lib/permissions.js";
+import { DataModel } from "@workspace/convex/app/_generated/dataModel.js";
+import { withAuthContext } from "@workspace/convex/context/auth-context.js";
+import { hasPermission } from "@workspace/convex/lib/permissions.js";
 
 export const alertsRls: Rules<QueryCtx, DataModel>["alerts"] = {
   read: (ctx, alert) =>

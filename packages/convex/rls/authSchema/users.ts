@@ -1,8 +1,8 @@
 import { Rules } from "convex-helpers/server/rowLevelSecurity";
-import { QueryCtx } from "../app/_generated/server.js";
-import { DataModel } from "../app/_generated/dataModel.js";
-import { withAuthContext } from "../context/auth-context.js";
-import { hasPermission } from "../lib/permissions.js";
+import { QueryCtx } from "../../app/_generated/server.js";
+import { DataModel } from "../../app/_generated/dataModel.js";
+import { withAuthContext } from "../../context/auth-context.js";
+import { hasPermission } from "../../lib/permissions.js";
 
 
 export const usersRls: Rules<QueryCtx, DataModel>["users"] = {

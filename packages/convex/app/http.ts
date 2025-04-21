@@ -5,14 +5,13 @@ import { HonoWithConvex } from "convex-helpers/server/hono";
 import { ActionCtx, httpAction } from "./_generated/server";
 import { z } from "zod";
 import { zValidator } from "@hono/zod-validator";
-import { api } from "./_generated/api";
+import { api, internal } from "./_generated/api";
 
-type Env = HonoWithConvex<ActionCtx>
-
-const app = new Hono<Env>();
+const app: HonoWithConvex<ActionCtx> = new Hono();
 
 import { logger } from "hono/logger";
 import stripAnsi from "strip-ansi";
+import { Id } from "./_generated/dataModel";
 
 app.use(
   "*",
@@ -22,11 +21,10 @@ app.use(
 );
 
 app.post(
-  "/:organizationId/alerts",
+  "/:organizationId/:departmentId/:integration/alerts",
   zValidator(
     "json",
     z.object({
-      department: z.string(),
       mappedUnits: z.array(z.string()).optional(),
       mappedDescriptor: z.string().optional(),
       units: z.string(),
@@ -46,13 +44,74 @@ app.post(
     })
   ),
   async (c) => {
-    const { organizationId } = c.req.param();
+    const { organizationId, departmentId, integration } = c.req.param();
+
+    let mappedDescriptor: Id<"descriptors"> | undefined;
+    const mappedUnits: Id<"units">[] = [];
+    let units: string[] = [];
+    let descriptor: string | undefined;
+
+
+    switch (integration) {
+      case "ACTIVE911":
+        units = c.req.valid("json").units.split(",").map(unit => unit.trim());
+        descriptor = c.req.valid("json").descriptor;
+        break;
+      default:
+        return c.json({ error: "Invalid integration" }, 400);
+    }
+
+    if (!organizationId) {
+      return c.json({ error: "Missing organizationId" }, 400);
+    }
+
+    if (!departmentId) {
+      return c.json({ error: "Missing departmentId" }, 400);
+    }
+
+    const [departmentIdExists, organizationIdExists] = await Promise.all([
+      c.env.runQuery(internal.organizationSchema.departments.departmentExist, { id: departmentId as Id<"departments"> }),
+      c.env.runQuery(internal.organizationSchema.organizations.organizationExist, { id: organizationId as Id<"organizations"> }),
+    ]);
+
+    if (!departmentIdExists) {
+      return c.json({ error: "Department not found" }, 404);
+    }
+
+    if (!organizationIdExists) {
+      return c.json({ error: "Organization not found" }, 404);
+    }
+
+    const [mappableDescriptors, mappableUnits] = await Promise.all([
+      c.env.runQuery(internal.configurationSchema.descriptors.mappableDescriptors, { department: departmentId as Id<"departments"> }),
+      c.env.runQuery(internal.configurationSchema.units.mappableUnits, { department: departmentId as Id<"departments"> })
+    ]);
+
+    const descriptorId = mappableDescriptors.find(d => d.cadDescriptor === descriptor);
+    if (descriptorId) {
+      mappedDescriptor = descriptorId._id;
+    }
+
+    for (const unit of units) {
+      const unitId = mappableUnits.find(u => u.cadUnit === unit);
+      if (unitId) {
+        mappedUnits.push(unitId._id);
+      }
+    }
+
     const body = c.req.valid("json");
-    await c.env.runMutation(api.alerts.createAlert, { ...body, organization: organizationId, modifiedAt: Date.now(), modifiedBy: "System" });
+    await c.env.runMutation(api.alerts.createAlert, {
+      ...body,
+      organization: organizationId as Id<"organizations">,
+      department: departmentId as Id<"departments">,
+      mappedUnits,
+      mappedDescriptor,
+      modifiedAt: 0,
+      modifiedBy: "System",
+    });
     return c.text("Sent message!");
   }
 );
-
 
 const http = httpRouter();
 auth.addHttpRoutes(http);

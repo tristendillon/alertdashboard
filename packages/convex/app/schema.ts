@@ -15,7 +15,7 @@ const alerts = defineTable({
   mappedUnits: v.array(v.id("units")),
   // Some departments might not want to have to map their call descriptors for redaction.
   // They might choose for a regex redaction or another method, or to not redact at all.
-  mappedDescriptor: v.id("descriptors"), // MED-Stroke, Fire-Structure. etc.
+  mappedDescriptor: v.optional(v.id("descriptors")), // MED-Stroke, Fire-Structure. etc.
   units: v.string(),
   descriptor: v.string(),
   cadDetails: v.string(),
@@ -102,6 +102,7 @@ const dashboardTables = {
 
 const configurationTables = {
   redactionLevels: defineTable({
+    organization: v.id("organizations"),
     department: v.id("departments"),
     // Something like partial, level 1, full, etc.
     level: v.string(),
@@ -119,24 +120,26 @@ const configurationTables = {
     // The fields that are redacted from the alert when accessed by the public
     // if public facing dashboards exists
     redactionFields: v.array(v.union(alerts.validator)),
-  }).index("by_department", ["department"]).index("by_level", ["level"]),
+  }).index("by_organization", ["organization"]).index("by_department", ["department"]).index("by_level", ["level"]),
 
   // This table maps the descriptor so we can
   descriptors: defineTable({
+    organization: v.id("organizations"),
     department: v.id("departments"),
     cadDescriptor: v.string(),
     descriptor: v.optional(v.string()),
-  }).index("by_department", ["department"]).index("by_cad_descriptor", ["cadDescriptor"]).index("by_descriptor", ["descriptor"]),
+  }).index("by_organization", ["organization"]).index("by_department", ["department"]).index("by_cad_descriptor", ["cadDescriptor"]).index("by_descriptor", ["descriptor"]),
 
   // Say on CAD the alert comes in as "E3" but we want to display "E-3 or Engine 3"
   // This table maps the CAD unit to the display unit
   // We have some pretty deep indexing to allow us to make fast queries when building
   // mass alert data.
   units: defineTable({
+    organization: v.id("organizations"),
     department: v.id("departments"),
     cadUnit: v.string(),
     unit: v.string(),
-  }).index("by_department", ["department"]).index("by_cad_unit", ["cadUnit"]).index("by_unit", ["unit"]),
+  }).index("by_organization", ["organization"]).index("by_department", ["department"]).index("by_cad_unit", ["cadUnit"]).index("by_unit", ["unit"]),
 };
 
 const authTables = {

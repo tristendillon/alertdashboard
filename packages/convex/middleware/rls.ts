@@ -5,20 +5,40 @@ import { DataModel } from "../app/_generated/dataModel.js";
 import { mutation, query } from "../app/_generated/server.js";
 
 // RLS
-import { stationsRls } from "../rls/stations.js";
-import { usersRls } from "../rls/users.js";
-import { organizationsRls } from "../rls/organizations.js";
-import { departmentsRls } from "../rls/departments.js";
-import { rolesRls } from "../rls/roles.js";
+import { stationsRls } from "../rls/organizationSchema/stations.js";
+import { usersRls } from "../rls/authSchema/users.js";
+import { organizationsRls } from "../rls/organizationSchema/organizations.js";
+import { departmentsRls } from "../rls/organizationSchema/departments.js";
+import { rolesRls } from "../rls/authSchema/roles.js";
 import { alertsRls } from "../rls/alerts.js";
+import { dashboardsRls } from "../rls/dashboardSchema/dashboards.js";
+import { pagesRls } from "../rls/dashboardSchema/pages.js";
+import { descriptorsRls } from "../rls/configurationSchema/descriptors.js";
+import { redactionLevelsRls } from "../rls/configurationSchema/redactionLevels.js";
+import { unitsRls } from "../rls/configurationSchema/units.js";
+
 
 export function rlsRules(_: QueryCtx): Rules<QueryCtx, DataModel> {
   return {
+    // organizationSchema
     stations: stationsRls,
-    users: usersRls,
     organizations: organizationsRls,
     departments: departmentsRls,
+
+    // authSchema
+    users: usersRls,
     roles: rolesRls,
+
+    //dashboardSchema
+    dashboards: dashboardsRls,
+    pages: pagesRls,
+
+    // configurationSchema
+    descriptors: descriptorsRls,
+    redactionLevels: redactionLevelsRls,
+    units: unitsRls,
+
+    // app
     alerts: alertsRls,
   };
 }
