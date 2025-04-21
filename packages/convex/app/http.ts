@@ -26,11 +26,10 @@ app.post(
   zValidator(
     "json",
     z.object({
-      mappedUnits: z.array(z.string()).optional(),
-      mappedDescriptor: z.string().optional(),
       units: z.string(),
       descriptor: z.string(),
       cadDetails: z.string(),
+      cadId: z.string(),
       city: z.string(),
       state: z.string(),
       crossStreet: z.string(),
@@ -61,7 +60,7 @@ app.post(
 
     switch (integration) {
       case "ACTIVE911":
-        units = c.req.valid("json").units.split(",").map(unit => unit.trim());
+        units = c.req.valid("json").units.split(" ").map(unit => unit.trim()).filter(unit => unit !== "");
         descriptor = c.req.valid("json").descriptor;
         break;
       default:
@@ -76,14 +75,22 @@ app.post(
       return c.json({ error: "Missing departmentId" }, 400);
     }
 
+    let departmentIdExistsPromise: Promise<boolean>;
+    if (departmentId === "ALL") {
+      departmentIdExistsPromise = Promise.resolve(true);
+    } else {
+      departmentIdExistsPromise = c.env.runQuery(internal.organizationSchema.departments.departmentExist, { id: departmentId as Id<"departments"> });
+    }
+    const organizationIdExistsPromise = c.env.runQuery(internal.organizationSchema.organizations.organizationExist, { id: organizationId as Id<"organizations"> });
+
     const [departmentIdExists, organizationIdExists] = await Promise.all([
-      c.env.runQuery(internal.organizationSchema.departments.departmentExist, { id: departmentId as Id<"departments"> }),
-      c.env.runQuery(internal.organizationSchema.organizations.organizationExist, { id: organizationId as Id<"organizations"> }),
+      departmentIdExistsPromise,
+      organizationIdExistsPromise,
     ]);
 
     // We let there exist and ALL departmentId for large scale integrations who might not want to
     // Have each department use a different url for their alert API.
-    if (!departmentIdExists && departmentId !== "ALL") {
+    if (!departmentIdExists) {
       return c.json({ error: "Department not found" }, 404);
     }
 
@@ -91,18 +98,12 @@ app.post(
       return c.json({ error: "Organization not found" }, 404);
     }
 
-    const apiKey = await c.env.runQuery(internal.authSchema.apiKeys.readKey, { key, organization: organizationId as Id<"organizations">, department: departmentId as Id<"departments"> });
-    if (!apiKey) {
-      return c.json({ error: "Invalid API key" }, 401);
-    }
-
-    if (!hasPermission({perms: new Set(apiKey.permissions), required: ["alert:insert"]})) {
-      return c.json({ error: "Unauthorized" }, 401);
-    }
+    const mappableDescriptorsPromise = c.env.runQuery(internal.configurationSchema.descriptors.mappableDescriptors, { organization: organizationId as Id<"organizations"> });
+    const mappableUnitsPromise = c.env.runQuery(internal.configurationSchema.units.mappableUnits, { organization: organizationId as Id<"organizations"> });
 
     const [mappableDescriptors, mappableUnits] = await Promise.all([
-      c.env.runQuery(internal.configurationSchema.descriptors.mappableDescriptors, { organization: organizationId as Id<"organizations"> }),
-      c.env.runQuery(internal.configurationSchema.units.mappableUnits, { organization: organizationId as Id<"organizations"> })
+      mappableDescriptorsPromise,
+      mappableUnitsPromise
     ]);
 
     const descriptorId = mappableDescriptors.find(d => d.cadDescriptor === descriptor);
@@ -118,16 +119,21 @@ app.post(
     }
 
     const body = c.req.valid("json");
-    await c.env.runMutation(api.alerts.createAlert, {
-      ...body,
+    const alert = await c.env.runMutation(api.alerts.createAlertWithApiKey, {
+      apiKey: key,
       organization: organizationId as Id<"organizations">,
       department: departmentId as Id<"departments">,
-      mappedUnits,
-      mappedDescriptor,
-      modifiedAt: 0,
-      modifiedBy: "System",
+      alert: {
+        ...body,
+        mappedUnits,
+        mappedDescriptor,
+        department: departmentId as Id<"departments">,
+        organization: organizationId as Id<"organizations">,
+        modifiedAt: 0,
+        modifiedBy: "System"
+      },
     });
-    return c.text("Sent message!");
+    return c.json({ status: "Created", alert }, 200);
   }
 );
 

@@ -19,6 +19,7 @@ const alerts = defineTable({
   units: v.string(),
   descriptor: v.string(),
   cadDetails: v.string(),
+  cadId: v.string(),
   city: v.string(),
   state: v.string(),
   crossStreet: v.string(), // DONDEE DR & ALLISON AVE
