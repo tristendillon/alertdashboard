@@ -26,8 +26,11 @@ This project is built as a monorepo using shadcn/ui components with the followin
 ### Adding UI Components
 
 To add components to your app, run the following command:
+You need to be in a directory with a components.json file
+to add a component to the shared UI library.
 
 ```bash
+cd /services/web/
 pnpm dlx shadcn@canary add [COMPONENT]
 ```
 

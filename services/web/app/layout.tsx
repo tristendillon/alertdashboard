@@ -3,6 +3,9 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "@workspace/ui/styles/globals.css";
 import "./globals.css";
 import { TCQueryProvider } from "@workspace/ui/providers/convex-query-provider";
+import { ThemeProvider } from "@workspace/ui/providers/theme-provider";
+import { ConvexAuthNextjsServerProvider } from "@convex-dev/auth/nextjs/server";
+import { Toaster } from "@workspace/ui/components/sonner";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -25,14 +28,19 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark h-screen w-full">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} w-full h-full antialiased`}
-      >
-        <TCQueryProvider>
-          {children}
-        </TCQueryProvider>
-      </body>
-    </html>
+    <ConvexAuthNextjsServerProvider>
+      <html lang="en" className="dark h-screen w-full" suppressHydrationWarning>
+        <body
+          className={`${geistSans.variable} ${geistMono.variable} w-full h-full antialiased`}
+        >
+          <TCQueryProvider>
+            <ThemeProvider>
+              {children}
+              <Toaster />
+            </ThemeProvider>
+          </TCQueryProvider>
+        </body>
+      </html>
+    </ConvexAuthNextjsServerProvider>
   );
 }
