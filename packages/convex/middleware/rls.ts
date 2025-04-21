@@ -64,6 +64,21 @@ export function rlsRules(_: QueryCtx): Rules<QueryCtx, DataModel> {
           return hasPermission({ perms, required: ["roles:insert"], compare: () => authedUser.organization === role.organization })
         }),
     },
+
+    redactionLevel: {
+      read: (ctx, role) =>
+        withAuthContext(ctx, role, ({ authedUser }) => {
+          return authedUser.departments.some(d => d._id === role.department);
+        }),
+      modify: (ctx, role) =>
+        withAuthContext(ctx, role, ({ perms, authedUser }) => {
+          return hasPermission({ perms, required: ["roles:modify"], compare: () => authedUser.departments.some(d => d._id === role.department) });
+        }),
+      insert: (ctx, role) =>
+        withAuthContext(ctx, role, ({ perms, authedUser }) => {
+          return hasPermission({ perms, required: ["roles:insert"], compare: () => authedUser.departments.some(d => d._id === role.department) })
+        }),
+    }
   };
 }
 

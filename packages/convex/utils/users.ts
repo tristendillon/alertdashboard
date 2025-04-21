@@ -1,7 +1,6 @@
 import { Doc } from "../app/_generated/dataModel.js";
 import { QueryCtx } from "../app/_generated/server.js";
-
-export async function getUserFromIdentityCtx(ctx: QueryCtx): Promise<Doc<'users'> | null> {
+export async function getUserFromIdentityCtx(ctx: QueryCtx): Promise<Doc<'users'> & { departments: Doc<'departments'>[] } | null> {
   const identity = await ctx.auth.getUserIdentity();
   if (!identity) {
     return null;
@@ -15,5 +14,10 @@ export async function getUserFromIdentityCtx(ctx: QueryCtx): Promise<Doc<'users'
     return null;
   }
 
-  return user;
+  const departments = await ctx.db
+    .query("departments")
+    .withIndex("by_organization", (q) => q.eq("organization", user.organization))
+    .collect();
+
+  return { ...user, departments };
 }

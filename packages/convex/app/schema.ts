@@ -96,8 +96,8 @@ const dashboardTables = {
   // Dashboard Pages, a given dashboard has many pages, they can cycled through,
   // or selected, etc, all managed through settings
   pages: defineTable({
-    name: v.string(),
     department: v.id("departments"),
+    name: v.string(),
   }).index("by_name", ["name"]).index("by_department", ["department"]),
 }
 
