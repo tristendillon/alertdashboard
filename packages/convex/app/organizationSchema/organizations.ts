@@ -11,15 +11,6 @@ export const readOrganization = queryWithAuthedUser({
   },
 })
 
-export function betterOmit<T extends Record<string, any>, Keys extends (keyof T)[]>(
-  obj: T,
-  keys: Keys,
-) {
-  const filtered = Object.fromEntries(
-    Object.entries(obj).filter(([k]) => !keys.includes(k as Keys[number])),
-  );
-  return v.object(filtered)
-}
 export const updateOrganization = mutationWithRLSAndUser({
   args: { patch: v.object({
     ...partial(doc(schema, "organizations").fields),

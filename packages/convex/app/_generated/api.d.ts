@@ -13,6 +13,7 @@ import type {
   FilterApi,
   FunctionReference,
 } from "convex/server";
+import type * as alerts from "../alerts.js";
 import type * as auth from "../auth.js";
 import type * as authSchema_authAccounts from "../authSchema/authAccounts.js";
 import type * as authSchema_roles from "../authSchema/roles.js";
@@ -30,6 +31,7 @@ import type * as organizationSchema_organizations from "../organizationSchema/or
  * ```
  */
 declare const fullApi: ApiFromModules<{
+  alerts: typeof alerts;
   auth: typeof auth;
   "authSchema/authAccounts": typeof authSchema_authAccounts;
   "authSchema/roles": typeof authSchema_roles;

@@ -10,6 +10,7 @@ const coordinates = v.object({
 
 const alerts = defineTable({
   department: v.id("departments"),
+  organization: v.id("organizations"),
   // Some departments might not want to have to map their units to display names
   mappedUnits: v.array(v.id("units")),
   // Some departments might not want to have to map their call descriptors for redaction.
@@ -40,9 +41,7 @@ const alerts = defineTable({
   // Modification by these integrations will be marked as "System"
   // we could migrate it to use their integration name in the future.
   modifiedBy: v.union(v.id("users"), v.literal("System")),
-
-
-}).index("by_department", ["department"]);
+}).index("by_department", ["department"]).index("by_organization", ["organization"]);
 
 const organizationTables = {
   organizations: defineTable({
