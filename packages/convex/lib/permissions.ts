@@ -28,8 +28,6 @@ export function hasPermission({
   return hasPerm && (compare ? compare() : true);
 }
 
-
-
 export const permissionValidator = v.union(
   // Dashboard permissions
   v.literal("dashboard:insert"),
@@ -50,6 +48,14 @@ export const permissionValidator = v.union(
   // Station permissions
   v.literal("station:insert"),
   v.literal("station:modify"),
+
+  // MapIcon permissions
+  v.literal("mapIcon:insert"),
+  v.literal("mapIcon:modify"),
+
+  // MapData permissions
+  v.literal("mapData:insert"),
+  v.literal("mapData:modify"),
 
   // Unit permissions
   v.literal("unit:insert"),

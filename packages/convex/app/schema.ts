@@ -99,9 +99,57 @@ const dashboardTables = {
     department: v.id("departments"),
     name: v.string(),
   }).index("by_name", ["name"]).index("by_department", ["department"]),
+
+
+  // We will get into this when we have a system for creating custom pages... For now pages will be templates
+  // drafts: defineTable({
+  //   department: v.id("departments"),
+  //   name: v.string(),
+  // }).index("by_name", ["name"]).index("by_department", ["department"]),
 }
 
+
+
 const configurationTables = {
+  // So we can have a objects that people can create and use on the dashboards...
+  // We can default to each department starting with a set of pre defined objects
+  // Like Fire Hydrants of multi colors for different flow rates, etc.
+  mapIcons: defineTable({
+    organization: v.id("organizations"),
+    department: v.id("departments"),
+    name: v.string(),
+    icon: v.string(), // This will be some SVG file stored in the file blob, so they can upload their own icons or use our built in ones.
+    color: v.string(),
+  }).index("by_department", ["department"]).index("by_organization", ["organization"]),
+
+  mapData: defineTable({
+    organization: v.id("organizations"),
+    department: v.id("departments"),
+    name: v.string(),
+    // We can use the map to display just one icon
+    icon: v.optional(v.id("mapIcons")),
+
+    // I am going to define a way to calculate what icon to display based on a calculation of the data stored
+    // Lets say we have the record "flow_rate": 1234 stored in a given mapData piece.
+    // If we have a calculation like using OData syntax, e.g., [{someMapIconId: "flow_rate gte 1000"}], we can display a someMapIconId
+
+    // So in some way it would look like data["flow_rate"] >= 1000 as a very pseudo code example to see if we use that icon id
+
+    // On the front end of things we would pull all of the mapIcons in the keys of the calculation to have them available to display.
+    // Then we would assign it based on the data of the mapIcon piece.
+
+    // This system will be more flexible in the future when more map icons are available to the organization/department.
+    iconCalculation: v.array(v.record(v.id("mapIcons"), v.string())),
+
+    // If the calculation fails, we can fallback to a default icon if this is not set it will try to use the "icon" field.
+    // Should that field also be undefined we will show a default icon on the frontend to make sure icons are always displayed.
+    iconCalculationFallback: v.optional(v.id("mapIcons")),
+    coordinates: coordinates,
+
+    // We can store more information in here like the type of hydrant, flow rate etc.
+    data: v.record(v.string(), v.union(v.string(), v.number())),
+  }).index("by_department", ["department"]).index("by_organization", ["organization"]),
+
   redactionLevels: defineTable({
     organization: v.id("organizations"),
     department: v.id("departments"),

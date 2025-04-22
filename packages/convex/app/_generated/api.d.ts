@@ -26,6 +26,8 @@ import type * as dashboardSchema_dashboards from "../dashboardSchema/dashboards.
 import type * as dashboardSchema_pages from "../dashboardSchema/pages.js";
 import type * as http from "../http.js";
 import type * as organizationSchema_departments from "../organizationSchema/departments.js";
+import type * as organizationSchema_mapData from "../organizationSchema/mapData.js";
+import type * as organizationSchema_mapIcons from "../organizationSchema/mapIcons.js";
 import type * as organizationSchema_organizations from "../organizationSchema/organizations.js";
 import type * as organizationSchema_stations from "../organizationSchema/stations.js";
 
@@ -51,6 +53,8 @@ declare const fullApi: ApiFromModules<{
   "dashboardSchema/pages": typeof dashboardSchema_pages;
   http: typeof http;
   "organizationSchema/departments": typeof organizationSchema_departments;
+  "organizationSchema/mapData": typeof organizationSchema_mapData;
+  "organizationSchema/mapIcons": typeof organizationSchema_mapIcons;
   "organizationSchema/organizations": typeof organizationSchema_organizations;
   "organizationSchema/stations": typeof organizationSchema_stations;
 }>;
