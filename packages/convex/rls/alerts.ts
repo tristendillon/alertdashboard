@@ -11,11 +11,11 @@ export const alertsRls: Rules<QueryCtx, DataModel>["alerts"] = {
     }),
   modify: (ctx, alert) =>
     withAuthContext(ctx, alert, ({ perms, authedUser }) => {
-      return hasPermission({ perms, required: ["admin:all"], compare: () => authedUser.organization === alert.organization });
+      return hasPermission({ perms, required: ["alert:modify"], compare: () => authedUser.organization === alert.organization });
     }),
   insert: (ctx, alert) =>
     withAuthContext(ctx, alert, ({ perms, authedUser }) => {
-      return hasPermission({ perms, required: ["admin:all"], compare: () => authedUser.organization === alert.organization });
+      return hasPermission({ perms, required: ["alert:insert"], compare: () => authedUser.organization === alert.organization });
     }),
 
 }

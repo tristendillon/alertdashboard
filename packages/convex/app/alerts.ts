@@ -34,7 +34,7 @@ export const createAlertWithApiKey = mutationWithApiKey({
       return {
         json: {
           "status": "Error",
-          "message": "Unauthorized"
+          "message": "Api Key is not allowed to insert alerts"
         },
         status: 403
       };
@@ -76,7 +76,7 @@ export const updateAlertWithApiKey = mutationWithApiKey({
       return {
         json: {
           "status": "Error",
-          "message": "Unauthorized"
+          "message": "Api key is not allowed to modify alerts"
         },
         status: 403
       };
