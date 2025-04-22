@@ -14,6 +14,7 @@
   "dependencies": {
     "@auth/core": "^0.38.0",
     "@convex-dev/auth": "^0.0.80",
+    "@convex-dev/rate-limiter": "^0.2.6",
     "@hono/zod-validator": "^0.4.3",
     "@workspace/convex": "file:",
     "convex": "^1.23.0",

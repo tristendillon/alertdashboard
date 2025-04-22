@@ -32,6 +32,9 @@ importers:
       '@convex-dev/auth':
         specifier: ^0.0.80
         version: 0.0.80(@auth/core@0.38.0)(convex@1.23.0(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(react@19.0.0)
+      '@convex-dev/rate-limiter':
+        specifier: ^0.2.6
+        version: 0.2.6(convex@1.23.0(react-dom@19.0.0(react@19.0.0))(react@19.0.0))
       '@hono/zod-validator':
         specifier: ^0.4.3
         version: 0.4.3(hono@4.7.7)(zod@3.24.2)
@@ -425,6 +428,11 @@ packages:
     peerDependenciesMeta:
       react:
         optional: true
+
+  '@convex-dev/rate-limiter@0.2.6':
+    resolution: {integrity: sha512-QcuLpUBHL8S34BgU4Xvbjzkqf4sw5KWNlnvIR0qZ8qhDxbxrjJBRnbiSJDYqUYccyCXpRJe4YnzmPnDefoPYHg==}
+    peerDependencies:
+      convex: ~1.16.5 || >=1.17.0 <1.25.0
 
   '@convex-dev/react-query@0.0.0-alpha.8':
     resolution: {integrity: sha512-Rv/q7/CplU75f7ckBd2vh+HoeeQ0tOrjwMl14Hk7D/03e55oUIU0TV5JYYzC79ZQyyAtoj7CmCo5ZxcmtKNv1Q==}
@@ -3952,6 +3960,10 @@ snapshots:
       server-only: 0.0.1
     optionalDependencies:
       react: 19.0.0
+
+  '@convex-dev/rate-limiter@0.2.6(convex@1.23.0(react-dom@19.0.0(react@19.0.0))(react@19.0.0))':
+    dependencies:
+      convex: 1.23.0(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
 
   '@convex-dev/react-query@0.0.0-alpha.8(@tanstack/react-query@5.74.4(react@19.0.0))(convex@1.23.0(react-dom@19.0.0(react@19.0.0))(react@19.0.0))':
     dependencies:
