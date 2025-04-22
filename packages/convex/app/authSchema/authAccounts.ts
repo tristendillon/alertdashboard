@@ -1,11 +1,11 @@
-import { internalMutationWithRLS } from "../../middleware/rls.js";
 import schema from "../schema.js";
 import { v } from "convex/values";
 import { Scrypt } from "lucia";
 import { doc, partial } from "convex-helpers/validators";
+import { internalMutation } from "../_generated/server.js";
 
 // This is pretty much entirely an internal table.
-export const createAuthAccount = internalMutationWithRLS({
+export const createAuthAccount = internalMutation({
   args: {
     providerAccountId: v.string(),
     password: v.string(),
@@ -13,7 +13,6 @@ export const createAuthAccount = internalMutationWithRLS({
   },
   handler: async (ctx, { providerAccountId, password, userId }) => {
     const hashed = await new Scrypt().hash(password)
-    console.log("HASHED", hashed)
     const authAccount = await ctx.db.insert("authAccounts", {
       provider: "password",
       providerAccountId,
@@ -24,7 +23,7 @@ export const createAuthAccount = internalMutationWithRLS({
   },
 });
 
-export const deleteAuthAccount = internalMutationWithRLS({
+export const deleteAuthAccount = internalMutation({
   args: {
     id: v.id("authAccounts")
   },
@@ -34,7 +33,7 @@ export const deleteAuthAccount = internalMutationWithRLS({
 });
 
 
-export const updateAuthAccount = internalMutationWithRLS({
+export const updateAuthAccount = internalMutation({
   args: { patch: v.object({
     ...partial(doc(schema, "authAccounts").fields),
     _id: v.id("authAccounts"),

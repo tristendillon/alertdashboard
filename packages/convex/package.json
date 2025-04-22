@@ -14,11 +14,15 @@
   "dependencies": {
     "@auth/core": "^0.38.0",
     "@convex-dev/auth": "^0.0.80",
+    "@hono/zod-validator": "^0.4.3",
     "@workspace/convex": "file:",
     "convex": "^1.23.0",
     "convex-helpers": "^0.1.79",
     "dotenv": "^16.5.0",
-    "lucia": "^3.2.2"
+    "hono": "^4.7.7",
+    "lucia": "^3.2.2",
+    "strip-ansi": "^7.1.0",
+    "zod": "^3.24.2"
   },
   "devDependencies": {
     "@types/node": "^20"

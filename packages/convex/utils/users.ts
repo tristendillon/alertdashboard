@@ -2,7 +2,6 @@ import { Doc, Id } from "../app/_generated/dataModel.js";
 import { QueryCtx } from "../app/_generated/server.js";
 export async function getUserFromIdentityCtx(ctx: QueryCtx): Promise<Doc<'users'> & { departments: Doc<'departments'>[] } | null> {
   const identity = await ctx.auth.getUserIdentity();
-  console.log(identity)
   if (!identity) {
     return null;
   }
