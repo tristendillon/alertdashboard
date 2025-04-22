@@ -31,30 +31,58 @@ export function hasPermission({
 
 
 export const permissionValidator = v.union(
+  // Dashboard permissions
   v.literal("dashboard:insert"),
   v.literal("dashboard:modify"),
-  v.literal("dashboard:delete"),
 
+  // Alert permissions
   v.literal("alert:insert"),
   v.literal("alert:modify"),
-  v.literal("alert:delete"),
 
+  // Organization permissions
+  v.literal("organization:insert"),
   v.literal("organization:modify"),
-  v.literal("organization:delete"),
 
+  // Department permissions
   v.literal("department:insert"),
   v.literal("department:modify"),
-  v.literal("department:delete"),
 
+  // Station permissions
+  v.literal("station:insert"),
+  v.literal("station:modify"),
+
+  // Unit permissions
+  v.literal("unit:insert"),
+  v.literal("unit:modify"),
+
+  // Descriptor permissions
+  v.literal("descriptor:insert"),
+  v.literal("descriptor:modify"),
+
+  // RedactionLevel permissions
+  v.literal("redactionLevel:insert"),
+  v.literal("redactionLevel:modify"),
+
+  // User permissions
   v.literal("user:insert"),
   v.literal("user:modify"),
-  v.literal("user:delete"),
 
+  // Role permissions
   v.literal("roles:insert"),
   v.literal("roles:modify"),
-  v.literal("roles:delete"),
 
+  // Page permissions
+  v.literal("page:insert"),
+  v.literal("page:modify"),
+
+  // Api Keys permissions
+  v.literal("apiKey:read"),
+  v.literal("apiKey:insert"),
+  v.literal("apiKey:modify"), // This is for updating or deleting
+
+  // Global admin permission
   v.literal("admin:all")
 );
+
 
 export type Permission = Infer<typeof permissionValidator>;

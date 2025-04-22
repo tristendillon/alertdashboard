@@ -11,10 +11,10 @@ export const pagesRls: Rules<QueryCtx, DataModel>["pages"] = {
     }),
   modify: (ctx, page) =>
     withAuthContext(ctx, page, ({ perms, authedUser }) => {
-      return hasPermission({ perms, required: ["admin:all"], compare: () => authedUser.departments.some(d => d._id === page.department) });
+      return hasPermission({ perms, required: ["page:modify"], compare: () => authedUser.departments.some(d => d._id === page.department) });
     }),
   insert: (ctx, page) =>
     withAuthContext(ctx, page, ({ perms, authedUser }) => {
-      return hasPermission({ perms, required: ["admin:all"], compare: () => authedUser.departments.some(d => d._id === page.department) });
+      return hasPermission({ perms, required: ["page:insert"], compare: () => authedUser.departments.some(d => d._id === page.department) });
     }),
 }

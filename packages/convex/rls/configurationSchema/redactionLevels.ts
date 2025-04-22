@@ -11,10 +11,10 @@ export const redactionLevelsRls: Rules<QueryCtx, DataModel>["redactionLevels"] =
     }),
   modify: (ctx, redactionLevel) =>
     withAuthContext(ctx, redactionLevel, ({ perms, authedUser }) => {
-      return hasPermission({ perms, required: ["admin:all"], compare: () => authedUser.organization === redactionLevel.organization });
+      return hasPermission({ perms, required: ["redactionLevel:modify"], compare: () => authedUser.organization === redactionLevel.organization });
     }),
   insert: (ctx, redactionLevel) =>
     withAuthContext(ctx, redactionLevel, ({ perms, authedUser }) => {
-      return hasPermission({ perms, required: ["admin:all"], compare: () => authedUser.organization === redactionLevel.organization });
+      return hasPermission({ perms, required: ["redactionLevel:insert"], compare: () => authedUser.organization === redactionLevel.organization });
     }),
 }

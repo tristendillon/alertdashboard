@@ -6,23 +6,15 @@ import { hasPermission } from "@workspace/convex/lib/permissions.js";
 
 export const stationsRls: Rules<QueryCtx, DataModel>["stations"] = {
   read: (ctx, station) =>
-    withAuthContext(ctx, station, ({ authedUser }) =>
-      authedUser.departments.some(d => d._id === station.department)
-    ),
+    withAuthContext(ctx, station, ({ authedUser }) => {
+      return authedUser.departments.some(d => d._id === station.department)
+    }),
   modify: (ctx, station) =>
-    withAuthContext(ctx, station, ({ perms, authedUser }) =>
-      hasPermission({
-        perms,
-        required: ["admin:all"],
-        compare: () => authedUser.departments.some(d => d._id === station.department),
-      })
-    ),
+    withAuthContext(ctx, station, ({ perms, authedUser }) =>{
+      return hasPermission({perms, required: ["station:modify"], compare: () => authedUser.departments.some(d => d._id === station.department),})
+    }),
   insert: (ctx, station) =>
-    withAuthContext(ctx, station, ({ perms, authedUser }) =>
-      hasPermission({
-        perms,
-        required: ["admin:all"],
-        compare: () => authedUser.departments.some(d => d._id === station.department),
-      })
-    ),
+    withAuthContext(ctx, station, ({ perms, authedUser }) => {
+      return hasPermission({perms, required: ["station:insert"], compare: () => authedUser.departments.some(d => d._id === station.department),})
+    }),
 };

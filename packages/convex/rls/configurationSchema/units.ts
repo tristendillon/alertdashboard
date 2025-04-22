@@ -11,10 +11,10 @@ export const unitsRls: Rules<QueryCtx, DataModel>["units"] = {
     }),
   modify: (ctx, unit) =>
     withAuthContext(ctx, unit, ({ perms, authedUser }) => {
-      return hasPermission({ perms, required: ["admin:all"], compare: () => authedUser.organization === unit.organization });
+      return hasPermission({ perms, required: ["unit:modify"], compare: () => authedUser.organization === unit.organization });
     }),
   insert: (ctx, unit) =>
     withAuthContext(ctx, unit, ({ perms, authedUser }) => {
-      return hasPermission({ perms, required: ["admin:all"], compare: () => authedUser.organization === unit.organization });
+      return hasPermission({ perms, required: ["unit:insert"], compare: () => authedUser.organization === unit.organization });
     }),
 }

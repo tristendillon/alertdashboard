@@ -8,14 +8,14 @@ import { hasPermission } from "@workspace/convex/lib/permissions.js";
 export const apiKeysRls: Rules<QueryCtx, DataModel>["apiKeys"] = {
   read: (ctx, apiKey) =>
     withAuthContext(ctx, apiKey, ({ perms, authedUser }) => {
-      return hasPermission({ perms, required: ["admin:all"], compare: () => authedUser.organization === apiKey.organization });
+      return hasPermission({ perms, required: ["apiKey:read"], compare: () => authedUser.organization === apiKey.organization });
     }),
   modify: (ctx, apiKey) =>
     withAuthContext(ctx, apiKey, ({ perms, authedUser }) => {
-      return hasPermission({ perms, required: ["admin:all"], compare: () => authedUser.organization === apiKey.organization });
+      return hasPermission({ perms, required: ["apiKey:modify"], compare: () => authedUser.organization === apiKey.organization });
     }),
   insert: (ctx, apiKey) =>
     withAuthContext(ctx, apiKey, ({ perms, authedUser }) => {
-      return hasPermission({ perms, required: ["admin:all"], compare: () => authedUser.organization === apiKey.organization })
+      return hasPermission({ perms, required: ["apiKey:insert"], compare: () => authedUser.organization === apiKey.organization })
     }),
 };

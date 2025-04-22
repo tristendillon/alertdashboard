@@ -11,10 +11,10 @@ export const dashboardsRls: Rules<QueryCtx, DataModel>["dashboards"] = {
     }),
   modify: (ctx, dashboard) =>
     withAuthContext(ctx, dashboard, ({ perms, authedUser }) => {
-      return hasPermission({ perms, required: ["admin:all"], compare: () => authedUser.departments.some(d => d._id === dashboard.department) });
+      return hasPermission({ perms, required: ["dashboard:modify"], compare: () => authedUser.departments.some(d => d._id === dashboard.department) });
     }),
   insert: (ctx, dashboard) =>
     withAuthContext(ctx, dashboard, ({ perms, authedUser }) => {
-      return hasPermission({ perms, required: ["admin:all"], compare: () => authedUser.departments.some(d => d._id === dashboard.department) });
+      return hasPermission({ perms, required: ["dashboard:insert"], compare: () => authedUser.departments.some(d => d._id === dashboard.department) });
     }),
 }

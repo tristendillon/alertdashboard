@@ -11,10 +11,10 @@ export const descriptorsRls: Rules<QueryCtx, DataModel>["descriptors"] = {
     }),
   modify: (ctx, descriptor) =>
     withAuthContext(ctx, descriptor, ({ perms, authedUser }) => {
-      return hasPermission({ perms, required: ["admin:all"], compare: () => authedUser.organization === descriptor.organization });
+      return hasPermission({ perms, required: ["descriptor:modify"], compare: () => authedUser.organization === descriptor.organization });
     }),
   insert: (ctx, descriptor) =>
     withAuthContext(ctx, descriptor, ({ perms, authedUser }) => {
-      return hasPermission({ perms, required: ["admin:all"], compare: () => authedUser.organization === descriptor.organization });
+      return hasPermission({ perms, required: ["descriptor:insert"], compare: () => authedUser.organization === descriptor.organization });
     }),
 }

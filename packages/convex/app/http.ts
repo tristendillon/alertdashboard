@@ -62,7 +62,13 @@ app.post(
 
     switch (integration) {
       case "ACTIVE911":
-        units = c.req.valid("json").units.split(" ").map(unit => unit.trim()).filter(unit => unit !== "");
+        const unitString = c.req.valid("json").units;
+        if (unitString) {
+          if (unitString.length > 255) {
+            return c.json({ error: "Units must be less than 255 characters" }, 400);
+          }
+          units = unitString.split(" ").map(unit => unit.trim()).filter(unit => unit !== "");
+        }
         descriptor = c.req.valid("json").descriptor;
         break;
       default:
@@ -133,7 +139,7 @@ app.post(
         mappedDescriptor,
         department: departmentId as Id<"departments">,
         organization: organizationId as Id<"organizations">,
-        modifiedAt: 0,
+        modifiedAt: Date.now(),
         modifiedBy: "System"
       },
     });
@@ -177,7 +183,13 @@ app.patch(
 
     switch (integration) {
       case "ACTIVE911":
-        units = c.req.valid("json")?.units?.split(" ").map(unit => unit.trim()).filter(unit => unit !== "") ?? [];
+        const unitString = c.req.valid("json")?.units;
+        if (unitString) {
+          if (unitString.length > 255) {
+            return c.json({ error: "Units must be less than 255 characters" }, 400);
+          }
+          units = unitString.split(" ").map(unit => unit.trim()).filter(unit => unit !== "");
+        }
         descriptor = c.req.valid("json")?.descriptor;
         break;
       default:
@@ -258,7 +270,7 @@ app.patch(
         mappedDescriptor,
         department: departmentId as Id<"departments">,
         organization: organizationId as Id<"organizations">,
-        modifiedAt: 0,
+        modifiedAt: Date.now(),
         modifiedBy: "System"
       },
     });
