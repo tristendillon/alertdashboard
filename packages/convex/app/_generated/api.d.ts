@@ -13,6 +13,7 @@ import type * as auth from "../auth.js";
 import type * as authSchema_apiKeys from "../authSchema/apiKeys.js";
 import type * as authSchema_authAccounts from "../authSchema/authAccounts.js";
 import type * as authSchema_roles from "../authSchema/roles.js";
+import type * as authSchema_sessions from "../authSchema/sessions.js";
 import type * as authSchema_users from "../authSchema/users.js";
 import type * as configurationSchema_descriptors from "../configurationSchema/descriptors.js";
 import type * as configurationSchema_redactionLevels from "../configurationSchema/redactionLevels.js";
@@ -47,6 +48,7 @@ declare const fullApi: ApiFromModules<{
   "authSchema/apiKeys": typeof authSchema_apiKeys;
   "authSchema/authAccounts": typeof authSchema_authAccounts;
   "authSchema/roles": typeof authSchema_roles;
+  "authSchema/sessions": typeof authSchema_sessions;
   "authSchema/users": typeof authSchema_users;
   "configurationSchema/descriptors": typeof configurationSchema_descriptors;
   "configurationSchema/redactionLevels": typeof configurationSchema_redactionLevels;

@@ -1,5 +1,12 @@
 "use client"
 
+/*
+ THIS IS A TEMPORARY PAGE FOR SIGNUP.
+ IT WILL BE REPLACED WITH AN INTERNAL
+ MUTATION THAT HANDLES CREATING AN ORGANIZATION
+ AND AN ADMIN RELATED TO THAT ORGANIZATION.
+*/
+
 import React from 'react'
 import z from 'zod'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@workspace/ui/components/card'
