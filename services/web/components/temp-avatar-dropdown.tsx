@@ -15,24 +15,17 @@ import {
 } from "@workspace/ui/components/dropdown-menu"
 import { LogOut, User, Settings } from "lucide-react"
 import { useAuthActions } from "@convex-dev/auth/react";
+import { useUser } from '@workspace/ui/providers/user-provider'
 
 export default function TempAvatarDropdown() {
   const { signOut } = useAuthActions();
-  const { data: user, isPending, error } = useQuery(api.authSchema.users.me)
-
-  if (error) {
-    console.error(error)
-    return null
-  }
-
-  if (!user && !isPending) {
-    return null
-  }
+  // If undefined user is loading.
+  const user = useUser();
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        {isPending ? (
+      <DropdownMenuTrigger asChild disabled={!user}>
+        {!user ? (
           <div className="size-10 rounded-full bg-muted animate-pulse"></div>
         ) : (
           <Avatar className="size-10 cursor-pointer hover:opacity-80 transition-opacity">

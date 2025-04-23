@@ -1,6 +1,7 @@
 
 import TempNav from "@/components/temp-nav";
 import type { Metadata } from "next";
+import { UserProvider } from "@workspace/ui/providers/user-provider";
 
 export const metadata: Metadata = {
   title: "Dashboard | AlertDashboard",
@@ -14,8 +15,10 @@ export default function RootLayout({
 }>) {
   return (
     <main className="h-full">
-      <TempNav/>
-      {children}
+      <UserProvider>
+        <TempNav/>
+        {children}
+      </UserProvider>
     </main>
   );
 }

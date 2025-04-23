@@ -3,9 +3,14 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@workspace/ui/*": ["./src/*"]
+      "@workspace/ui/*": ["./src/*"],
+      "@workspace/convex/*": ["../convex/*"]
     }
   },
-  "include": ["."],
+  "include": [
+    ".",
+    "**/*.ts",
+    "**/*.tsx"
+  ],
   "exclude": ["node_modules", "dist"]
 }

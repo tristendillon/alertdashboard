@@ -1,6 +1,16 @@
 import { crud } from "convex-helpers/server/crud";
 import { mutationWithRLS, queryWithRLS } from "@workspace/convex/middleware/rls";
 import schema from "../schema";
+import { queryWithRLSAndUser } from "../../middleware/user";
+
+export const me = queryWithRLSAndUser({
+  handler: async (ctx) => {
+    if (!ctx.authedUser.role)
+      return null;
+    const role = await ctx.db.get(ctx.authedUser.role);
+    return role;
+  },
+})
 
 export const readRoles = queryWithRLS({
   handler: async (ctx) => {

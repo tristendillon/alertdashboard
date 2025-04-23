@@ -27,7 +27,8 @@ export function TCQueryProvider({
     },
   });
   return (
-    <ConvexAuthNextjsProvider  client={convex}>
+    // @ts-ignore Idk why i have to ignore this
+    <ConvexAuthNextjsProvider client={convex}>
       <QueryClientProvider client={queryClient}>
         <ConvexQueryCacheProvider>
           {children}
