@@ -10,7 +10,6 @@ assignees: ''
 
 <!-- A clear and concise description of the UI work to be done -->
 
-
 ## Design Requirements
 
 <!-- Describe any specific design requirements or guidelines to follow -->
@@ -24,7 +23,7 @@ assignees: ''
 
 <!-- Describe the expected user interaction flow -->
 
-## Mockups/Wireframes
+## Mockups/Wireframes/References
 
 <!-- If available, attach or link to mockups/wireframes -->
 
