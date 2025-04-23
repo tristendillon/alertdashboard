@@ -131,6 +131,26 @@ const configurationTables = {
     .index('by_department', ['department'])
     .index('by_organization', ['organization']),
 
+  // We can let people create their own map data templates, so when adding a piece of mapData
+  // They dont have to copy and paste or redefine stuff.
+
+  // Someone could make a Fire Hydrant template.
+  // It would have an icon calculation of [{someMapIconId: "flow_rate gte 500"}, {someMapIconId: "flow_rate gte 1000"}]
+  // It would have an icon calculation fallback of someMapIconId
+  // It would could data like {flow_rate: null, address: null, prefilled_data: "some prefilled data", prefilled_data2: 1234}
+  // Then when someone creates a new mapData piece, they can select the template and it will prefill the data for them.
+  // all they would have to is add the coordinates and fill in the data that is null in the data field and it would just work.
+  mapDataTemplates: defineTable({
+    organization: v.id('organizations'),
+    department: v.id('departments'),
+    name: v.string(),
+    iconCalculation: v.array(v.record(v.id('mapIcons'), v.string())),
+    iconCalculationFallback: v.optional(v.id('mapIcons')),
+    data: v.record(v.string(), v.union(v.string(), v.number(), v.null())),
+  })
+    .index('by_department', ['department'])
+    .index('by_organization', ['organization']),
+
   mapData: defineTable({
     organization: v.id('organizations'),
     department: v.id('departments'),
