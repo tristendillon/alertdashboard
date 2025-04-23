@@ -108,8 +108,6 @@ const dashboardTables = {
   // }).index("by_name", ["name"]).index("by_department", ["department"]),
 }
 
-
-
 const configurationTables = {
   // So we can have a objects that people can create and use on the dashboards...
   // We can default to each department starting with a set of pre defined objects
@@ -190,7 +188,6 @@ const configurationTables = {
     unit: v.string(),
   }).index("by_organization", ["organization"]).index("by_department", ["department"]).index("by_cad_unit", ["cadUnit"]).index("by_unit", ["unit"]),
 };
-
 
 const authTables = {
   ...convexAuthTables,
