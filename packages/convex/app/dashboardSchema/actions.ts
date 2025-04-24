@@ -98,6 +98,7 @@ export const createDashboardTokens = internalAction({
 
     const convexToken = await jose.JWS.createSign(
       { format: 'compact', fields: {}, alg: 'RS256' },
+      // @ts-ignore
       { key: rawKey, reference: false }
     )
       .update(input)
