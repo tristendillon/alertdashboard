@@ -18,6 +18,7 @@ import type * as authSchema_users from "../authSchema/users.js";
 import type * as configurationSchema_descriptors from "../configurationSchema/descriptors.js";
 import type * as configurationSchema_redactionLevels from "../configurationSchema/redactionLevels.js";
 import type * as configurationSchema_units from "../configurationSchema/units.js";
+import type * as dashboardSchema_actions from "../dashboardSchema/actions.js";
 import type * as dashboardSchema_dashboards from "../dashboardSchema/dashboards.js";
 import type * as dashboardSchema_pages from "../dashboardSchema/pages.js";
 import type * as http from "../http.js";
@@ -53,6 +54,7 @@ declare const fullApi: ApiFromModules<{
   "configurationSchema/descriptors": typeof configurationSchema_descriptors;
   "configurationSchema/redactionLevels": typeof configurationSchema_redactionLevels;
   "configurationSchema/units": typeof configurationSchema_units;
+  "dashboardSchema/actions": typeof dashboardSchema_actions;
   "dashboardSchema/dashboards": typeof dashboardSchema_dashboards;
   "dashboardSchema/pages": typeof dashboardSchema_pages;
   http: typeof http;

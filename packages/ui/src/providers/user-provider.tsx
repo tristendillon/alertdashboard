@@ -32,7 +32,7 @@ export const UserProvider = ({ children }: UserProviderProps) => {
 
   return (
     <UserContext.Provider value={{
-      user: user && role ? {
+      user: user ? {
         ...user,
         joinedRole: role
       } : undefined
