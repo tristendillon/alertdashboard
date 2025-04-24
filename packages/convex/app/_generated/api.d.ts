@@ -28,6 +28,7 @@ import type * as organizationSchema_mapIcons from "../organizationSchema/mapIcon
 import type * as organizationSchema_organizations from "../organizationSchema/organizations.js";
 import type * as organizationSchema_stations from "../organizationSchema/stations.js";
 import type * as rateLimiter from "../rateLimiter.js";
+import type * as restraints from "../restraints.js";
 
 import type {
   ApiFromModules,
@@ -64,6 +65,7 @@ declare const fullApi: ApiFromModules<{
   "organizationSchema/organizations": typeof organizationSchema_organizations;
   "organizationSchema/stations": typeof organizationSchema_stations;
   rateLimiter: typeof rateLimiter;
+  restraints: typeof restraints;
 }>;
 declare const fullApiWithMounts: typeof fullApi;
 

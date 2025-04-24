@@ -17,7 +17,7 @@ export const me = queryWithAuthedUser({
   handler: async (ctx) => {
     const user = await ctx.db
       .query('users')
-      .withIndex('email', (q) => q.eq('email', ctx.authedUser.email))
+      .withIndex('by_email', (q) => q.eq('email', ctx.authedUser.email))
       .first()
     return user
   },
@@ -63,7 +63,7 @@ export const emailTaken = query({
   handler: async (ctx, { email }) => {
     const user = await ctx.db
       .query('users')
-      .withIndex('email', (q) => q.eq('email', email))
+      .withIndex('by_email', (q) => q.eq('email', email))
       .first()
     return !!user
   },
@@ -130,7 +130,7 @@ export const getDashboardUser = internalQuery({
   handler: async (ctx, { organization }) => {
     const users = await ctx.db
       .query('users')
-      .withIndex('organization', (q) => q.eq('organization', organization))
+      .withIndex('by_organization', (q) => q.eq('organization', organization))
       .collect()
     return users.find((user) =>
       user.email.includes('@alertdashboard.dashboard.com')
