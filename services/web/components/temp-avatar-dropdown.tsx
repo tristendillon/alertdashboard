@@ -1,8 +1,6 @@
 'use client'
 
 import React from 'react'
-import { useQuery } from '@workspace/ui/hooks/use-query'
-import { api } from "@workspace/convex/app/_generated/api"
 import { Avatar, AvatarImage, AvatarFallback } from "@workspace/ui/components/avatar"
 import {
   DropdownMenu,

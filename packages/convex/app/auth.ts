@@ -4,7 +4,6 @@ export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
   providers: [Password],
 })
 
-
 // This is for development only i guess
 // import { convexAuth, getAuthUserId } from "@convex-dev/auth/server";
 // import { ActionCtx, query } from "./_generated/server";

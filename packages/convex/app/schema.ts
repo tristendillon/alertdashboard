@@ -83,7 +83,7 @@ const dashboardTables = {
   // Dashboards serve for what is displayed and the main entry point for seeing data.
   dashboards: defineTable({
     name: v.string(),
-    department: v.id('departments'),
+    department: v.union(v.literal('ALL'), v.id('departments')),
     // The alert page is the page that is displayed when an alert is triggered
     // It is optional and so if an alert comes it, it will not display anything new.
     alertPage: v.optional(v.id('pages')),
@@ -271,8 +271,8 @@ const authTables = {
     role: v.optional(v.id('roles')),
     userPermissions: v.optional(v.array(v.id('permissions'))),
   })
-    .index('email', ['email'])
-    .index('organization', ['organization']),
+    .index('by_email', ['email'])
+    .index('by_organization', ['organization']),
 }
 
 export default defineSchema({

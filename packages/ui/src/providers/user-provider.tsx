@@ -1,8 +1,8 @@
 "use client"
 
 import React, { createContext, useContext } from 'react';
-import { JoinedUser } from '../lib/types';
-import { useQuery } from '../hooks/use-query';
+import { JoinedUser } from '@workspace/ui/lib/types';
+import { useQuery } from '@workspace/ui/hooks/use-query';
 import { api } from '@workspace/convex/app/_generated/api';
 
 
@@ -32,7 +32,7 @@ export const UserProvider = ({ children }: UserProviderProps) => {
 
   return (
     <UserContext.Provider value={{
-      user: user && role ? {
+      user: user ? {
         ...user,
         joinedRole: role
       } : undefined
