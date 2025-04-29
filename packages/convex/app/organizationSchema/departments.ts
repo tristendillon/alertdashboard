@@ -1,5 +1,8 @@
 import { crud } from "convex-helpers/server/crud";
-import { mutationWithRLS, queryWithRLS } from "@workspace/convex/middleware/rls";
+import {
+  mutationWithRLS,
+  queryWithRLS,
+} from "@workspace/convex/middleware/rls";
 import schema from "../schema";
 import { internalQuery } from "../_generated/server";
 import { v } from "convex/values";
@@ -10,8 +13,7 @@ export const departmentExist = internalQuery({
     const department = await ctx.db.get(args.id);
     return !!department;
   },
-})
-
+});
 
 export const readDepartments = queryWithRLS({
   handler: async (ctx) => {
@@ -20,9 +22,9 @@ export const readDepartments = queryWithRLS({
   },
 });
 
-export const { update: updateDepartment, destroy: deleteDepartment, create: createDepartment, read: readDepartment } = crud(
-  schema,
-  "departments",
-  queryWithRLS,
-  mutationWithRLS,
-);
+export const {
+  update: updateDepartment,
+  destroy: deleteDepartment,
+  create: createDepartment,
+  read: readDepartment,
+} = crud(schema, "departments", queryWithRLS, mutationWithRLS);
