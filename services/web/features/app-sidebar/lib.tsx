@@ -33,46 +33,6 @@ export const HomeSidebar: Sidebar = {
         }
       ]
     },
-    {
-      label: "Map Configuration",
-      items: [
-        {
-          title: "Map Data",
-          url: "map-data",
-          icon: <FaMapMarkerAlt />,
-        },
-        {
-          title: "Map Icons",
-          url: "map-icons",
-          icon: <MdOutlineMap />,
-        },
-        {
-          title: "Map Templates",
-          url: "map-templates",
-          icon: <Layers />,
-        }
-      ]
-    },
-    {
-      label: "Configuration",
-      items: [
-        {
-          title: "Units",
-          url: "units",
-          icon: <Database />,
-        },
-        {
-          title: "Descriptors",
-          url: "descriptors",
-          icon: <MdOutlineDescription />,
-        },
-        {
-          title: "Redaction Levels",
-          url: "redaction-levels",
-          icon: <Settings />,
-        }
-      ]
-    }
   ]
 };
 export const OrganizationSidebar: Sidebar = {
@@ -335,4 +295,5 @@ export const AllSidebars: Sidebar[] = [
   HomeSidebar,
   OrganizationSidebar,
   DashboardsSidebar,
+  ConfigurationSidebar,
 ];

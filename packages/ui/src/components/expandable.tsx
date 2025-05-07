@@ -32,7 +32,7 @@ export function Expandable({
 
   return (
     <ExpandableContext.Provider value={expandableState}>
-      <div className={cn('flex flex-col', className)}>{children}</div>
+      <div data-expanded={expandableState.isExpanded} className={cn('flex flex-col group/expandable', className)}>{children}</div>
     </ExpandableContext.Provider>
   )
 }
