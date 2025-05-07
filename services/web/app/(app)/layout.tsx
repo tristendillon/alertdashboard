@@ -2,6 +2,7 @@
 import TempNav from "@/components/temp-nav";
 import type { Metadata } from "next";
 import { UserProvider } from "@workspace/ui/providers/user-provider";
+import { SidebarProvider } from '@workspace/ui/components/sidebar';
 
 export const metadata: Metadata = {
   title: "Dashboard | AlertDashboard",
@@ -14,11 +15,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <main className="h-full">
-      <UserProvider>
-        <TempNav/>
-        {children}
-      </UserProvider>
-    </main>
+    <UserProvider>
+      <TempNav />
+      <SidebarProvider className="h-[calc(100%-var(--spacing)*16)] overflow-hidden">
+        <main className="h-full flex">
+          {children}
+        </main>
+      </SidebarProvider>
+    </UserProvider>
   );
 }

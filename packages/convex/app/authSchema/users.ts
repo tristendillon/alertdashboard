@@ -14,10 +14,14 @@ import { internal } from '@workspace/convex/app/_generated/api'
 import { generateSecureKey } from '../../utils/keys'
 
 export const me = queryWithAuthedUser({
-  handler: async (ctx) => {
-    const user = await ctx.db
+  handler: async ({ db, authedUser }) => {
+    if (!authedUser) {
+      return null
+    }
+
+    const user = await db
       .query('users')
-      .withIndex('by_email', (q) => q.eq('email', ctx.authedUser.email))
+      .withIndex('by_email', (q) => q.eq('email', authedUser.email))
       .first()
     return user
   },
@@ -76,6 +80,9 @@ export const updateMe = mutationWithAuthedUser({
     }),
   },
   handler: async ({ db, authedUser }, { patch }) => {
+    if (!authedUser) {
+      throw new ConvexError('Unauthenticated')
+    }
     const updatedUser = await db.patch(authedUser._id, patch)
     return updatedUser
   },

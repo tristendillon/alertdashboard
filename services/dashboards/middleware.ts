@@ -57,10 +57,8 @@ export default convexAuthNextjsMiddleware(async (req, { convexAuth }) => {
   const refreshToken = searchParams.get('refresh')
 
   // If tokens exist and cookies aren't already set, set them
-  if (token && refreshToken && (!tokenCookie || !refreshTokenCookie)) {
-    req.nextUrl.searchParams.delete('token')
-    req.nextUrl.searchParams.delete('refresh')
-    const response = NextResponse.redirect(new URL('/', req.nextUrl))
+  if (token && refreshToken) {
+    const response = NextResponse.next()
     response.cookies.set({
       name: '__convexAuthJWT',
       value: token,

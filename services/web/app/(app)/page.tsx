@@ -1,7 +1,11 @@
+import { AppSidebar } from '@/features/app-sidebar';
+import { HomeSidebar } from '@/features/app-sidebar/lib';
+
 export default function Home() {
   return (
-    <div className="h-full">
+    <>
+      <AppSidebar sidebar={HomeSidebar} />
       HOME
-    </div>
+    </>
   )
 }

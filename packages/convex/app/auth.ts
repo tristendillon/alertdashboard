@@ -1,4 +1,5 @@
 import { convexAuth } from '@convex-dev/auth/server'
+// I dont know why this is giving ts problems
 import { Password } from '@convex-dev/auth/providers/Password'
 export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
   providers: [Password],

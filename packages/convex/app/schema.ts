@@ -147,6 +147,7 @@ const configurationTables = {
     iconCalculation: v.array(v.record(v.id('mapIcons'), v.string())),
     iconCalculationFallback: v.optional(v.id('mapIcons')),
     data: v.record(v.string(), v.union(v.string(), v.number(), v.null())),
+    public: v.boolean(),
   })
     .index('by_department', ['department'])
     .index('by_organization', ['organization']),
@@ -174,6 +175,7 @@ const configurationTables = {
     // Should that field also be undefined we will show a default icon on the frontend to make sure icons are always displayed.
     iconCalculationFallback: v.optional(v.id('mapIcons')),
     coordinates: coordinates,
+    public: v.boolean(),
 
     // We can store more information in here like the type of hydrant, flow rate etc.
     data: v.record(v.string(), v.union(v.string(), v.number())),
@@ -185,7 +187,7 @@ const configurationTables = {
     organization: v.id('organizations'),
     department: v.id('departments'),
     // Something like partial, level 1, full, etc.
-    level: v.string(),
+    name: v.string(),
 
     // This will look like "^MED" or "^FIRE" to match the any MED or any FIRE descriptor
     // field matches against the cadDescriptor in the mapping
@@ -193,17 +195,18 @@ const configurationTables = {
     // This will look like "^MED" or "^FIRE" to match the any MED or any FIRE descriptor
     // field matches against the descriptor
     descriptorRegex: v.string(),
-
+    // This will search for keywords in the descriptor of the cad alert
+    keywords: v.array(v.string()),
     // This will do direct matching for redaction level.
     descriptors: v.array(v.id('descriptors')),
 
     // The fields that are redacted from the alert when accessed by the public
     // if public facing dashboards exists
-    redactionFields: v.array(v.union(alerts.validator)),
+    redactionFields: v.array(v.string()),
   })
     .index('by_organization', ['organization'])
     .index('by_department', ['department'])
-    .index('by_level', ['level']),
+    .index('by_name', ['name']),
 
   // This table maps the descriptor so we can
   descriptors: defineTable({
