@@ -58,3 +58,5 @@ override.tf.json
 
 # Finder (MacOS) folder config
 .DS_Store
+.sst/
+sst-env.d.ts

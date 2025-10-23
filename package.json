@@ -3,16 +3,26 @@
   "module": "index.ts",
   "type": "module",
   "private": true,
+  "scripts": {
+    "dev": "sst dev",
+    "build": "sst build",
+    "deploy": "sst deploy",
+    "remove": "sst remove",
+    "console": "sst console",
+    "typecheck": "sst typecheck"
+  },
   "devDependencies": {
     "@types/bun": "latest",
+    "aws-cdk-lib": "2.x",
+    "constructs": "10.x",
+    "sst": "^3.17.21",
     "turbo": "^2.5.8"
   },
   "peerDependencies": {
     "typescript": "^5"
   },
   "workspaces": [
-    "./lambdas/*",
-    "./packages/*"
+    "./packages/**/*"
   ],
   "dependencies": {
     "@types/aws-lambda": "^8.10.156"

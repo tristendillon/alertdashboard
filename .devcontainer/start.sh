@@ -1,3 +1,4 @@
+#!/bin/bash
 if command -v gh &> /dev/null; then
   if ! gh auth status &> /dev/null; then
     echo "GitHub CLI is not authenticated."
