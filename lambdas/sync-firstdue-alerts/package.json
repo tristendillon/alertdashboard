@@ -1,0 +1,13 @@
+{
+  "name": "sync-firstdue-alerts",
+  "version": "1.0.0",
+  "scripts": {
+    "build": "rm -rf dist && bun build src/index.ts --outdir=dist --target=node --format=cjs",
+    "zip": "rm -rf ./sync-firstdue-alerts.zip && cd dist && zip -r ../sync-firstdue-alerts.zip ."
+  },
+  "dependencies": {
+    "@alertdashboard/utils": "workspace:*",
+    "@alertdashboard/firstdue-sdk": "workspace:*"
+  },
+  "devDependencies": {}
+}

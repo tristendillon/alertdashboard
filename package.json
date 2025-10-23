@@ -1,0 +1,21 @@
+{
+  "name": "alertdashboard",
+  "module": "index.ts",
+  "type": "module",
+  "private": true,
+  "devDependencies": {
+    "@types/bun": "latest",
+    "turbo": "^2.5.8"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "workspaces": [
+    "./lambdas/*",
+    "./packages/*"
+  ],
+  "dependencies": {
+    "@types/aws-lambda": "^8.10.156"
+  },
+  "packageManager": "bun@1.3.1"
+}

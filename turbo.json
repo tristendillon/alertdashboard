@@ -1,0 +1,14 @@
+{
+  "$schema": "https://turborepo.com/schema.json",
+  "ui": "tui",
+  "tasks": {
+    "build": {
+      "outputs": ["dist/**"],
+      "dependsOn": []
+    },
+    "zip": {
+      "dependsOn": ["build"],
+      "outputs": ["*.zip"]
+    }
+  }
+}
