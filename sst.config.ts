@@ -5,21 +5,19 @@ export default $config({
     return {
       name: 'alertdashboard',
       removal: input?.stage === 'production' ? 'retain' : 'remove',
+      protect: ['production'].includes(input?.stage),
       home: 'aws',
     }
   },
   async run() {
-    // Import and create infrastructure resources
-    const storage = await import('./infra/storage')
-    const cron = await import('./infra/cron')
-    const api = await import('./infra/api')
+    const infra = await import('./infra')
+    const resources = {
+      ...infra.functions.resources,
+      ...infra.libs.resources,
+      ...infra.apps.resources,
+    }
 
     // Return outputs for easy access
-    return {
-      AlertsTable: storage.alertsTable.name,
-      SyncMetadataTable: storage.syncMetadataTable.name,
-      FirstDueSyncCron: cron.firstDueSyncCron.nodes.function.name,
-      ApiUrl: api.api.url,
-    }
+    return resources
   },
 })

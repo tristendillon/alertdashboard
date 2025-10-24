@@ -22,7 +22,9 @@
     "typescript": "^5"
   },
   "workspaces": [
-    "./packages/**/*"
+    "./apps/*",
+    "./packages/**/*",
+    "./functions/**/*"
   ],
   "dependencies": {
     "@types/aws-lambda": "^8.10.156"

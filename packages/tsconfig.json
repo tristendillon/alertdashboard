@@ -1,0 +1,21 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    // Enable output for build
+    "noEmit": false,
+    "outDir": "dist",
+    "rootDir": ".",
+
+    // Node.js library targeting
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+
+    // Output ES modules with declarations
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true
+  },
+  "include": ["**/src/**/*"],
+  "exclude": ["**/node_modules", "**/dist"]
+}

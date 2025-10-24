@@ -6,6 +6,11 @@ import {
 } from '@alertdashboard/utils'
 import { CONFIG } from './config'
 import { FirstDueSyncService } from './services/firstdue-sync'
+import {
+  IoTDataPlaneClient,
+  PublishCommand,
+} from '@aws-sdk/client-iot-data-plane'
+import { Resource } from 'sst'
 
 /**
  * AWS Lambda handler for FirstDue alert synchronization
@@ -54,6 +59,36 @@ export const handler = async () => {
         duration
       )} total`
     )
+
+    // Publish heartbeat to real-time API
+    try {
+      const iotClient = new IoTDataPlaneClient({
+        endpoint: `https://${Resource.Realtime.endpoint}`,
+      })
+
+      const heartbeat = {
+        timestamp: new Date().toISOString(),
+        status: 'completed',
+        successCount,
+        errorCount,
+        duration: formatDuration(duration),
+      }
+
+      // Topic format: app/stage/channel
+      const topic = `${Resource.App.name}/${Resource.App.stage}/cron/heartbeat`
+
+      const command = new PublishCommand({
+        topic,
+        payload: JSON.stringify(heartbeat),
+        qos: 0, // At most once delivery
+      })
+
+      await iotClient.send(command)
+      console.log('Heartbeat published to topic:', topic)
+    } catch (error) {
+      console.error('Failed to publish heartbeat:', error)
+    } finally {
+    }
   } finally {
     // Always release the lock, even if there was an error
     lockManager.release()

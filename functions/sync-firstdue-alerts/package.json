@@ -1,0 +1,16 @@
+{
+  "name": "sync-firstdue-alerts",
+  "version": "1.0.0",
+  "scripts": {
+    "build": "rm -rf dist && tsc"
+  },
+  "dependencies": {
+    "@alertdashboard/firstdue-sdk": "workspace:*",
+    "@alertdashboard/utils": "workspace:*",
+    "@aws-sdk/client-iot-data-plane": "^3.916.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
+  }
+}
