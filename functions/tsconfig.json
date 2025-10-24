@@ -1,21 +1,15 @@
 {
   "extends": "../tsconfig.json",
   "compilerOptions": {
-    // Enable output for build
-    "noEmit": false,
-    "outDir": "dist",
-    "rootDir": ".",
+    // No build output - esbuild handles transpilation
+    "noEmit": true,
 
-    // Node.js Lambda runtime targeting - CommonJS for better Lambda compatibility
+    // Modern module resolution for source-linked packages
+    "moduleResolution": "bundler",
+
+    // Lambda runtime targeting
     "target": "ES2022",
-    "module": "CommonJS",
-    "moduleResolution": "node",
-
-    // Output CommonJS modules
-    "declaration": true,
-    "declarationMap": true,
-    "sourceMap": true,
-    "esModuleInterop": true
+    "module": "ESNext"
   },
   "include": ["**/src/**/*"],
   "exclude": ["**/node_modules", "**/dist"]
