@@ -2,7 +2,7 @@
   "name": "sync-firstdue-alerts",
   "version": "1.0.0",
   "scripts": {
-    "build": "rm -rf dist && tsc"
+    "build": "tsc"
   },
   "dependencies": {
     "@alertdashboard/firstdue-sdk": "workspace:*",

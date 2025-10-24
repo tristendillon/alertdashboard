@@ -1,5 +1,7 @@
-import { web } from './web'
+import { Web } from './web'
+import { Api } from './api'
 
 export const resources = {
-  web: web.url,
+  Web: Web.url,
+  Api: Api.url,
 }

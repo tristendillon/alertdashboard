@@ -1,10 +1,8 @@
-import { alertsTable, syncMetadataTable } from './storage'
-import { realtimeApi } from './realtime'
+import { RealtimeApi } from './realtime'
 
-export { alertsTable, syncMetadataTable, realtimeApi }
+export * from './realtime'
+
 export const resources = {
-  alertsTable: alertsTable.name,
-  syncMetadataTable: syncMetadataTable.name,
-  realtimeEndpoint: realtimeApi.endpoint,
-  realtimeAuthorizer: realtimeApi.authorizer,
+  RealtimeApi: RealtimeApi.endpoint,
+  RealtimeAuthorizer: RealtimeApi.authorizer,
 }

@@ -1,0 +1,14 @@
+{
+  "name": "@alertdashboard/keep-api-warm",
+  "version": "0.1.0",
+  "type": "module",
+  "private": true,
+  "dependencies": {
+    "sst": "^3.17.21"
+  },
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.156",
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
+  }
+}

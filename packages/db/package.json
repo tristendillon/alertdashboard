@@ -1,0 +1,21 @@
+{
+  "name": "@alertdashboard/db",
+  "version": "0.0.1",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    }
+  },
+  "dependencies": {
+    "@alertdashboard/schemas": "workspace:*",
+    "@aws-sdk/client-dynamodb": "^3.916.0",
+    "@aws-sdk/lib-dynamodb": "^3.916.0",
+    "sst": "^3.17.21"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
+  }
+}

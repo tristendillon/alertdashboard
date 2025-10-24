@@ -2,16 +2,11 @@
   "name": "@alertdashboard/utils",
   "version": "0.0.1",
   "type": "module",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
     }
-  },
-  "scripts": {
-    "build": "rm -rf dist && tsc"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",

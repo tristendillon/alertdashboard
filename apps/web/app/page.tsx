@@ -1,6 +1,8 @@
 import Image from 'next/image'
-import { CronMonitor } from './components/cron-monitor'
+import { CronMonitor } from '../components/cron-monitor'
 import { Resource } from 'sst'
+import { AlertList } from '@/components/alert-list'
+import { CreateFakeAlertButton } from '@/components/create-fake-alert-button'
 
 export default function Home() {
   return (
@@ -21,6 +23,8 @@ export default function Home() {
           <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
             Monitor your FirstDue alert sync in real-time.
           </p>
+          <CreateFakeAlertButton />
+          <AlertList />
           <CronMonitor
             endpoint={Resource.Realtime.endpoint}
             topic={`${Resource.App.name}/${Resource.App.stage}/cron/heartbeat`}

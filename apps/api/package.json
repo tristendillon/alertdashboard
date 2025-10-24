@@ -1,0 +1,26 @@
+{
+  "name": "@alertdashboard/api",
+  "version": "0.1.0",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@alertdashboard/schemas": "workspace:*",
+    "@alertdashboard/db": "workspace:*",
+    "@aws-sdk/client-iot-data-plane": "^3.916.0",
+    "@hono/zod-validator": "^0.4.1",
+    "hono": "^4.7.12",
+    "zod": "^4.1.12",
+    "sst": "^3.17.21"
+  },
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.156",
+    "@types/node": "^20",
+    "typescript": "^5",
+    "tsx": "^4.19.2"
+  }
+}

@@ -9,6 +9,10 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@tanstack/react-query": "^5.90.5 ",
+    "@alertdashboard/api": "workspace:*",
+    "@alertdashboard/schemas": "workspace:*",
+    "hono": "^4.7.12",
     "mqtt": "^5.14.1",
     "next": "^16.0.0",
     "react": "19.2.0",

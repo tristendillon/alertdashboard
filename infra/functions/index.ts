@@ -1,6 +1,8 @@
-import { firstDueSyncCron } from './sync-firstdue-alerts'
+import { SyncFirstDueAlerts } from './sync-firstdue-alerts'
+import { KeepApiWarm } from './keep-api-warm'
 
-export { firstDueSyncCron }
+export { SyncFirstDueAlerts, KeepApiWarm }
 export const resources = {
-  syncFirstDueAlerts: firstDueSyncCron.nodes.function.name,
+  SyncFirstDueAlerts: SyncFirstDueAlerts.nodes.function.name,
+  KeepApiWarm: KeepApiWarm.nodes.function.name,
 }
