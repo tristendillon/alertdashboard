@@ -24,6 +24,7 @@ export default $config({
       target(event) {
         return {
           stage: 'development',
+          
           // stage: event.type === 'pull_request' ? 'development' : 'production',
         }
       },
