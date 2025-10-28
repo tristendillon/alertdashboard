@@ -1,9 +1,10 @@
 'use client'
 
-import { createContext, useContext } from 'react'
-import { createApiClient } from '@/lib/api-client'
+import { createContext, useContext, useMemo } from 'react'
+import { hc } from 'hono/client'
+import type { AppType } from '@alertdashboard/api/src'
 
-type ApiClient = ReturnType<typeof createApiClient>
+type ApiClient = ReturnType<typeof hc<AppType>>
 
 const ApiContext = createContext<ApiClient | null>(null)
 
@@ -28,7 +29,7 @@ interface ApiProviderProps {
  * }
  */
 export function ApiProvider({ apiUrl, children }: ApiProviderProps) {
-  const client = createApiClient(apiUrl)
+  const client = useMemo(() => hc<AppType>(apiUrl), [apiUrl])
   return <ApiContext.Provider value={client}>{children}</ApiContext.Provider>
 }
 

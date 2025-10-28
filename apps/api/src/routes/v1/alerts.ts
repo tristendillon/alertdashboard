@@ -1,50 +1,68 @@
 import { Hono } from 'hono'
 import { zValidator } from '@hono/zod-validator'
+import { asc, desc, count, eq } from 'drizzle-orm/sql'
 import {
-  Alert,
   PaginationQuerySchema,
   InsertAlertSchema,
   UpdateAlertSchema,
+  SelectAlertSchema,
+  createPaginatedResponseSchema,
 } from '@alertdashboard/schemas'
-import { db } from '@alertdashboard/db'
-import { randomUUID } from 'crypto'
+import { db, alerts as alertsTable } from '@alertdashboard/db'
 
 const alerts = new Hono()
   .get('/', zValidator('query', PaginationQuerySchema), async (c) => {
-    const { limit, sortOrder, lastKey } = c.req.valid('query')
+    const { limit, page, sortOrder } = c.req.valid('query')
 
-    // Query all alerts using timestampIndex GSI (5-10x faster than scan)
-    const { items, lastEvaluatedKey } = await db.query('Alerts', {
-      keyConditionExpression: '#type = :type',
-      expressionAttributeNames: {
-        '#type': 'type',
-      },
-      expressionAttributeValues: {
-        ':type': 'alert',
-      },
-      indexName: 'timestampIndex',
-      scanIndexForward: sortOrder === 'asc', // DynamoDB handles sorting
-      limit,
-      exclusiveStartKey: lastKey ? JSON.parse(lastKey) : undefined,
-    })
+    // Query alerts with pagination and sorting
+    // Fetch one extra to determine if there are more results
+    const [items, totalItems] = await Promise.all([
+      db
+        .select()
+        .from(alertsTable)
+        .orderBy(
+          sortOrder === 'asc'
+            ? asc(alertsTable.createdAt)
+            : desc(alertsTable.createdAt)
+        )
+        .limit(limit + 1)
+        .offset((page - 1) * limit),
+      db
+        .select({ count: count() })
+        .from(alertsTable)
+        .then((result) => result[0]?.count ?? 0),
+    ])
 
-    return c.json({
+    const hasMore = items.length > limit
+    if (hasMore) {
+      items.pop()
+    }
+
+    const schema = createPaginatedResponseSchema(SelectAlertSchema)
+
+    const response = schema.parse({
       items,
       pagination: {
         limit,
-        hasMore: !!lastEvaluatedKey,
-        lastKey: lastEvaluatedKey
-          ? JSON.stringify(lastEvaluatedKey)
-          : undefined,
+        page,
+        hasNextPage: hasMore,
+        totalPages: Math.ceil(totalItems / limit),
       },
     })
+
+    return c.json(response)
   })
 
   .get('/:id', async (c) => {
     const id = c.req.param('id')
 
-    // Get alert - automatically typed as Alert | null!
-    const alert = await db.get('Alerts', { id })
+    const result = await db
+      .select()
+      .from(alertsTable)
+      .where(eq(alertsTable.id, id))
+      .limit(1)
+
+    const alert = result[0]
 
     if (!alert) {
       return c.json({ error: 'Alert not found' }, 404)
@@ -56,14 +74,9 @@ const alerts = new Hono()
   .post('/', zValidator('json', InsertAlertSchema), async (c) => {
     const data = c.req.valid('json')
 
-    const alert: Alert = {
-      id: randomUUID(),
-      timestamp: Date.now(),
-      ...data,
-      createdAt: Date.now(),
-    }
+    const result = await db.insert(alertsTable).values(data).returning()
 
-    await db.put('Alerts', alert)
+    const alert = result[0]
 
     return c.json({ alert }, 201)
   })
@@ -72,30 +85,27 @@ const alerts = new Hono()
     const id = c.req.param('id')
     const updates = c.req.valid('json')
 
-    // Fetch the existing alert
-    const alert = await db.get('Alerts', { id })
+    // Update alert and return the updated record
+    const result = await db
+      .update(alertsTable)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(alertsTable.id, id))
+      .returning()
+
+    const alert = result[0]
 
     if (!alert) {
       return c.json({ error: 'Alert not found' }, 404)
     }
 
-    const updatedAlert: Alert = {
-      ...alert,
-      ...updates,
-      updatedAt: Date.now(),
-    }
-
-    // Type-safe put
-    await db.put('Alerts', updatedAlert)
-
-    return c.json({ alert: updatedAlert })
+    return c.json({ alert })
   })
 
   .delete('/:id', async (c) => {
     const id = c.req.param('id')
 
-    // Type-safe delete
-    await db.deleteItem('Alerts', { id })
+    // Delete alert
+    await db.delete(alertsTable).where(eq(alertsTable.id, id))
 
     return c.json({ success: true, message: 'Alert deleted' })
   })

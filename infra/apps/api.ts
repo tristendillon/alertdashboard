@@ -1,5 +1,5 @@
-import { AlertsTable } from '../storage'
 import { RealtimeApi } from '../libs/realtime'
+import { Postgres } from '../postgres'
 
 /**
  * API Lambda Function
@@ -10,12 +10,9 @@ export const Api = new sst.aws.Function('Api', {
   url: {
     cors: false, // Disable Lambda Function URL CORS - Hono handles it
   },
-  link: [AlertsTable.table, RealtimeApi],
+  link: [RealtimeApi, Postgres],
   timeout: '30 seconds',
-  memory: '1024 MB', // Increased for faster cold starts and execution
-  environment: {
-    NODE_ENV: 'production',
-  },
+  memory: '1024 MB',
 })
 
 /**

@@ -2,6 +2,7 @@
 import * as functions from './functions'
 import * as libs from './libs'
 import * as apps from './apps'
-import * as storage from './storage'
+import * as postgres from './postgres'
+import * as commands from './commands'
 
-export { functions, libs, apps, storage }
+export { functions, libs, apps, postgres, commands }

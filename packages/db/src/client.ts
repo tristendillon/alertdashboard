@@ -1,19 +1,27 @@
-import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
+import { drizzle } from 'drizzle-orm/postgres-js'
+import postgres from 'postgres'
+import { alerts } from '@alertdashboard/schemas'
+import { Resource } from 'sst'
+
+const client = postgres({
+  host: Resource.Postgres.host,
+  port: Resource.Postgres.port,
+  database: Resource.Postgres.database,
+  username: Resource.Postgres.username,
+  password: Resource.Postgres.password,
+  max: 1,
+  idle_timeout: 20,
+  connect_timeout: 10,
+})
+/**
+ * Drizzle ORM instance
+ * Use this for all database operations
+ */
+export const db = drizzle(client, {
+  schema: { alerts },
+})
 
 /**
- * DynamoDB Document Client
- * Configured for the current AWS region
- * Singleton instance shared across all operations
+ * Export the schema for direct access
  */
-const client = new DynamoDBClient({});
-
-export const docClient = DynamoDBDocumentClient.from(client, {
-  marshallOptions: {
-    removeUndefinedValues: true,
-    convertClassInstanceToMap: true,
-  },
-  unmarshallOptions: {
-    wrapNumbers: false,
-  },
-});
+export { alerts }

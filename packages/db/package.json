@@ -8,14 +8,22 @@
       "default": "./src/index.ts"
     }
   },
+  "scripts": {
+    "db": "sst shell drizzle-kit",
+    "db:generate": "sst shell drizzle-kit generate",
+    "db:migrate": "sst shell drizzle-kit migrate",
+    "db:push": "sst shell drizzle-kit push",
+    "db:studio": "sst shell drizzle-kit studio"
+  },
   "dependencies": {
     "@alertdashboard/schemas": "workspace:*",
-    "@aws-sdk/client-dynamodb": "^3.916.0",
-    "@aws-sdk/lib-dynamodb": "^3.916.0",
+    "drizzle-orm": "^0.44.7",
+    "postgres": "^3.4.5",
     "sst": "^3.17.21"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
+    "drizzle-kit": "^0.29.1",
     "typescript": "^5.0.0"
   }
 }

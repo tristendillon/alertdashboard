@@ -35,5 +35,7 @@
   "service": "devcontainer",
   "forwardPorts": [3000, 8080],
   "postCreateCommand": "sudo chown -R $(whoami) . && bash .devcontainer/setup.sh",
-  "postStartCommand": "bash .devcontainer/start.sh"
+  "postStartCommand": "bash .devcontainer/start.sh",
+  "capAdd": ["NET_ADMIN"],
+  "runArgs": ["--device=/dev/net/tun"]
 }

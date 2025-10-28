@@ -1,68 +1,39 @@
 /**
  * @alertdashboard/db
- * Type-safe DynamoDB operations
- * No casting needed - types are inferred from table names!
+ * Type-safe PostgreSQL database operations using Drizzle ORM
  */
-
-// Table utilities
-export {
-  TABLES,
-  getTableName,
-  type TableName,
-  type EntityType,
-  type KeyType,
-} from './tables'
-
-// Client (if needed for advanced use cases)
-export { docClient } from './client'
 
 /**
- * Main db namespace for convenient usage
+ * Export the Drizzle ORM instance and schema
  *
  * @example
- * import { db } from "@alertdashboard/db";
+ * import { db, alerts } from "@alertdashboard/db";
+ * import { eq, desc } from "drizzle-orm";
  *
- * // Get an alert (automatically typed as Alert | null)
- * const alert = await db.get("Alerts", { id: "123", timestamp: 456 });
+ * // Get an alert by ID
+ * const alert = await db.select().from(alerts).where(eq(alerts.id, "123"));
  *
- * // Create an alert (type-checked)
- * await db.put("Alerts", {
- *   id: "123",
- *   timestamp: Date.now(),
+ * // Create a new alert
+ * await db.insert(alerts).values({
  *   source: "firstdue",
- *   alertData: { ... },
- *   createdAt: Date.now()
+ *   alertData: { ... }
  * });
  *
- * // Query alerts (returns Alert[])
- * const { items } = await db.query("Alerts", {
- *   keyConditionExpression: "#source = :source",
- *   expressionAttributeNames: { "#source": "source" },
- *   expressionAttributeValues: { ":source": "firstdue" },
- *   indexName: "sourceIndex"
- * });
+ * // Query alerts with filtering and sorting
+ * const recentAlerts = await db
+ *   .select()
+ *   .from(alerts)
+ *   .where(eq(alerts.source, "firstdue"))
+ *   .orderBy(desc(alerts.timestamp))
+ *   .limit(10);
  *
  * // Update an alert
- * await db.update("Alerts",
- *   { id: "123", timestamp: 456 },
- *   { assignedTo: "user@example.com" }
- * );
+ * await db
+ *   .update(alerts)
+ *   .set({ assignedTo: "user@example.com", updatedAt: new Date() })
+ *   .where(eq(alerts.id, "123"));
  *
  * // Delete an alert
- * await db.deleteItem("Alerts", { id: "123", timestamp: 456 });
+ * await db.delete(alerts).where(eq(alerts.id, "123"));
  */
-import { get } from './operations/get'
-import { put } from './operations/put'
-import { query } from './operations/query'
-import { deleteItem } from './operations/delete'
-import { update } from './operations/update'
-import { scan } from './operations/scan'
-
-export const db = {
-  get,
-  put,
-  query,
-  deleteItem,
-  update,
-  scan,
-}
+export { db, alerts } from './client'

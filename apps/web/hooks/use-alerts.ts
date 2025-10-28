@@ -1,13 +1,19 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useApiClient } from '@/context/api-provider'
-import { UpdateAlert } from '@alertdashboard/schemas'
+import {
+  createPaginatedResponseSchema,
+  SelectAlertSchema,
+  UpdateAlert,
+} from '@alertdashboard/schemas'
+
+interface UseAlertsParams {
+  limit?: number
+  sortOrder?: 'asc' | 'desc'
+}
 /**
  * Get all alerts with TanStack Query
  */
-export function useAlerts(params?: {
-  limit?: number
-  sortOrder?: 'asc' | 'desc'
-}) {
+export function useAlerts(params?: UseAlertsParams) {
   const client = useApiClient()
 
   return useQuery({
@@ -20,7 +26,9 @@ export function useAlerts(params?: {
         },
       })
       if (!res.ok) throw new Error('Failed to fetch alerts')
-      return await res.json()
+      const schema = createPaginatedResponseSchema(SelectAlertSchema)
+      const alerts = schema.parse(await res.json())
+      return alerts
     },
   })
 }

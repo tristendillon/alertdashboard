@@ -6,9 +6,25 @@
       "outputs": ["dist/**"],
       "dependsOn": []
     },
-    "zip": {
-      "dependsOn": ["build"],
-      "outputs": ["*.zip"]
+    "lint": {
+      "outputs": ["*.lint"],
+      "dependsOn": ["build"]
+    },
+    "typecheck": {
+      "outputs": ["*.typecheck"],
+      "dependsOn": ["build"]
+    },
+    "test": {
+      "outputs": ["*.test"],
+      "dependsOn": ["build"]
+    },
+    "db:generate": {
+      "outputs": ["*.db:generate"],
+      "dependsOn": ["build"]
+    },
+    "db:migrate": {
+      "outputs": ["*.db:migrate"],
+      "dependsOn": ["build"]
     }
   }
 }
