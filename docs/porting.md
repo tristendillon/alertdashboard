@@ -73,17 +73,15 @@ will paste them into §2 (repo) and §4 (GitHub).
    (`https://<slug>.convex.cloud`; current value `https://unique-grasshopper-23.convex.cloud`).
 2. Generate a **Deploy key** for that prod deployment → this becomes the
    `CONVEX_DEPLOY_KEY` GitHub secret (§4).
-3. The two **Convex environment variables** are synced automatically by
-   `deploy-to-convex.yml` on every deploy (GitHub is the source of truth — no
-   manual dashboard edits needed):
-   - `CLERK_JWT_ISSUER_DOMAIN` — set the `CLERK_JWT_ISSUER_DOMAIN` GitHub Actions
-     **variable** to `https://clerk.<web-hostname>` (the tofu-managed Clerk
-     frontend-API record, **no trailing slash** — Convex compares it to the JWT
-     `iss` claim). Consumed at
+3. The **Convex environment variables** are written automatically by the deploy
+   cascade on every run — nothing to set anywhere:
+   - `CLERK_JWT_ISSUER_DOMAIN` — derived as `https://clerk.<webHostname>` from
+     `deploy.config.json` (the tofu-managed Clerk frontend-API record, no trailing
+     slash — Convex compares it to the JWT `iss` claim). Consumed at
      [`apps/convex/src/api/auth.config.ts:4`](../apps/convex/src/api/auth.config.ts).
-   - `API_KEY` — synced from the `CONVEX_API_KEY` GitHub secret, so it always
-     equals the key the web and listener workers send
-     (`apps/convex/src/lib/auth.ts`). Generate fresh: `openssl rand -hex 32`.
+   - `API_KEY` — generated fresh each cascade run and handed to the web and
+     listener workers in the same run (`apps/convex/src/lib/auth.ts` also accepts
+     `API_KEY_PREVIOUS` during the rotation window).
 
 ### 1.3 Clerk (fresh app)
 
@@ -143,32 +141,18 @@ read its note carefully. Make these on a branch and merge to `main` (CI deploys 
 | 11 | Regenerate `apps/firstdue-listener/worker-configuration.d.ts` | `pnpm --filter @sizeupdashboard/firstdue-listener cf:types` (the committed file has stale generated values) | after rows 2–5 |
 | 12 | Comment-only, non-functional (update for accuracy): [`apps/web/wrangler.jsonc:17`](../apps/web/wrangler.jsonc), [`apps/firstdue-listener/wrangler.jsonc:6,44`](../apps/firstdue-listener/wrangler.jsonc), [`apps/firstdue-listener/README.md:38`](../apps/firstdue-listener/README.md), [`infra/providers.tf:4`](../infra/providers.tf), [`flake.nix:2`](../flake.nix) | Update stale hostnames/zone in comments | any move |
 
-### Row 9 — the infra variables nuance (CI does NOT read `terraform.tfvars`)
+### Row 9 — the single source of truth: `deploy.config.json`
 
-`infra/variables.tf` defines `zone_name`, `web_hostname`, `listener_hostname`,
-`web_worker_name`, `listener_worker_name`, and `clerk_instance_slug`, all with
-defaults pointing at the current environment. There are two ways to override them, and **they behave
-differently for local vs CI**:
+All zone/hostname/worker-name/Clerk-slug values live in **`deploy.config.json`** at
+the repo root. Tofu reads it directly (`infra/config.tf`, `jsondecode`) and the
+deploy workflow reads it with `jq` — editing and committing that one file changes
+both, in local applies and CI identically. The validate job
+(`scripts/check-deploy-config.mjs`) fails the build if the wrangler `name` fields
+drift from it.
 
-- **Local `tofu apply`** reads `infra/terraform.tfvars` (copied from
-  `terraform.tfvars.example`). Overrides there work for laptop applies only.
-- **CI (`deploy-infra.yml`)** does **NOT** pass any `-var-file`. Verified: the
-  workflow sets only `TF_VAR_account_id` from the `CLOUDFLARE_ACCOUNT_ID` secret
-  ([`.github/workflows/deploy-infra.yml:57,84`](../.github/workflows/deploy-infra.yml))
-  and runs a bare `tofu plan`/`tofu apply`
-  ([`:73,100,103`](../.github/workflows/deploy-infra.yml)). Your `terraform.tfvars`
-  is gitignored and never reaches the runner. So in CI, every variable **except
-  `account_id`** resolves to its **default in `variables.tf`**.
-
-**Conclusion / what actually works with CI:** for a new zone, hostnames, or worker
-names to take effect in the CI-driven apply, you **must edit the defaults in
-[`infra/variables.tf`](../infra/variables.tf)** (lines 9, 15, 21, 27, 33) and commit
-them. Setting them only in `terraform.tfvars` will make local applies correct while
-CI silently applies the old values. (Alternatively, add matching `TF_VAR_zone_name`
-etc. env entries to the `plan` and `apply` jobs of `deploy-infra.yml` — but editing
-`variables.tf` defaults is the smaller, less error-prone change and is the
-recommended approach.) `account_id` stays out of the repo — it flows from the
-secret via `TF_VAR_account_id` in both local (tfvars) and CI paths.
+`account_id` stays out of the repo entirely — CI derives it from the zone
+(`GET /zones?name=<zoneName>` → `.result[0].account.id`); local applies export
+`TF_VAR_account_id` the same way (see `infra/backend.hcl.example`).
 
 ---
 
@@ -180,91 +164,71 @@ Only needed for a **new account**. Full detail (token scopes, R2 bootstrap) is i
 1. **Create the custom API token** (My Profile → API Tokens → Create Token →
    Custom). Scopes:
    - Account → *Workers Scripts* → **Edit**
+   - Account → *Workers R2 Storage* → **Edit** (yields the derived tofu-state creds)
    - Zone → *Zone* → **Read**
    - Zone → *DNS* → **Edit**
    - Zone → *SSL and Certificates* → **Edit**
    - Zone Resources → Include → *your new zone*
 
-   This one token is used by both `wrangler` (workers) and the tofu Cloudflare
-   provider, and is stored as the `CLOUDFLARE_API_TOKEN` GitHub secret.
+   This **one token** covers wrangler, the tofu Cloudflare provider, the derived
+   R2 state credentials, and the derived account id. Stored as the single
+   `CLOUDFLARE_API_TOKEN` GitHub secret.
 
-2. **Create the R2 state bucket** and an S3 access-key pair:
+2. **Create the R2 state bucket**:
    ```bash
    wrangler r2 bucket create <new-bucket-name>   # must match infra/versions.tf:22
    ```
-   Then in the dashboard: R2 → Manage R2 API Tokens → Create API Token → Object
-   Read & Write, scoped to that bucket. Copy the **Access Key ID** and **Secret** —
-   these become `R2_STATE_ACCESS_KEY_ID` / `R2_STATE_SECRET_ACCESS_KEY` (§4).
+   No access-key pair needed — CI derives S3 credentials from the API token.
 
-3. **Local tofu config** from the examples (both gitignored):
-   ```bash
-   cd infra
-   cp backend.hcl.example backend.hcl          # set https://<ACCOUNT_ID>.r2.cloudflarestorage.com
-   cp terraform.tfvars.example terraform.tfvars # set account_id (+ local overrides per §2 row 9)
-   ```
-   Remember: `terraform.tfvars` overrides are for **local** applies only (§2 row 9).
+3. **Local tofu config** (gitignored): `cd infra && cp backend.hcl.example backend.hcl`
+   and follow the derivation comments inside it for credentials + `TF_VAR_account_id`.
 
 ---
 
 ## 4. GitHub configuration
 
-Set all **10 secrets** and **6 variables** under repo Settings → Secrets and
-variables → Actions. For what each one means and its exact consumer, see the tables
-in [`environment.md`](./environment.md); the command pattern is:
+Set the **5 secrets** and **2 variables** under repo Settings → Secrets and
+variables → Actions. For what each one means, see [`environment.md`](./environment.md):
 
 ```bash
-# Secrets (encrypted)
-gh secret set CLOUDFLARE_API_TOKEN
-gh secret set CLOUDFLARE_ACCOUNT_ID
-# ... etc
+# Secrets (encrypted) — all externally issued, nothing generated
+gh secret set CLOUDFLARE_API_TOKEN     # §3.1 (with the R2 scope!)
+gh secret set CONVEX_DEPLOY_KEY        # Convex dashboard -> deploy key
+gh secret set CLERK_SECRET_KEY         # Clerk dashboard -> sk_live_
+gh secret set FIRSTDUE_API_KEY         # reuse unless new tenant
+gh secret set WEATHER_API_KEY          # reuse
 
-# Variables (plaintext, inlined into the client bundle at build)
-gh variable set NEXT_PUBLIC_CONVEX_URL
-gh variable set NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
-# ... etc
+# Variables (public, build-inlined)
+gh variable set NEXT_PUBLIC_GOOGLE_MAPS_API_KEY   # referrer-restrict it!
+gh variable set NEXT_PUBLIC_MAP_ID
 ```
 
-Which values change on a move:
-
-| Category | Names | Source on a new environment |
-| --- | --- | --- |
-| **NEW per environment** | `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`, `R2_STATE_ACCESS_KEY_ID`, `R2_STATE_SECRET_ACCESS_KEY`, `CONVEX_DEPLOY_KEY`, `CLERK_SECRET_KEY` (secrets); `NEXT_PUBLIC_CONVEX_URL`, `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` (vars) | §1/§3 outputs |
-| **Freshly generated** | `CONVEX_API_KEY` **and** `API_KEY` — **must be identical to each other and to the Convex-dashboard `API_KEY`** (§1.2) | `openssl rand -hex 32` |
-| **Likely carried over** | `FIRSTDUE_API_KEY`, `WEATHER_API_KEY` (unless new tenant/provider) | reuse |
-| **Location/branding vars** | `NEXT_PUBLIC_DB_TIMEZONE`, `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY`, `NEXT_PUBLIC_MAP_ID`, `NEXT_PUBLIC_LOG_VERBOSE` | reuse or update to new location/keys |
-
-> The web `CONVEX_API_KEY` secret, the listener `CONVEX_API_KEY` secret, the
-> listener `API_KEY` secret, and the Convex-dashboard `API_KEY` env var are the
-> **same shared app-auth secret** in four places. If any drifts, authenticated
-> calls between listener/web and Convex fail with 401.
+Everything else — Convex URL, both app keys, the Clerk publishable key and issuer
+domain, the account id, R2 state credentials — is **derived or generated by the
+deploy cascade**; there is nothing to set and nothing to keep in sync (§1.2).
 
 ---
 
-## 5. First deploy — ordering matters
+## 5. First deploy — one cascade run
 
-Verified against the deploy workflows and [`../infra/README.md`](../infra/README.md)
-"Apply ordering". Do these in order.
+The deploy cascade already encodes the ordering (convex → web + listener →
+infra-apply, so Worker scripts exist before tofu attaches custom domains). After
+§1–§4, a single run bootstraps everything:
 
-### 5.1 Deploy Convex first
+```bash
+gh workflow run deploy.yml -f deploy_all=true
+gh run watch
+```
 
-The schema and functions must exist before any client connects. Trigger
-`deploy-to-convex.yml` (push to `main` touching `apps/convex/**`, or
-`workflow_dispatch`). It runs `convex deploy` against the deployment selected by
-`CONVEX_DEPLOY_KEY`.
-
-### 5.2 Deploy the web + listener Workers
-
-The **Worker scripts must exist before tofu can attach custom domains** (a custom
-domain attaches to an already-deployed script). Trigger `deploy-web.yml` and
-`deploy-listener.yml` (push to `main`, or `workflow_dispatch`), or run manually:
+The convex job seeds the vault (generates `API_KEY`, sets the derived
+`CLERK_JWT_ISSUER_DOMAIN`); web + listener derive their values from it and deploy
+(the listener image builds on the runner during `wrangler deploy`); infra applies
+last. Manual equivalents, if ever needed:
 
 ```bash
 pnpm --filter @sizeupdashboard/web deploy
 pnpm --filter @sizeupdashboard/firstdue-listener cf:deploy
 ```
-
-The listener image builds on the runner during `wrangler deploy` (Docker, repo root
-as build context).
 
 ### 5.3 Clear conflicting DNS on the target hostnames
 

@@ -34,7 +34,7 @@ deployment. Other scripts: `pnpm typecheck`, `pnpm lint`, `pnpm logs`.
 
 ## Deployment
 
-CI deploys on push to `main` via `.github/workflows/deploy-to-convex.yml`
+CI deploys on push to `main` via the `convex` job of `.github/workflows/deploy.yml`
 (`convex deploy --cmd "pnpm lint"`, authenticated with `CONVEX_DEPLOY_KEY`). See
 [`../../docs/deployment.md`](../../docs/deployment.md) and
 [`../../docs/environment.md`](../../docs/environment.md).

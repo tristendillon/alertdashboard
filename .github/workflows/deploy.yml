@@ -1,0 +1,356 @@
+name: Deploy
+
+# Unified deploy cascade: convex (vault + key rotation) → web + listener → infra.
+# Design notes:
+#  - GitHub holds only 5 root secrets (CLOUDFLARE_API_TOKEN, CONVEX_DEPLOY_KEY,
+#    CLERK_SECRET_KEY, FIRSTDUE_API_KEY, WEATHER_API_KEY) and the 2 public Google
+#    Maps variables. Everything else is derived or generated at deploy time.
+#  - The Convex deployment env is the vault: generated keys are stored there and
+#    read back with the deploy key (`npx convex env get <NAME>`), because GitHub
+#    blocks secret-valued job outputs.
+#  - The convex job rotates the shared app key on every run (zero-downtime: convex
+#    accepts API_KEY and API_KEY_PREVIOUS), which forces web + listener redeploys.
+#  - infra (OpenTofu) applies last: Worker custom domains require the Worker
+#    scripts to exist, so a fresh account bootstraps in a single cascade run.
+
+on:
+  push:
+    branches: ['main']
+  pull_request:
+    branches: ['main']
+  workflow_dispatch:
+    inputs:
+      deploy_all:
+        description: 'Run every deploy job regardless of changed paths'
+        type: boolean
+        default: false
+
+concurrency:
+  group: ${{ github.event_name == 'pull_request' && format('deploy-pr-{0}', github.event.number) || 'deploy-main' }}
+  # Never cancel main runs: tofu state writes and key rotation must finish.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  TOFU_VERSION: '1.12.3'
+
+jobs:
+  changes:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: read
+    outputs:
+      infra: ${{ steps.filter.outputs.infra }}
+      convex: ${{ steps.filter.outputs.convex }}
+      listener: ${{ steps.filter.outputs.listener }}
+      web: ${{ steps.filter.outputs.web }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            shared: &shared
+              - 'deploy.config.json'
+              - '.github/workflows/deploy.yml'
+              - '.github/actions/convex-derive/**'
+            infra:
+              - *shared
+              - 'infra/**'
+            convex:
+              - *shared
+              - 'apps/convex/**'
+            listener:
+              - *shared
+              - 'apps/firstdue-listener/**'
+              - 'apps/convex/**'
+              - 'packages/**'
+              - 'pnpm-lock.yaml'
+              - 'pnpm-workspace.yaml'
+              - 'turbo.json'
+              - 'package.json'
+            web:
+              - *shared
+              - 'apps/web/**'
+              - 'apps/convex/src/api/**'
+              - 'packages/**'
+              - 'pnpm-lock.yaml'
+              - 'pnpm-workspace.yaml'
+              - 'turbo.json'
+              - 'package.json'
+
+  # Credential-free checks — run everywhere, including fork PRs.
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'pnpm'
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Check deploy.config.json consistency
+        run: node scripts/check-deploy-config.mjs
+      - name: Typecheck and lint
+        run: pnpm turbo run typecheck lint --ui=stream
+      - uses: opentofu/setup-opentofu@v1
+        with:
+          tofu_version: ${{ env.TOFU_VERSION }}
+      - name: Tofu format check
+        working-directory: infra
+        run: tofu fmt -check -recursive
+      - name: Tofu validate
+        working-directory: infra
+        run: |
+          tofu init -backend=false -input=false
+          tofu validate
+
+  # Plan against real state on PRs (same-repo only — forks don't get secrets).
+  infra-plan:
+    if: >-
+      github.event_name == 'pull_request' &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      needs.changes.outputs.infra == 'true'
+    needs: [changes, validate]
+    runs-on: ubuntu-latest
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+    defaults:
+      run:
+        working-directory: infra
+    steps:
+      - uses: actions/checkout@v4
+      - uses: opentofu/setup-opentofu@v1
+        with:
+          tofu_version: ${{ env.TOFU_VERSION }}
+      - name: Derive account id and R2 state credentials
+        run: |
+          set -euo pipefail
+          zone_name=$(jq -er .zoneName ../deploy.config.json)
+          account_id=$(curl -sf -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+            "https://api.cloudflare.com/client/v4/zones?name=${zone_name}" \
+            | jq -er '.result[0].account.id')
+          token_id=$(curl -sf -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+            https://api.cloudflare.com/client/v4/user/tokens/verify | jq -er '.result.id' \
+            || curl -sf -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+            "https://api.cloudflare.com/client/v4/accounts/${account_id}/tokens/verify" | jq -er '.result.id')
+          secret=$(printf %s "$CLOUDFLARE_API_TOKEN" | sha256sum | cut -d' ' -f1)
+          echo "::add-mask::$secret"
+          {
+            echo "AWS_ACCESS_KEY_ID=$token_id"
+            echo "AWS_SECRET_ACCESS_KEY=$secret"
+            echo "TF_VAR_account_id=$account_id"
+            echo "R2_ENDPOINT=https://${account_id}.r2.cloudflarestorage.com"
+          } >> "$GITHUB_ENV"
+      - name: Init (R2 backend)
+        run: |
+          printf 'endpoints = { s3 = "%s" }\n' "$R2_ENDPOINT" > backend.generated.hcl
+          tofu init -backend-config=backend.generated.hcl
+      - name: Plan
+        run: tofu plan -no-color -input=false
+
+  # The vault: rotates the shared app key (dual-key overlap) and syncs derived
+  # Convex env on every run. `rotated` forces web + listener to redeploy.
+  convex:
+    if: >-
+      github.event_name != 'pull_request' && !failure() && !cancelled() &&
+      (needs.changes.outputs.convex == 'true' || inputs.deploy_all == true)
+    needs: [changes, validate]
+    runs-on: ubuntu-latest
+    outputs:
+      rotated: ${{ steps.vault.outputs.rotated }}
+    env:
+      CONVEX_DEPLOY_KEY: ${{ secrets.CONVEX_DEPLOY_KEY }}
+    defaults:
+      run:
+        working-directory: apps/convex
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'pnpm'
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Rotate app key and sync Convex env
+        id: vault
+        run: |
+          set -euo pipefail
+          current=$(npx convex env list 2>/dev/null | grep -m1 '^API_KEY=' | cut -d= -f2- || true)
+          new=$(openssl rand -hex 32)
+          echo "::add-mask::$new"
+          if [ -n "$current" ]; then
+            echo "::add-mask::$current"
+            # Zero-downtime rotation: already-deployed workers keep working via
+            # API_KEY_PREVIOUS until their redeploy lands later in this cascade.
+            npx convex env set API_KEY_PREVIOUS "$current"
+          fi
+          npx convex env set API_KEY "$new"
+          issuer="https://clerk.$(jq -er .webHostname "$GITHUB_WORKSPACE/deploy.config.json")"
+          npx convex env set CLERK_JWT_ISSUER_DOMAIN "$issuer"
+          echo "rotated=true" >> "$GITHUB_OUTPUT"
+      - name: Deploy to Convex
+        run: pnpm dlx convex deploy --cmd "pnpm lint"
+
+  web:
+    if: >-
+      github.event_name != 'pull_request' && !failure() && !cancelled() &&
+      (needs.changes.outputs.web == 'true' || inputs.deploy_all == true || needs.convex.outputs.rotated == 'true')
+    needs: [changes, validate, convex]
+    runs-on: ubuntu-latest
+    env:
+      CONVEX_DEPLOY_KEY: ${{ secrets.CONVEX_DEPLOY_KEY }}
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'pnpm'
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      # Exports CONVEX_URL + CONVEX_API_KEY (masked) from the Convex deployment.
+      - uses: ./.github/actions/convex-derive
+      - name: Derive public build values
+        run: |
+          set -euo pipefail
+          web_hostname=$(jq -er .webHostname deploy.config.json)
+          zone_name=$(jq -er .zoneName deploy.config.json)
+          account_id=$(curl -sf -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+            "https://api.cloudflare.com/client/v4/zones?name=${zone_name}" \
+            | jq -er '.result[0].account.id')
+          # Clerk publishable key is base64("clerk.<host>$") with '=' padding
+          # stripped — Clerk's documented key format.
+          pk="pk_live_$(printf '%s$' "clerk.${web_hostname}" | base64 -w0 | tr -d '=')"
+          {
+            echo "CLOUDFLARE_ACCOUNT_ID=$account_id"
+            echo "NEXT_PUBLIC_CONVEX_URL=$CONVEX_URL"
+            echo "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=$pk"
+          } >> "$GITHUB_ENV"
+      - name: Build and deploy to Cloudflare Workers
+        working-directory: apps/web
+        env:
+          # Runtime server secrets (nodejs_compat exposes these via process.env at
+          # build). CONVEX_API_KEY and the NEXT_PUBLIC_* values are already in the
+          # job env from the derive steps above.
+          CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
+          NEXT_PUBLIC_GOOGLE_MAPS_API_KEY: ${{ vars.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY }}
+          NEXT_PUBLIC_MAP_ID: ${{ vars.NEXT_PUBLIC_MAP_ID }}
+        run: pnpm run deploy
+      - name: Sync Worker runtime secrets
+        working-directory: apps/web
+        env:
+          CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
+        run: |
+          set -euo pipefail
+          jq -n --arg convex "$CONVEX_API_KEY" --arg clerk "$CLERK_SECRET_KEY" \
+            '{ CONVEX_API_KEY: $convex, CLERK_SECRET_KEY: $clerk }' > /tmp/web-secrets.json
+          pnpm exec wrangler secret bulk /tmp/web-secrets.json
+          rm -f /tmp/web-secrets.json
+
+  listener:
+    if: >-
+      github.event_name != 'pull_request' && !failure() && !cancelled() &&
+      (needs.changes.outputs.listener == 'true' || inputs.deploy_all == true || needs.convex.outputs.rotated == 'true')
+    needs: [changes, validate, convex]
+    runs-on: ubuntu-latest
+    env:
+      CONVEX_DEPLOY_KEY: ${{ secrets.CONVEX_DEPLOY_KEY }}
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'pnpm'
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - uses: ./.github/actions/convex-derive
+      - name: Derive account id
+        run: |
+          set -euo pipefail
+          zone_name=$(jq -er .zoneName deploy.config.json)
+          account_id=$(curl -sf -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+            "https://api.cloudflare.com/client/v4/zones?name=${zone_name}" \
+            | jq -er '.result[0].account.id')
+          echo "CLOUDFLARE_ACCOUNT_ID=$account_id" >> "$GITHUB_ENV"
+      # The listener's endpoint key is generated fresh every deploy and stored in
+      # the Convex env purely for retrieval by humans/tools:
+      #   npx convex env get LISTENER_API_KEY
+      - name: Generate listener endpoint key
+        working-directory: apps/convex
+        run: |
+          set -euo pipefail
+          key=$(openssl rand -hex 32)
+          echo "::add-mask::$key"
+          npx convex env set LISTENER_API_KEY "$key"
+          echo "LISTENER_API_KEY=$key" >> "$GITHUB_ENV"
+      # The runner's Docker builds the container image during cf:deploy.
+      - name: Deploy to Cloudflare
+        run: pnpm --filter @sizeupdashboard/firstdue-listener cf:deploy
+      - name: Sync Worker secrets
+        run: |
+          set -euo pipefail
+          jq -n \
+            --arg firstdue "$FIRSTDUE_API_KEY" \
+            --arg weather "$WEATHER_API_KEY" \
+            --arg convex "$CONVEX_API_KEY" \
+            --arg convexurl "$CONVEX_URL" \
+            --arg apikey "$LISTENER_API_KEY" \
+            '{FIRSTDUE_API_KEY: $firstdue, WEATHER_API_KEY: $weather, CONVEX_API_KEY: $convex, CONVEX_URL: $convexurl, API_KEY: $apikey}' \
+            > /tmp/listener-secrets.json
+          pnpm --filter @sizeupdashboard/firstdue-listener exec wrangler secret bulk /tmp/listener-secrets.json
+          rm -f /tmp/listener-secrets.json
+        env:
+          FIRSTDUE_API_KEY: ${{ secrets.FIRSTDUE_API_KEY }}
+          WEATHER_API_KEY: ${{ secrets.WEATHER_API_KEY }}
+
+  # Applies LAST: Worker custom domains require the Worker scripts to exist, so a
+  # fresh account bootstraps in one cascade run (workers first, then domains).
+  infra-apply:
+    if: >-
+      github.event_name != 'pull_request' && !failure() && !cancelled() &&
+      (needs.changes.outputs.infra == 'true' || inputs.deploy_all == true)
+    needs: [changes, validate, web, listener]
+    runs-on: ubuntu-latest
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+    defaults:
+      run:
+        working-directory: infra
+    steps:
+      - uses: actions/checkout@v4
+      - uses: opentofu/setup-opentofu@v1
+        with:
+          tofu_version: ${{ env.TOFU_VERSION }}
+      - name: Derive account id and R2 state credentials
+        run: |
+          set -euo pipefail
+          zone_name=$(jq -er .zoneName ../deploy.config.json)
+          account_id=$(curl -sf -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+            "https://api.cloudflare.com/client/v4/zones?name=${zone_name}" \
+            | jq -er '.result[0].account.id')
+          token_id=$(curl -sf -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+            https://api.cloudflare.com/client/v4/user/tokens/verify | jq -er '.result.id' \
+            || curl -sf -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+            "https://api.cloudflare.com/client/v4/accounts/${account_id}/tokens/verify" | jq -er '.result.id')
+          secret=$(printf %s "$CLOUDFLARE_API_TOKEN" | sha256sum | cut -d' ' -f1)
+          echo "::add-mask::$secret"
+          {
+            echo "AWS_ACCESS_KEY_ID=$token_id"
+            echo "AWS_SECRET_ACCESS_KEY=$secret"
+            echo "TF_VAR_account_id=$account_id"
+            echo "R2_ENDPOINT=https://${account_id}.r2.cloudflarestorage.com"
+          } >> "$GITHUB_ENV"
+      - name: Init (R2 backend)
+        run: |
+          printf 'endpoints = { s3 = "%s" }\n' "$R2_ENDPOINT" > backend.generated.hcl
+          tofu init -backend-config=backend.generated.hcl
+      - name: Plan
+        run: tofu plan -no-color -input=false -out=tfplan
+      - name: Apply
+        run: tofu apply -no-color -input=false tfplan

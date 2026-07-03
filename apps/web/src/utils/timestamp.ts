@@ -1,4 +1,3 @@
-import { env } from "@/env";
 import { useEffect, useState } from "react";
 
 const buildTimeUnits = () => {
@@ -65,9 +64,9 @@ function isSameDay(date1: Date, date2: Date): boolean {
  * Gets the day difference between two dates (positive for future, negative for past)
  */
 function getDayDifference(targetDate: Date, referenceDate: Date): number {
-  // Use the configured timezone from environment, with fallback
-  const tz =
-    (typeof env !== "undefined" && env.NEXT_PUBLIC_DB_TIMEZONE) || "UTC";
+  // Bucket days in the viewer's timezone (timestamps are stored as UTC epochs);
+  // fall back to UTC in non-Intl environments.
+  const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
 
   // Helper to get the date parts in the specified timezone
   function getTzDateParts(date: Date) {

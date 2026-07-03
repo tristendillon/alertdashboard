@@ -18,10 +18,15 @@ const getAuthStatus = async (
   const identity = await ctx.auth.getUserIdentity()
   const token = viewToken ? await ctx.db.get(viewToken) : undefined
 
-  if (!process.env.API_KEY) {
+  // API_KEY_PREVIOUS is honored during key rotation so already-deployed workers
+  // keep authenticating until their redeploy lands (set by the deploy cascade).
+  const validKeys = [process.env.API_KEY, process.env.API_KEY_PREVIOUS].filter(
+    (key): key is string => Boolean(key)
+  )
+  if (validKeys.length === 0) {
     throw new Error('API_KEY is not set, set it in the convex environment!')
   }
-  return apiKey === process.env.API_KEY
+  return apiKey !== undefined && validKeys.includes(apiKey)
     ? 'apiKey'
     : token
       ? 'viewToken'
