@@ -3,6 +3,8 @@
   "name": "firstdue-listener",
   "main": "worker/index.ts",
   "compatibility_date": "2025-11-01",
+  // Custom domain (listener.alertdashboard.com) is the only public host.
+  "workers_dev": false,
   "observability": {
     "enabled": true
   },

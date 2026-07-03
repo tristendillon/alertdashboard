@@ -14,7 +14,8 @@
       "service": "sizeup-web"
     }
   ],
-  "workers_dev": true,
+  // Custom domain (mfd.alertdashboard.com) is the only public host.
+  "workers_dev": false,
   "observability": {
     "enabled": true
   },
