@@ -10,7 +10,7 @@ export function useDispatchAnalytics() {
     });
   const { data: dispatchStats, isPending: isPendingDispatchStats } = useQuery(
     api.dispatches.getDispatchStats,
-    {},
+    { timezone: Intl.DateTimeFormat().resolvedOptions().timeZone },
   );
 
   return {

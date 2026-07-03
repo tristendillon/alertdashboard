@@ -20,7 +20,7 @@ Live data comes from the Convex backend (`@sizeupdashboard/convex`) over
 | `cf-typegen` | `wrangler types --env-interface CloudflareEnv …`          | Regenerate Worker env types.              |
 
 Run via pnpm, e.g. `pnpm --filter @sizeupdashboard/web dev`. CI deploys on push
-to `main` (`.github/workflows/deploy-web.yml`); see
+to `main` (the `web` job of `.github/workflows/deploy.yml`); see
 [`../../docs/deployment.md`](../../docs/deployment.md).
 
 ## Environment

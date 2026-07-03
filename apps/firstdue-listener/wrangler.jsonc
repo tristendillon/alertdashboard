@@ -38,17 +38,16 @@
   "triggers": {
     "crons": ["*/5 * * * *"]
   },
-  // Non-secret config forwarded into the container. Secrets (FIRSTDUE_API_KEY,
-  // WEATHER_API_KEY, CONVEX_API_KEY, API_KEY) are set via `wrangler secret put`
-  // (synced from GitHub secrets by deploy-listener.yml).
-  // CONVEX_URL is the PRODUCTION deployment (dev is useful-sardine-117, used
-  // only in local .env files).
+  // Non-secret config forwarded into the container. Everything else is pushed as
+  // Worker secrets by the deploy cascade (.github/workflows/deploy.yml):
+  // FIRSTDUE_API_KEY + WEATHER_API_KEY from GitHub secrets, CONVEX_URL +
+  // CONVEX_API_KEY derived from the Convex deployment, and API_KEY generated per
+  // deploy (readable via `npx convex env get LISTENER_API_KEY`).
+  // WEATHER_UNITS is pinned to imperial in src/config (the web UI assumes mph).
   "vars": {
     "TIMEZONE": "America/Chicago",
     "LOG_LEVEL": "info",
     "WEATHER_LAT": "39.19296187328465",
-    "WEATHER_LNG": "-96.58551325178348",
-    "WEATHER_UNITS": "imperial",
-    "CONVEX_URL": "https://unique-grasshopper-23.convex.cloud"
+    "WEATHER_LNG": "-96.58551325178348"
   }
 }

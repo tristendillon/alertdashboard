@@ -8,6 +8,7 @@ declare global {
     FIRSTDUE_API_KEY: string
     WEATHER_API_KEY: string
     CONVEX_API_KEY: string
+    CONVEX_URL: string
     API_KEY?: string
   }
 }
@@ -22,20 +23,22 @@ export class FirstdueListenerContainer extends Container<Env> {
 
   // Forward Worker vars + secrets into the container process env. The listener
   // validates these on boot (zod).
-  envVars = {
-    NODE_ENV: 'production',
-    PORT: '8080',
-    TIMEZONE: this.env.TIMEZONE,
-    LOG_LEVEL: this.env.LOG_LEVEL,
-    WEATHER_LAT: this.env.WEATHER_LAT,
-    WEATHER_LNG: this.env.WEATHER_LNG,
-    WEATHER_UNITS: this.env.WEATHER_UNITS,
-    CONVEX_URL: this.env.CONVEX_URL,
-    FIRSTDUE_API_KEY: this.env.FIRSTDUE_API_KEY,
-    WEATHER_API_KEY: this.env.WEATHER_API_KEY,
-    CONVEX_API_KEY: this.env.CONVEX_API_KEY,
-    ...(this.env.API_KEY ? { API_KEY: this.env.API_KEY } : {}),
-  }
+  envVars = ((): Record<string, string> => {
+    const vars: Record<string, string> = {
+      NODE_ENV: 'production',
+      PORT: '8080',
+      TIMEZONE: this.env.TIMEZONE,
+      LOG_LEVEL: this.env.LOG_LEVEL,
+      WEATHER_LAT: this.env.WEATHER_LAT,
+      WEATHER_LNG: this.env.WEATHER_LNG,
+      CONVEX_URL: this.env.CONVEX_URL,
+      FIRSTDUE_API_KEY: this.env.FIRSTDUE_API_KEY,
+      WEATHER_API_KEY: this.env.WEATHER_API_KEY,
+      CONVEX_API_KEY: this.env.CONVEX_API_KEY,
+    }
+    if (this.env.API_KEY) vars.API_KEY = this.env.API_KEY
+    return vars
+  })()
 }
 
 export default {

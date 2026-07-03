@@ -81,8 +81,8 @@ cp backend.hcl.example backend.hcl
 # edit backend.hcl: replace <ACCOUNT_ID> with $TF_VAR_account_id.
 ```
 
-CI does the same derivation automatically in `deploy-infra.yml` — the only secret it
-needs is `CLOUDFLARE_API_TOKEN`.
+CI does the same derivation automatically (infra jobs in `.github/workflows/deploy.yml`)
+— the only secret it needs is `CLOUDFLARE_API_TOKEN`.
 
 ---
 
@@ -105,8 +105,8 @@ zone; see the bootstrap section above).
 `cloudflare_workers_custom_domain` attaches a domain to an **already-deployed** Worker
 script. If the script does not exist yet, apply fails. So the order at cutover is:
 
-1. Deploy both Workers with wrangler first (this happens automatically on `main` via the
-   `deploy-web` / `deploy-listener` GitHub Actions, or run them manually):
+1. Deploy both Workers with wrangler first (the deploy cascade orders this for you:
+   its `infra-apply` job runs **after** the `web` and `listener` jobs; manually:
    ```bash
    pnpm --filter @sizeupdashboard/web deploy
    pnpm --filter @sizeupdashboard/firstdue-listener cf:deploy
@@ -127,58 +127,37 @@ script. If the script does not exist yet, apply fails. So the order at cutover i
    This creates the DNS records and edge certificates automatically; traffic serves only
    from the custom domains (`workers_dev` is `false`).
 
-Applies run through **CI** (`deploy-infra.yml`):
+Applies run through **CI** (the `infra-plan` / `infra-apply` jobs of
+`.github/workflows/deploy.yml`):
 
-- **Pull requests** touching `infra/**`: credential-free `fmt`/`validate`, then a real
-  `tofu plan` against R2 state (same-repo PRs only — forks get no secrets).
-- **Push to `main`** touching `infra/**` (or manual `workflow_dispatch`): `tofu plan`
-  then `tofu apply` of that exact plan. Runs are serialized via a concurrency group on
-  top of the state lock.
+- **Pull requests** touching `infra/**` or `deploy.config.json`: credential-free
+  `fmt`/`validate`, then a real `tofu plan` against R2 state (same-repo PRs only —
+  forks get no secrets).
+- **Push to `main`** (or `workflow_dispatch` with `deploy_all=true`): `tofu plan`
+  then `tofu apply` of that exact plan, **after** the Worker deploy jobs. Runs are
+  serialized via the workflow concurrency group on top of the state lock.
 
-CI builds the backend config from `CLOUDFLARE_ACCOUNT_ID` and authenticates to R2 with
-the `R2_STATE_ACCESS_KEY_ID` / `R2_STATE_SECRET_ACCESS_KEY` secrets (see
-[`../docs/environment.md`](../docs/environment.md)), so local `backend.hcl` files
-are for humans only. Manual applies from a laptop
-still work the same way and share the same state + lock.
+CI derives the account id and R2 credentials from `CLOUDFLARE_API_TOKEN` (see the
+bootstrap section above), so local `backend.hcl` files are for humans only. Manual
+applies from a laptop still work the same way and share the same state + lock.
 
 ---
 
-## Worker secrets (set once, out of band — never in tofu)
+## Worker secrets (never in tofu)
 
-Secrets are pushed to the Workers via `wrangler secret`, not tofu. Both deploy
-workflows bulk-sync them from GitHub secrets on every deploy, so GitHub is the single
-source of truth — rotating a value is `gh secret set NAME` + rerun the deploy workflow.
-Which secret/var goes where is documented in [`../docs/environment.md`](../docs/environment.md);
-the manual `wrangler` equivalents are below.
-
-**Web** (`apps/web`): `deploy-web.yml` syncs `CONVEX_API_KEY` + `CLERK_SECRET_KEY`
-after each deploy. Manual equivalent if ever needed:
-
-```bash
-cd apps/web
-wrangler secret put CONVEX_API_KEY
-wrangler secret put CLERK_SECRET_KEY
-```
-
-**Listener** (`apps/firstdue-listener`): the `deploy-listener` workflow bulk-syncs the
-listener secrets from GitHub secrets on every deploy via `wrangler secret bulk`. To set
-them manually:
-
-```bash
-cd apps/firstdue-listener
-wrangler secret bulk ./secrets.json   # { "FIRSTDUE_API_KEY": "...", ... }
-```
+Secrets are pushed to the Workers via `wrangler secret bulk` by the `web` and
+`listener` jobs of the deploy cascade on every run — most of them derived or
+generated at deploy time (see [`../docs/environment.md`](../docs/environment.md)
+for the full table). No secret material ever lands in tofu state. Manual
+equivalent if ever needed: `wrangler secret put <NAME>` in the app directory.
 
 ---
 
 ## GitHub secrets / vars inventory
 
-The full inventory of GitHub Actions secrets and variables — and which workflow
-consumes each — is maintained in one place: [`../docs/environment.md`](../docs/environment.md).
-
-In short: `deploy-infra.yml` needs `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`,
-`R2_STATE_ACCESS_KEY_ID`, and `R2_STATE_SECRET_ACCESS_KEY`. Configure everything
-under repo Settings → Secrets and variables → Actions.
+The full inventory — and how each value is derived — is maintained in one place:
+[`../docs/environment.md`](../docs/environment.md). The infra jobs need exactly one
+secret: `CLOUDFLARE_API_TOKEN` (with the scopes listed above).
 
 ---
 
@@ -190,5 +169,5 @@ tofu output listener_hostname
 tofu output web_custom_domain_id
 tofu output listener_custom_domain_id
 tofu output clerk_dns_records        # the five Clerk CNAMEs (hostname -> target)
-tofu output clerk_frontend_api_url   # must equal the CLERK_JWT_ISSUER_DOMAIN GitHub variable
+tofu output clerk_frontend_api_url   # = the CLERK_JWT_ISSUER_DOMAIN the cascade writes to Convex
 ```

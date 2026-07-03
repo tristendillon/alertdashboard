@@ -8,6 +8,7 @@
     "typecheck": "turbo run typecheck"
   },
   "devDependencies": {
+    "jsonc-parser": "^3.3.1",
     "turbo": "^2.10.2"
   },
   "packageManager": "pnpm@11.9.0",

@@ -1,0 +1,23 @@
+name: Derive Convex values
+description: >
+  Derive the Convex deployment URL and the shared app API key from
+  CONVEX_DEPLOY_KEY (which the caller must set in the step/job env), and export
+  them to GITHUB_ENV as CONVEX_URL and CONVEX_API_KEY (masked). GitHub blocks
+  secret-valued job outputs, so every consuming job re-derives instead.
+  Requires pnpm install to have run already.
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      working-directory: apps/convex
+      run: |
+        set -euo pipefail
+        url=$(npx convex function-spec 2>/dev/null | jq -er .url)
+        [[ "$url" == https://*.convex.cloud ]] || { echo "unexpected convex url: $url" >&2; exit 1; }
+        key=$(npx convex env list 2>/dev/null | grep -m1 '^API_KEY=' | cut -d= -f2-)
+        [ -n "$key" ] || { echo "API_KEY missing from Convex env (has the convex job run?)" >&2; exit 1; }
+        echo "::add-mask::$key"
+        {
+          echo "CONVEX_URL=$url"
+          echo "CONVEX_API_KEY=$key"
+        } >> "$GITHUB_ENV"

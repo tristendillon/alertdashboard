@@ -91,93 +91,66 @@ streams logs from an in-memory ring buffer (volatile, cleared on restart). See
 `src/api/auth.config.ts` (`applicationID: 'convex'`, issuer from the
 `CLERK_JWT_ISSUER_DOMAIN` deployment env). Server-to-server callers (web Worker,
 listener) authenticate with an `API_KEY` app-auth check in `src/lib/auth.ts:21`
-that compares the caller-supplied key against `process.env.API_KEY`. Both env
-vars are synced from GitHub by `deploy-to-convex.yml` on every deploy: `API_KEY`
-from the `CONVEX_API_KEY` secret (the same one handed to web and listener) and
-`CLERK_JWT_ISSUER_DOMAIN` from the GitHub variable of the same name
-(`https://clerk.<web-hostname>`, the tofu-managed Clerk frontend-API record).
+that compares the caller-supplied key against `process.env.API_KEY` (or
+`API_KEY_PREVIOUS` during a rotation window). Both env vars are written by the
+`convex` job of the deploy cascade on every run: `API_KEY` is generated fresh
+(and handed to web + listener in the same cascade) and `CLERK_JWT_ISSUER_DOMAIN`
+is derived as `https://clerk.<webHostname>` from `deploy.config.json` (the
+tofu-managed Clerk frontend-API record).
 
 ---
 
-## CI/CD pipelines
+## CI/CD: the deploy cascade
 
-Four GitHub Actions workflows, each scoped by path filter. GitHub is the single
-source of truth for secrets and variables — every deploy re-syncs them onto the
-target (see [`environment.md`](./environment.md)).
+One workflow — `.github/workflows/deploy.yml` — runs everything as a job graph:
 
-### `deploy-web.yml`
+```
+changes ─ validate ─┬─ infra-plan            (PRs only, same-repo, infra paths)
+                    └─ convex ─┬─ web        (push/dispatch only)
+                               └─ listener
+                                    └──────── infra-apply   (last)
+```
 
-- **Triggers**: push to `main` on `apps/web/**`, `apps/convex/src/api/**`,
-  `packages/**`, `pnpm-lock.yaml`, `pnpm-workspace.yaml`, `turbo.json`,
-  `package.json`; plus `workflow_dispatch`.
-- **Concurrency**: group `deploy-web`, `cancel-in-progress: true`.
-- **Job** (`deploy`): checkout → pnpm/Node 22 → `pnpm install --frozen-lockfile`.
-- **Build & deploy** (`deploy-web.yml:40`): `pnpm run deploy` runs
-  `opennextjs-cloudflare build && opennextjs-cloudflare deploy`. The step env
-  carries `CLOUDFLARE_API_TOKEN`/`CLOUDFLARE_ACCOUNT_ID` (wrangler auth), the two
-  runtime server secrets `CONVEX_API_KEY` + `CLERK_SECRET_KEY`, and all six
-  `NEXT_PUBLIC_*` **variables** which OpenNext inlines into the client bundle at
-  build time.
-- **Secret sync** (`deploy-web.yml:59`): builds a `{ CONVEX_API_KEY,
-  CLERK_SECRET_KEY }` JSON with `jq` and runs `wrangler secret bulk` so the
-  deployed Worker's runtime secrets match GitHub, then deletes the temp file.
+- **`changes`** — `dorny/paths-filter` decides which deploy jobs a push needs
+  (`deploy.config.json` and the workflow itself count as "everything"). A manual
+  `workflow_dispatch` with `deploy_all=true` runs every job.
+- **`validate`** — credential-free, runs on every PR including forks:
+  `check-deploy-config.mjs` (wrangler.jsonc ↔ `deploy.config.json` drift), turbo
+  typecheck + lint for all apps, `tofu fmt`/`validate`.
+- **`convex`** — the vault. On every run it **rotates the shared app key**
+  (`API_KEY` ← fresh `openssl rand -hex 32`, previous value kept as
+  `API_KEY_PREVIOUS` for a zero-downtime overlap), sets the derived
+  `CLERK_JWT_ISSUER_DOMAIN`, then `convex deploy --cmd "pnpm lint"`. Its `rotated`
+  output forces web + listener to run whenever it ran.
+- **`web`** — reads `CONVEX_API_KEY` back from the vault and derives
+  `NEXT_PUBLIC_CONVEX_URL` (both via the `convex-derive` composite action), derives
+  the Clerk publishable key from `webHostname` and the account id from the zone,
+  builds + deploys via OpenNext, then `wrangler secret bulk`s
+  `CONVEX_API_KEY` + `CLERK_SECRET_KEY` onto the Worker.
+- **`listener`** — same derivations, plus it **generates a fresh endpoint key**
+  every deploy (stored in the vault as `LISTENER_API_KEY` for retrieval), builds
+  the container image on the runner during `cf:deploy`, then bulk-syncs
+  `FIRSTDUE_API_KEY`, `WEATHER_API_KEY`, `CONVEX_API_KEY`, `CONVEX_URL`, `API_KEY`.
+- **`infra-plan` / `infra-apply`** — OpenTofu against the R2 state backend with
+  credentials **derived from `CLOUDFLARE_API_TOKEN`** (account id from the zone;
+  R2 S3 creds = token id + sha256 of the token). Apply runs **last** because
+  Worker custom domains require the Worker scripts to exist — a fresh account
+  bootstraps in a single cascade run.
+- **Concurrency**: one `deploy-main` group with `cancel-in-progress: false` (tofu
+  state writes and key rotation must never be cancelled); PR runs get per-PR
+  groups that do cancel.
 
-### `deploy-listener.yml`
+### Secret model
 
-- **Triggers**: push **and** pull_request to `main` on `apps/firstdue-listener/**`,
-  `apps/convex/**`, `packages/**`, lockfiles, `turbo.json`, `package.json`; plus
-  `workflow_dispatch`. PRs run the checks but skip the deploy.
-- **Concurrency**: group `deploy-listener`, `cancel-in-progress: true`.
-- **Job** (`deploy`): install → `turbo run typecheck lint --filter=…listener`
-  (runs on PRs too).
-- **Deploy** (`deploy-listener.yml:54`, `if: github.event_name != 'pull_request'`):
-  `pnpm --filter …firstdue-listener cf:deploy` → `wrangler deploy`. wrangler
-  builds the container **Docker image on the runner** from the repo-root build
-  context (`image_build_context: "../.."`) during deploy.
-- **Secret sync** (`deploy-listener.yml:62`, non-PR only): `jq` assembles
-  `FIRSTDUE_API_KEY`, `WEATHER_API_KEY`, `CONVEX_API_KEY`, `API_KEY` into JSON,
-  `wrangler secret bulk` uploads it, temp file removed. The supervisor Worker
-  forwards these into the container's process env.
-
-### `deploy-to-convex.yml`
-
-- **Triggers**: push to `main` on `apps/convex/**`; plus `workflow_dispatch`.
-- **Job** (`deploy`): install → **env sync** → `pnpm dlx convex deploy --cmd
-  "pnpm lint"`. The env-sync step runs `convex env set` for `API_KEY` (from the
-  `CONVEX_API_KEY` secret) and `CLERK_JWT_ISSUER_DOMAIN` (from the GitHub
-  variable) before the deploy, so the deployment never runs with stale/missing
-  env. `--cmd` runs lint as the codegen/pre-push step; `CONVEX_DEPLOY_KEY`
-  selects the target Convex project/deployment and authenticates both steps. No
-  concurrency group is declared.
-
-### `deploy-infra.yml`
-
-- **Triggers**: push **and** pull_request to `main` on `infra/**` or the workflow
-  file itself; plus `workflow_dispatch`. `TOFU_VERSION: 1.12.3`.
-- **Concurrency**: group `infra-tofu`, `cancel-in-progress: false` — runs are
-  serialized so they never race on the shared R2 state.
-- **Three jobs**:
-  - `validate` — credential-free `tofu fmt -check` / `init -backend=false` /
-    `validate`. Runs on every trigger, including fork PRs.
-  - `plan` — `if: pull_request` **and** the PR head repo equals this repo (forks
-    get no secrets, so they can't plan). Initializes the R2 backend and runs
-    `tofu plan`. This is why `plan` shows up **skipped** on pushes to `main`:
-    its `if` only matches same-repo pull requests.
-  - `apply` — `if: push || workflow_dispatch`. Initializes the R2 backend,
-    `tofu plan -out=tfplan`, then `tofu apply tfplan` of that exact plan.
-- Both `plan` and `apply` build the backend config inline from
-  `CLOUDFLARE_ACCOUNT_ID` (`endpoints.s3 = https://<account>.r2.cloudflarestorage.com`)
-  and authenticate to R2 with `R2_STATE_ACCESS_KEY_ID` /
-  `R2_STATE_SECRET_ACCESS_KEY`; `TF_VAR_account_id` comes from
-  `CLOUDFLARE_ACCOUNT_ID`; the CF provider reads `CLOUDFLARE_API_TOKEN`.
-
-### Secret-sync model
-
-Neither Worker stores secrets in `wrangler.jsonc`. Instead, **GitHub secrets are
-the single source of truth**: the web and listener workflows re-push them onto
-the deployed Worker with `wrangler secret bulk` on every run. Rotating a value is
-`gh secret set NAME` followed by re-running the deploy workflow. The full
-inventory of secrets and variables lives in [`environment.md`](./environment.md).
+GitHub holds only the **5 root secrets** (`CLOUDFLARE_API_TOKEN`,
+`CONVEX_DEPLOY_KEY`, `CLERK_SECRET_KEY`, `FIRSTDUE_API_KEY`, `WEATHER_API_KEY`)
+and 2 public Google Maps variables. Everything else is derived or generated at
+deploy time and, if it needs to persist, lives in the Convex deployment env (the
+vault) — see [`environment.md`](./environment.md) for the full derivation table
+and retrieval commands. Neither Worker stores secrets in `wrangler.jsonc`; each
+deploy re-pushes them with `wrangler secret bulk`. Rotating a root secret is
+`gh secret set NAME` + `gh workflow run deploy.yml -f deploy_all=true`; generated
+keys rotate themselves on every cascade run.
 
 ---
 

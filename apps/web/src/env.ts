@@ -21,7 +21,6 @@ export const env = createEnv({
     NEXT_PUBLIC_CONVEX_URL: z.string(),
     NEXT_PUBLIC_GOOGLE_MAPS_API_KEY: z.string(),
     NEXT_PUBLIC_MAP_ID: z.string(),
-    NEXT_PUBLIC_DB_TIMEZONE: z.string(),
     NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: z.string(),
     NEXT_PUBLIC_LOG_VERBOSE: z.string().default("false"),
     // NEXT_PUBLIC_CLIENTVAR: z.string(),
@@ -39,7 +38,6 @@ export const env = createEnv({
     NEXT_PUBLIC_GOOGLE_MAPS_API_KEY:
       process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY,
     NEXT_PUBLIC_MAP_ID: process.env.NEXT_PUBLIC_MAP_ID,
-    NEXT_PUBLIC_DB_TIMEZONE: process.env.NEXT_PUBLIC_DB_TIMEZONE,
     NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY:
       process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY,
     NEXT_PUBLIC_LOG_VERBOSE: process.env.NEXT_PUBLIC_LOG_VERBOSE,

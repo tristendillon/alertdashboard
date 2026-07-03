@@ -106,10 +106,23 @@ const prefixes = [
   'other',
 ] as const
 
+// Kept as the fallback for already-shipped bundles that don't send a timezone.
+const DEFAULT_STATS_TIMEZONE = 'America/Chicago'
+
 // This is an intensive query and it should be cached for long periods of time
 export const getDispatchStats = authedOrThrowQuery({
-  args: {},
-  handler: async (ctx) => {
+  args: {
+    timezone: v.optional(v.string()),
+  },
+  handler: async (ctx, { timezone }) => {
+    // Day/hour bucketing happens in the caller's timezone; invalid names throw
+    // a RangeError from Intl, so validate and fall back.
+    let tz = timezone ?? DEFAULT_STATS_TIMEZONE
+    try {
+      new Intl.DateTimeFormat('en-US', { timeZone: tz })
+    } catch {
+      tz = DEFAULT_STATS_TIMEZONE
+    }
     const allDispatches = await ctx.db.query('dispatches').collect()
 
     const counts = await Promise.all(
@@ -132,7 +145,7 @@ export const getDispatchStats = authedOrThrowQuery({
     // Get today's date in CST timezone
     const nowCST = new Date(
       new Intl.DateTimeFormat('en-US', {
-        timeZone: 'America/Chicago',
+        timeZone: tz,
         year: 'numeric',
         month: '2-digit',
         day: '2-digit',
@@ -144,7 +157,7 @@ export const getDispatchStats = authedOrThrowQuery({
       if (!dispatch.dispatchCreatedAt) return false
       const dispatchDateCST = new Date(
         new Intl.DateTimeFormat('en-US', {
-          timeZone: 'America/Chicago',
+          timeZone: tz,
           year: 'numeric',
           month: '2-digit',
           day: '2-digit',
@@ -162,7 +175,7 @@ export const getDispatchStats = authedOrThrowQuery({
           new Intl.DateTimeFormat('en-US', {
             hour: '2-digit',
             hour12: false,
-            timeZone: 'America/Chicago',
+            timeZone: tz,
           }).format(date)
         )
         hourlyData[cstHour].count += 1
