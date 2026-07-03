@@ -93,6 +93,10 @@ jobs:
       - name: Check deploy.config.json consistency
         run: node scripts/check-deploy-config.mjs
       - name: Typecheck and lint
+        env:
+          # web typecheck runs `next typegen`, which loads next.config.ts ->
+          # src/env.ts; the validate job has no real env vars.
+          SKIP_ENV_VALIDATION: '1'
         run: pnpm turbo run typecheck lint --ui=stream
       - uses: opentofu/setup-opentofu@v1
         with:
