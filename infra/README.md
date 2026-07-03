@@ -40,8 +40,9 @@ backend with native S3 conditional-write locking (`use_lockfile = true`).
 Create a Cloudflare API token (My Profile → API Tokens → Create Token → Custom) with:
 
 - **Account** → *Workers Scripts* → **Edit** (custom-domain attach)
-- **Zone** → *Zone* → **Read**
-- **Zone** → *DNS* → **Edit** (custom domains create DNS records)
+- **Account** → *Workers R2 Storage* → **Edit** (derived S3 creds for the tofu state bucket)
+- **Zone** → *Zone* → **Read** (also used to derive the account id from the zone)
+- **Zone** → *DNS* → **Edit** (Clerk CNAMEs in clerk.tf + custom-domain records)
 - **Zone** → *SSL and Certificates* → **Edit** (edge certs for the hostnames)
 - Zone Resources → Include → `alertdashboard.com`
 
@@ -58,27 +59,30 @@ The same token is used by CI (stored as the `CLOUDFLARE_API_TOKEN` GitHub secret
 
 ## One-time: R2 state bucket bootstrap
 
-The tofu state backend needs an R2 bucket and an S3 access-key pair.
+The tofu state backend needs an R2 bucket. Credentials are **derived from the
+Cloudflare API token** — no separate R2 access-key pair, no extra GitHub secrets.
 
 ```bash
 # 1. Create the bucket (uses your wrangler-authenticated CF login).
 wrangler r2 bucket create sizeup-tofu-state
 
-# 2. Create an R2 API token / access key pair in the Cloudflare dashboard:
-#    R2 → Manage R2 API Tokens → Create API Token → Object Read & Write,
-#    scoped to the sizeup-tofu-state bucket. Copy the Access Key ID + Secret.
-#    These are the S3-style credentials the backend authenticates with.
-#    Store the same pair as the GitHub secrets R2_STATE_ACCESS_KEY_ID /
-#    R2_STATE_SECRET_ACCESS_KEY so deploy-infra.yml can plan/apply in CI.
-export AWS_ACCESS_KEY_ID=<r2 access key id>
-export AWS_SECRET_ACCESS_KEY=<r2 secret access key>
+# 2. Derive S3-style credentials from the API token (requires the token to carry
+#    the "Workers R2 Storage: Edit" account scope — see API token scopes above).
+#    R2's S3 API accepts: access key = the token's id, secret = sha256(token value).
+export AWS_ACCESS_KEY_ID=$(curl -sf -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+  https://api.cloudflare.com/client/v4/user/tokens/verify | jq -er '.result.id')
+export AWS_SECRET_ACCESS_KEY=$(printf %s "$CLOUDFLARE_API_TOKEN" | sha256sum | cut -d' ' -f1)
+export TF_VAR_account_id=$(curl -sf -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+  "https://api.cloudflare.com/client/v4/zones?name=$(jq -er .zoneName ../deploy.config.json)" \
+  | jq -er '.result[0].account.id')
 
 # 3. Point the backend at your account's R2 endpoint (partial backend config).
 cp backend.hcl.example backend.hcl
-# edit backend.hcl: replace <ACCOUNT_ID> with your Cloudflare account id.
+# edit backend.hcl: replace <ACCOUNT_ID> with $TF_VAR_account_id.
 ```
 
-The account id is on the Cloudflare dashboard sidebar (or `wrangler whoami`).
+CI does the same derivation automatically in `deploy-infra.yml` — the only secret it
+needs is `CLOUDFLARE_API_TOKEN`.
 
 ---
 
@@ -89,11 +93,10 @@ cd infra
 tofu init -backend-config=backend.hcl
 ```
 
-Then provide `account_id` (and any overrides) via a tfvars file:
-
-```bash
-cp terraform.tfvars.example terraform.tfvars   # fill in account_id
-```
+All domain/worker-name values come from **`../deploy.config.json`** (read by tofu via
+`jsondecode` in `config.tf` and by CI via `jq`) — edit that file to change them. The
+only tofu variable is `account_id`, supplied via `TF_VAR_account_id` (derived from the
+zone; see the bootstrap section above).
 
 ---
 

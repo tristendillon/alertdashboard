@@ -1,0 +1,8 @@
+{
+  "zoneName": "alertdashboard.com",
+  "webWorkerName": "sizeup-web",
+  "listenerWorkerName": "firstdue-listener",
+  "webHostname": "mfd.alertdashboard.com",
+  "listenerHostname": "listener.alertdashboard.com",
+  "clerkInstanceSlug": "083ah0f8xra3"
+}
