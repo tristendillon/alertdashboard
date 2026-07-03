@@ -4,6 +4,7 @@ import { ConvexQueryCacheProvider } from "convex-helpers/react/cache/provider";
 import { ConvexReactClient } from "convex/react";
 import { env } from "@/env";
 import { ClerkProvider, useAuth } from "@clerk/nextjs";
+import { shadcn } from "@clerk/ui/themes"
 import { ConvexProviderWithClerk } from "convex/react-clerk";
 
 const convex = new ConvexReactClient(env.NEXT_PUBLIC_CONVEX_URL);
@@ -12,6 +13,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
     <ClerkProvider
       appearance={{
         cssLayerName: "clerk",
+        theme: shadcn
       }}
     >
       <ConvexProviderWithClerk client={convex} useAuth={useAuth}>
