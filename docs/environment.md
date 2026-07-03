@@ -42,10 +42,12 @@ workflows re-sync everything on every run:
   container process env. The supervisor Worker forwards both `wrangler.jsonc` `vars` and
   Worker secrets into the container via `envVars` in
   `apps/firstdue-listener/worker/index.ts:25`. The listener validates them on boot.
-- **Convex** has an entirely separate environment store (the Convex **dashboard**, per
-  deployment). Its two runtime env vars (`CLERK_JWT_ISSUER_DOMAIN`, `API_KEY`) are **not**
-  in GitHub and **not** in the repo — they are set in the Convex dashboard. The only
-  GitHub-side Convex value is `CONVEX_DEPLOY_KEY`, used to push code.
+- **Convex** has an entirely separate environment store (per deployment). Its two runtime
+  env vars (`CLERK_JWT_ISSUER_DOMAIN`, `API_KEY`) are **synced from GitHub by
+  `deploy-to-convex.yml`** on every deploy (`convex env set`), so GitHub is the single
+  source of truth — dashboard edits get overwritten. `API_KEY` comes from the
+  `CONVEX_API_KEY` secret; `CLERK_JWT_ISSUER_DOMAIN` from the GitHub variable of the same
+  name. `CONVEX_DEPLOY_KEY` is used to push code and authenticate the env sync.
 
 ---
 
@@ -61,21 +63,23 @@ Configure at **repo → Settings → Secrets and variables → Actions → Secre
 | `CLOUDFLARE_ACCOUNT_ID` | `deploy-web`, `deploy-listener`, `deploy-infra` | Cloudflare dashboard sidebar (Account ID), or `wrangler whoami`. In infra it also becomes `TF_VAR_account_id` **and** builds the R2 endpoint `https://<id>.r2.cloudflarestorage.com`. | Deploys target the wrong/no account; infra init can't reach R2 state. |
 | `R2_STATE_ACCESS_KEY_ID` | `deploy-infra` (→ `AWS_ACCESS_KEY_ID`) | Cloudflare **R2 → Manage R2 API Tokens** → token with **Object Read & Write** scoped to the `sizeup-tofu-state` bucket (Access Key ID half). | OpenTofu can't read/write remote state; plan/apply fail. |
 | `R2_STATE_SECRET_ACCESS_KEY` | `deploy-infra` (→ `AWS_SECRET_ACCESS_KEY`) | Same R2 API token (Secret Access Key half; shown once at creation). | Same as above. |
-| `CONVEX_API_KEY` | `deploy-web`, `deploy-listener` | **You generate it yourself** (shared secret, e.g. `openssl rand -hex 32`). **Must equal the `API_KEY` env var set in the Convex dashboard** — it is an app-level auth key checked by `apps/convex/src/lib/auth.ts:24`, **not** a Convex platform key. | Web/listener calls to Convex mutations/queries are rejected as `Unauthorized`. |
+| `CONVEX_API_KEY` | `deploy-web`, `deploy-listener`, `deploy-to-convex` | **You generate it yourself** (shared secret, e.g. `openssl rand -hex 32`). `deploy-to-convex` syncs it into the Convex deployment as its `API_KEY` env var, so the two can no longer drift — it is an app-level auth key checked by `apps/convex/src/lib/auth.ts:24`, **not** a Convex platform key. | Web/listener calls to Convex mutations/queries are rejected as `Unauthorized`. |
 | `CLERK_SECRET_KEY` | `deploy-web` | Clerk dashboard → **API Keys → Secret keys**. | Server-side Clerk auth in the web Worker fails. |
 | `FIRSTDUE_API_KEY` | `deploy-listener` | FirstDue / SizeUp tenant API key (from the FirstDue tenant admin). | Listener can't pull dispatches; fails zod validation → `exit(1)`. |
 | `WEATHER_API_KEY` | `deploy-listener` | OpenWeatherMap account → API keys. | Listener weather fetch fails; fails zod validation → `exit(1)`. |
 | `API_KEY` | `deploy-listener` | **You generate it yourself** (e.g. `openssl rand -hex 32`). Gates the **listener's own** HTTP/WebSocket endpoints. **If unset, the listener endpoints are UNAUTHENTICATED** (runs open, logs a warning per request). | Nothing breaks functionally — the listener just runs with no endpoint auth. |
 | `CONVEX_DEPLOY_KEY` | `deploy-to-convex` | Convex dashboard → **deployment settings → Deploy key**. This is the actual **Convex platform** key. | `convex deploy` can't push functions/schema. |
 
-### 2b. GitHub Actions **variables** (6)
+### 2b. GitHub Actions **variables** (7)
 
 Configure at **repo → Settings → Secrets and variables → Actions → Variables**. All are
-`NEXT_PUBLIC_*` build-time vars consumed only by `deploy-web` and **inlined into the
-client bundle** (public).
+public values: the `NEXT_PUBLIC_*` build-time vars are consumed by `deploy-web` and
+**inlined into the client bundle**; `CLERK_JWT_ISSUER_DOMAIN` is consumed by
+`deploy-to-convex`.
 
 | Variable | Consumed by | Where the value comes from | Breaks if missing |
 |---|---|---|---|
+| `CLERK_JWT_ISSUER_DOMAIN` | `deploy-to-convex` | `https://clerk.<web-hostname>` (e.g. `https://clerk.mfd.alertdashboard.com`) — the tofu-managed Clerk frontend-API CNAME (`infra/clerk.tf`, `tofu output clerk_frontend_api_url`). **No trailing slash** — Convex compares it to the Clerk JWT `iss` claim. Synced into the Convex deployment env on every Convex deploy. | Convex env gets an empty issuer → Clerk JWT auth in Convex fails; every signed-in live query is unauthenticated. |
 | `NEXT_PUBLIC_CONVEX_URL` | `deploy-web` | The **production** Convex deployment URL (Convex dashboard → deployment → URL, e.g. `https://unique-grasshopper-23.convex.cloud`). Must point at the **same** prod deployment as the listener's `CONVEX_URL`. | Build fails env validation (`env.ts:20`); client can't reach Convex. |
 | `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` | `deploy-web` | Google Cloud Console → **APIs & Services → Credentials** (Maps JavaScript API key). | Build fails validation; map won't load. |
 | `NEXT_PUBLIC_MAP_ID` | `deploy-web` | Google Cloud Console → **Google Maps Platform → Map Management** (Map ID). | Build fails validation; styled/vector map won't render. |
@@ -155,13 +159,14 @@ present** (`...(this.env.API_KEY ? { API_KEY } : {})`).
 
 ### 3c. `apps/convex` (Convex cloud)
 
-Convex has its **own** environment store, set per-deployment in the **Convex dashboard**
-(Settings → Environment Variables) — these are **not** GitHub secrets and **not** in the repo.
+Convex has its **own** environment store (per deployment). The two runtime vars are
+**synced from GitHub by `deploy-to-convex.yml`** (`convex env set`, before each deploy) —
+dashboard edits get overwritten on the next deploy.
 
 | Variable | Kind | Consumed at | Notes |
 |---|---|---|---|
-| `CLERK_JWT_ISSUER_DOMAIN` | Convex dashboard env | `apps/convex/src/api/auth.config.ts:4` | Clerk provider `domain`; `applicationID: 'convex'`. Must match the Clerk instance / JWT template `convex`. |
-| `API_KEY` | Convex dashboard env | `apps/convex/src/lib/auth.ts:21-24` | App-level auth key. **Must equal GitHub secret `CONVEX_API_KEY`.** `auth.ts:22` **throws** if it is unset. Callers passing a matching `apiKey` get `authStatus: 'apiKey'`. |
+| `CLERK_JWT_ISSUER_DOMAIN` | Convex deployment env (synced from the GitHub **variable** of the same name) | `apps/convex/src/api/auth.config.ts:4` | Clerk provider `domain`; `applicationID: 'convex'`. Must be `https://clerk.<web-hostname>` (tofu-managed record, no trailing slash) and match the Clerk instance / JWT template `convex`. |
+| `API_KEY` | Convex deployment env (synced from GitHub secret `CONVEX_API_KEY`) | `apps/convex/src/lib/auth.ts:21-24` | App-level auth key; the CI sync keeps it **equal to `CONVEX_API_KEY`** by construction. `auth.ts:22` **throws** if it is unset. Callers passing a matching `apiKey` get `authStatus: 'apiKey'`. |
 | `CONVEX_DEPLOY_KEY` | GitHub secret (CI only) | `deploy-to-convex.yml:37` | Platform deploy key; selects which Convex project/deployment gets `convex deploy --cmd "pnpm lint"`. |
 | `CONVEX_DEPLOYMENT` | local `.env.local` (dev only) | `convex dev` | Selects the dev deployment locally; written by `convex dev`. Not used in CI. |
 
@@ -187,11 +192,14 @@ Workflow `deploy-infra.yml` maps GitHub secrets to tofu/AWS env. Jobs: `validate
 **tofu variables** (`infra/variables.tf`): `account_id` (required, no default); `zone_name`
 (default `alertdashboard.com`); `web_worker_name` (default `sizeup-web`);
 `listener_worker_name` (default `firstdue-listener`); `web_hostname` (default
-`mfd.alertdashboard.com`); `listener_hostname` (default `listener.alertdashboard.com`).
+`mfd.alertdashboard.com`); `listener_hostname` (default `listener.alertdashboard.com`);
+`clerk_instance_slug` (default `083ah0f8xra3`, the instance-specific subdomain in the
+Clerk DKIM/mail CNAME targets).
 Override via `terraform.tfvars` (copy from `terraform.tfvars.example`). The `s3` backend
 (`versions.tf:21-34`) hardcodes bucket `sizeup-tofu-state`, key `infra/terraform.tfstate`,
 `region auto`, `use_lockfile=true`; the endpoint is supplied at init. tofu manages **only**
-the two `cloudflare_workers_custom_domain` resources — not Worker scripts, container config,
+the two `cloudflare_workers_custom_domain` resources and the five Clerk
+`cloudflare_dns_record` CNAMEs (`infra/clerk.tf`) — not Worker scripts, container config,
 secrets, or the R2 bucket. See **[`docs/deployment.md`](./deployment.md)** for the full
 infra flow.
 
@@ -202,10 +210,12 @@ infra flow.
 Several distinctly-named variables must hold **identical** values, and one similarly-named
 pair must **not** be confused:
 
-- **`CONVEX_API_KEY` (GitHub secret) === `API_KEY` (Convex dashboard env).** This is one
+- **`CONVEX_API_KEY` (GitHub secret) === `API_KEY` (Convex deployment env).** This is one
   shared app-level auth secret. Web (`env.ts:11`) and the listener (`config/index.ts:40`)
-  send it as `apiKey`; Convex checks it at `apps/convex/src/lib/auth.ts:24`. If the two
-  values drift, every authenticated web/listener → Convex call fails as `Unauthorized`.
+  send it as `apiKey`; Convex checks it at `apps/convex/src/lib/auth.ts:24`. The equality
+  is enforced by `deploy-to-convex.yml`, which syncs the secret into Convex before each
+  deploy — but the web/listener Workers only pick up a rotated value on **their** next
+  deploy, so rotate by updating the GitHub secret and re-running all three workflows.
 - **The listener's `API_KEY` is a DIFFERENT key.** It protects the **listener's own**
   HTTP/WebSocket endpoints (`config/index.ts:43`, forwarded at `worker/index.ts:37`). It is
   unrelated to Convex's `API_KEY`. Unset ⇒ listener endpoints are unauthenticated.

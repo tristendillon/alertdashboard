@@ -73,14 +73,17 @@ will paste them into §2 (repo) and §4 (GitHub).
    (`https://<slug>.convex.cloud`; current value `https://unique-grasshopper-23.convex.cloud`).
 2. Generate a **Deploy key** for that prod deployment → this becomes the
    `CONVEX_DEPLOY_KEY` GitHub secret (§4).
-3. Set the two **Convex dashboard environment variables** (Convex reads these from
-   its own environment, not the repo):
-   - `CLERK_JWT_ISSUER_DOMAIN` — the Clerk issuer domain from §1.3. Consumed at
+3. The two **Convex environment variables** are synced automatically by
+   `deploy-to-convex.yml` on every deploy (GitHub is the source of truth — no
+   manual dashboard edits needed):
+   - `CLERK_JWT_ISSUER_DOMAIN` — set the `CLERK_JWT_ISSUER_DOMAIN` GitHub Actions
+     **variable** to `https://clerk.<web-hostname>` (the tofu-managed Clerk
+     frontend-API record, **no trailing slash** — Convex compares it to the JWT
+     `iss` claim). Consumed at
      [`apps/convex/src/api/auth.config.ts:4`](../apps/convex/src/api/auth.config.ts).
-   - `API_KEY` — the shared app-auth secret. Convex compares caller-supplied keys
-     against this (`apps/convex/src/lib/auth.ts`). It **must equal** the
-     `CONVEX_API_KEY` the web and listener workers send. Generate fresh:
-     `openssl rand -hex 32`.
+   - `API_KEY` — synced from the `CONVEX_API_KEY` GitHub secret, so it always
+     equals the key the web and listener workers send
+     (`apps/convex/src/lib/auth.ts`). Generate fresh: `openssl rand -hex 32`.
 
 ### 1.3 Clerk (fresh app)
 
@@ -91,8 +94,12 @@ will paste them into §2 (repo) and §4 (GitHub).
    (`applicationID: 'convex'`).
 3. Add the new web hostname to **allowed origins**.
 4. For a **production Clerk instance** on the new domain: Clerk issues DNS **CNAME
-   records** (Clerk dashboard → Configure → Domains). Add them to the new zone
-   (§5.6). Development instances skip this.
+   records** (Clerk dashboard → Configure → Domains). These are managed by tofu
+   ([`infra/clerk.tf`](../infra/clerk.tf)) — update the `clerk_instance_slug`
+   default in [`infra/variables.tf`](../infra/variables.tf) to the new instance's
+   slug (the `<slug>` in the issued `dkim1.<slug>.clerk.services` targets) and
+   verify the record names/targets match what Clerk issued (§5.6). Development
+   instances skip this.
 
 ### 1.4 FirstDue
 
@@ -131,7 +138,7 @@ read its note carefully. Make these on a branch and merge to `main` (CI deploys 
 | 6 | [`apps/firstdue-listener/src/config/index.ts:68`](../apps/firstdue-listener/src/config/index.ts) | `firstdueApiUrl` tenant subdomain | different FirstDue tenant |
 | 7 | [`apps/convex/src/api/dispatches.ts:135,147,165`](../apps/convex/src/api/dispatches.ts) | Hardcoded `America/Chicago` — **known wart**, not env-driven. Must hand-edit for a different TZ. | new timezone |
 | 8 | [`apps/web/src/app/layout.tsx:10-11`](../apps/web/src/app/layout.tsx) | `MFD Alerts` branding (title + description) | rebranding |
-| 9 | `infra/` variables — see **note below** | `zone_name`, `web_hostname`, `listener_hostname`, `web_worker_name`, `listener_worker_name` | new zone / renamed workers |
+| 9 | `infra/` variables — see **note below** | `zone_name`, `web_hostname`, `listener_hostname`, `web_worker_name`, `listener_worker_name`, `clerk_instance_slug` (from the new Clerk app's issued DNS records, §1.3) | new zone / renamed workers / fresh Clerk app |
 | 10 | [`infra/versions.tf:22`](../infra/versions.tf) | R2 state bucket `bucket = "sizeup-tofu-state"` → new bucket name (backend config is not variable-izable) | new account |
 | 11 | Regenerate `apps/firstdue-listener/worker-configuration.d.ts` | `pnpm --filter @sizeupdashboard/firstdue-listener cf:types` (the committed file has stale generated values) | after rows 2–5 |
 | 12 | Comment-only, non-functional (update for accuracy): [`apps/web/wrangler.jsonc:17`](../apps/web/wrangler.jsonc), [`apps/firstdue-listener/wrangler.jsonc:6,44`](../apps/firstdue-listener/wrangler.jsonc), [`apps/firstdue-listener/README.md:38`](../apps/firstdue-listener/README.md), [`infra/providers.tf:4`](../infra/providers.tf), [`flake.nix:2`](../flake.nix) | Update stale hostnames/zone in comments | any move |
@@ -139,8 +146,8 @@ read its note carefully. Make these on a branch and merge to `main` (CI deploys 
 ### Row 9 — the infra variables nuance (CI does NOT read `terraform.tfvars`)
 
 `infra/variables.tf` defines `zone_name`, `web_hostname`, `listener_hostname`,
-`web_worker_name`, and `listener_worker_name`, all with defaults pointing at the
-current environment. There are two ways to override them, and **they behave
+`web_worker_name`, `listener_worker_name`, and `clerk_instance_slug`, all with
+defaults pointing at the current environment. There are two ways to override them, and **they behave
 differently for local vs CI**:
 
 - **Local `tofu apply`** reads `infra/terraform.tfvars` (copied from
@@ -294,9 +301,13 @@ serves from the custom domain.
 
 ### 5.6 Clerk DNS + sign-in
 
-For a production Clerk instance, add the CNAME records Clerk issued (§1.3) to the
-new zone, wait for Clerk to verify them, then confirm sign-in works end to end on
-the new web hostname.
+For a production Clerk instance, the five Clerk CNAME records (accounts portal,
+frontend API, two DKIM keys, mail) are created by the tofu apply in §5.4 from
+[`infra/clerk.tf`](../infra/clerk.tf). Confirm the applied names/targets match
+what Clerk issued (§1.3) — `tofu output clerk_dns_records` — wait for Clerk to
+verify them (Clerk dashboard → Configure → Domains), then confirm sign-in works
+end to end on the new web hostname. The records must stay **DNS-only** (tofu sets
+`proxied = false`); don't flip them to proxied in the Cloudflare dashboard.
 
 ---
 

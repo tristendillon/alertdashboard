@@ -32,6 +32,20 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
+      # Sync the Convex deployment's environment before deploying, so a fresh deploy
+      # never runs against stale/missing env. GitHub is the single source of truth:
+      # API_KEY must equal the CONVEX_API_KEY secret the listener/web pass as `apiKey`,
+      # and CLERK_JWT_ISSUER_DOMAIN must be https://clerk.<web_hostname> (the tofu-managed
+      # Clerk frontend-API record, no trailing slash — it is compared to the JWT `iss`).
+      - name: Sync Convex environment
+        env:
+          CONVEX_DEPLOY_KEY: ${{ secrets.CONVEX_DEPLOY_KEY }}
+          CONVEX_API_KEY: ${{ secrets.CONVEX_API_KEY }}
+          CLERK_JWT_ISSUER_DOMAIN: ${{ vars.CLERK_JWT_ISSUER_DOMAIN }}
+        run: |
+          pnpm dlx convex env set API_KEY "$CONVEX_API_KEY"
+          pnpm dlx convex env set CLERK_JWT_ISSUER_DOMAIN "$CLERK_JWT_ISSUER_DOMAIN"
+
       - name: Deploy to Convex
         env:
           CONVEX_DEPLOY_KEY: ${{ secrets.CONVEX_DEPLOY_KEY }}
