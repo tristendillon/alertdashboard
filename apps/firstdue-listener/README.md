@@ -91,7 +91,9 @@ wrangler secret put API_KEY
 ```
 
 The supervisor Worker forwards these into the container's process env
-(`FirstdueListenerContainer.envVars`).
+(`FirstdueListenerContainer.envVars`). In CI these come from GitHub secrets; the
+full reference is in [`../../docs/environment.md`](../../docs/environment.md), and
+the deploy pipeline is in [`../../docs/deployment.md`](../../docs/deployment.md).
 
 > Confirm `WEATHER_LAT/LNG` and `CONVEX_URL` in `wrangler.jsonc` are correct
 > before the first deploy.

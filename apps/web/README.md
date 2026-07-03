@@ -1,29 +1,43 @@
-# Create T3 App
+# @sizeupdashboard/web
 
-This is a [T3 Stack](https://create.t3.gg/) project bootstrapped with `create-t3-app`.
+Fire-department dispatch dashboard. Next 16 App Router with Convex live queries
+and Clerk auth, styled with Tailwind 4, deployed to Cloudflare Workers via
+[`@opennextjs/cloudflare`](https://opennext.js.org/cloudflare).
 
-## What's next? How do I make an app with this?
+Live data comes from the Convex backend (`@sizeupdashboard/convex`) over
+`convex/react-clerk`; server code reaches Convex with `CONVEX_API_KEY`.
 
-We try to keep this project as simple as possible, so you can start with just the scaffolding we set up for you, and add additional things later when they become necessary.
+## Scripts
 
-If you are not familiar with the different technologies used in this project, please refer to the respective docs. If you still are in the wind, please join our [Discord](https://t3.gg/discord) and ask for help.
+| Script       | Command                                                    | Purpose                                   |
+| ------------ | --------------------------------------------------------- | ----------------------------------------- |
+| `dev`        | `next dev`                                                 | Local dev server.                         |
+| `build`      | `next build`                                               | Next production build.                    |
+| `preview`    | `opennextjs-cloudflare build && … preview`                | Build + run the Worker locally.           |
+| `deploy`     | `opennextjs-cloudflare build && … deploy`                 | Build + deploy the Worker to Cloudflare.  |
+| `typecheck`  | `tsc --noEmit`                                             | Type check.                               |
+| `lint`       | `eslint .`                                                 | Lint.                                     |
+| `cf-typegen` | `wrangler types --env-interface CloudflareEnv …`          | Regenerate Worker env types.              |
 
-- [Next.js](https://nextjs.org)
-- [NextAuth.js](https://next-auth.js.org)
-- [Prisma](https://prisma.io)
-- [Drizzle](https://orm.drizzle.team)
-- [Tailwind CSS](https://tailwindcss.com)
-- [tRPC](https://trpc.io)
+Run via pnpm, e.g. `pnpm --filter @sizeupdashboard/web dev`. CI deploys on push
+to `main` (`.github/workflows/deploy-web.yml`); see
+[`../../docs/deployment.md`](../../docs/deployment.md).
 
-## Learn More
+## Environment
 
-To learn more about the [T3 Stack](https://create.t3.gg/), take a look at the following resources:
+`NEXT_PUBLIC_*` variables are inlined into the client bundle at build time;
+`CONVEX_API_KEY` and `CLERK_SECRET_KEY` are runtime Worker secrets. The full
+reference is in [`../../docs/environment.md`](../../docs/environment.md). For
+local `next dev`/`next build`, copy `.env.example` → `.env` (gitignored) and fill
+it in; for `preview`/`wrangler dev` Worker runtime secrets, copy
+`.dev.vars.example` → `.dev.vars` (gitignored).
 
-- [Documentation](https://create.t3.gg/)
-- [Learn the T3 Stack](https://create.t3.gg/en/faq#what-learning-resources-are-currently-available) — Check out these awesome tutorials
+## Notes
 
-You can check out the [create-t3-app GitHub repository](https://github.com/t3-oss/create-t3-app) — your feedback and contributions are welcome!
-
-## How do I deploy this?
-
-Follow our deployment guides for [Vercel](https://create.t3.gg/en/deployment/vercel), [Netlify](https://create.t3.gg/en/deployment/netlify) and [Docker](https://create.t3.gg/en/deployment/docker) for more information.
+- `src/middleware.ts` is Clerk middleware and stays on the **edge runtime** — the
+  OpenNext Cloudflare adapter does not support the newer Next `proxy.ts`, so
+  auth routing lives in `middleware.ts`.
+- `images.unoptimized: true` (`next.config.ts`) — no Next image optimizer on
+  Workers.
+- Cloudflare config is in `wrangler.jsonc` (script `sizeup-web`, `ASSETS`
+  binding, `WORKER_SELF_REFERENCE`, smart placement, custom domain only).

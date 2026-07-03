@@ -104,21 +104,21 @@ script. If the script does not exist yet, apply fails. So the order at cutover i
    pnpm --filter @sizeupdashboard/web deploy
    pnpm --filter @sizeupdashboard/firstdue-listener cf:deploy
    ```
-   Both start on `*.workers.dev` (`workers_dev: true`). Verify the Clerk checklist and
-   `wrangler tail` on the workers.dev hostnames before touching DNS.
+   Both wrangler configs ship with `workers_dev: false`, so the Workers are unreachable
+   until their custom domains attach in step 3. To smoke-test before touching DNS,
+   temporarily set `workers_dev: true`, verify on the `*.workers.dev` hostnames (Clerk
+   checklist, `wrangler tail`), then flip it back and redeploy.
 
-2. **Remove the pre-existing `mfd` DNS record.** There is an old `mfd.alertdashboard.com`
-   record (legacy Vercel-era). A Worker custom domain cannot coexist with a conflicting
-   DNS record on the same hostname, so delete it in the Cloudflare dashboard (DNS tab)
-   immediately before applying. This is a brief downtime window — do it deliberately.
+2. **Remove any conflicting DNS records.** A Worker custom domain cannot coexist with an
+   existing DNS record on the same hostname — delete any pre-existing records on the
+   target hostnames in the Cloudflare dashboard (DNS tab) immediately before applying.
 
 3. Apply the custom domains:
    ```bash
    tofu apply
    ```
-
-4. Flip `workers_dev: false` in each `wrangler.jsonc` and redeploy so traffic only serves
-   from the custom domains.
+   This creates the DNS records and edge certificates automatically; traffic serves only
+   from the custom domains (`workers_dev` is `false`).
 
 Applies run through **CI** (`deploy-infra.yml`):
 
@@ -129,8 +129,9 @@ Applies run through **CI** (`deploy-infra.yml`):
   top of the state lock.
 
 CI builds the backend config from `CLOUDFLARE_ACCOUNT_ID` and authenticates to R2 with
-the `R2_STATE_ACCESS_KEY_ID` / `R2_STATE_SECRET_ACCESS_KEY` secrets (see inventory
-below), so local `backend.hcl` files are for humans only. Manual applies from a laptop
+the `R2_STATE_ACCESS_KEY_ID` / `R2_STATE_SECRET_ACCESS_KEY` secrets (see
+[`../docs/environment.md`](../docs/environment.md)), so local `backend.hcl` files
+are for humans only. Manual applies from a laptop
 still work the same way and share the same state + lock.
 
 ---
@@ -140,6 +141,8 @@ still work the same way and share the same state + lock.
 Secrets are pushed to the Workers via `wrangler secret`, not tofu. Both deploy
 workflows bulk-sync them from GitHub secrets on every deploy, so GitHub is the single
 source of truth — rotating a value is `gh secret set NAME` + rerun the deploy workflow.
+Which secret/var goes where is documented in [`../docs/environment.md`](../docs/environment.md);
+the manual `wrangler` equivalents are below.
 
 **Web** (`apps/web`): `deploy-web.yml` syncs `CONVEX_API_KEY` + `CLERK_SECRET_KEY`
 after each deploy. Manual equivalent if ever needed:
@@ -149,9 +152,6 @@ cd apps/web
 wrangler secret put CONVEX_API_KEY
 wrangler secret put CLERK_SECRET_KEY
 ```
-
-The `NEXT_PUBLIC_*` values are inlined at build time in CI from GitHub **vars** (they are
-not runtime secrets).
 
 **Listener** (`apps/firstdue-listener`): the `deploy-listener` workflow bulk-syncs the
 listener secrets from GitHub secrets on every deploy via `wrangler secret bulk`. To set
@@ -166,39 +166,12 @@ wrangler secret bulk ./secrets.json   # { "FIRSTDUE_API_KEY": "...", ... }
 
 ## GitHub secrets / vars inventory
 
-Configure these under repo Settings → Secrets and variables → Actions.
+The full inventory of GitHub Actions secrets and variables — and which workflow
+consumes each — is maintained in one place: [`../docs/environment.md`](../docs/environment.md).
 
-### Secrets
-
-| Secret                   | Used by                          | Purpose                                        |
-| ------------------------ | -------------------------------- | ---------------------------------------------- |
-| `CLOUDFLARE_API_TOKEN`   | deploy-web, deploy-listener, deploy-infra | wrangler + tofu provider auth (scopes above) |
-| `CLOUDFLARE_ACCOUNT_ID`  | deploy-web, deploy-listener, deploy-infra | account targeting + R2 backend endpoint      |
-| `R2_STATE_ACCESS_KEY_ID` | deploy-infra                     | R2 state bucket access key id                  |
-| `R2_STATE_SECRET_ACCESS_KEY` | deploy-infra                 | R2 state bucket secret access key              |
-| `CONVEX_API_KEY`         | deploy-web, deploy-listener      | web runtime secret + listener → Convex         |
-| `CLERK_SECRET_KEY`       | deploy-web                       | web runtime secret                             |
-| `FIRSTDUE_API_KEY`       | deploy-listener (secret bulk)    | listener FirstDue API auth                     |
-| `WEATHER_API_KEY`        | deploy-listener (secret bulk)    | listener weather API auth                      |
-| `API_KEY`                | deploy-listener (secret bulk)    | listener endpoint auth (unset = open)          |
-
-### Variables
-
-| Variable                            | Used by     | Notes                              |
-| ----------------------------------- | ----------- | ---------------------------------- |
-| `NEXT_PUBLIC_CONVEX_URL`            | deploy-web  | inlined at build                   |
-| `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY`   | deploy-web  | inlined at build                   |
-| `NEXT_PUBLIC_MAP_ID`                | deploy-web  | inlined at build                   |
-| `NEXT_PUBLIC_DB_TIMEZONE`           | deploy-web  | inlined at build                   |
-| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | deploy-web  | inlined at build                   |
-| `NEXT_PUBLIC_LOG_VERBOSE`           | deploy-web  | inlined at build (defaults false)  |
-
-The listener's non-secret vars (`TIMEZONE`, `LOG_LEVEL`, `WEATHER_LAT/LNG`,
-`WEATHER_UNITS`, `CONVEX_URL`, `PORT`, `NODE_ENV`) are defined in
-`apps/firstdue-listener/wrangler.jsonc`, not in GitHub.
-
-Convex itself keeps its own separate deploy action (`deploy-to-convex.yml`) using
-`CONVEX_DEPLOY_KEY`.
+In short: `deploy-infra.yml` needs `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`,
+`R2_STATE_ACCESS_KEY_ID`, and `R2_STATE_SECRET_ACCESS_KEY`. Configure everything
+under repo Settings → Secrets and variables → Actions.
 
 ---
 
