@@ -11,7 +11,7 @@
     },
     "topo": { "dependsOn": ["^topo"] },
     "lint": { "dependsOn": ["^topo"] },
-    "typecheck": { "dependsOn": ["^topo"] },
+    "typecheck": { "dependsOn": ["^topo"], "env": ["SKIP_ENV_VALIDATION"] },
     "dev": { "cache": false, "persistent": true },
     "start": { "cache": false, "persistent": true }
   }
