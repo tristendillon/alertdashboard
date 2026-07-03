@@ -15,7 +15,9 @@
       "class_name": "FirstdueListenerContainer",
       "image": "./Dockerfile",
       "image_build_context": "../..",
-      "max_instances": 1,
+      // 2, not 1: a replacement instance must be able to provision while the old
+      // version's instance drains, or deploys wedge on "no container instance".
+      "max_instances": 2,
       // "dev" is the cheapest instance (~256 MiB). Bump to "basic" if it OOMs.
       "instance_type": "dev"
     }
