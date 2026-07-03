@@ -1,6 +1,6 @@
 # Look up the existing zone by name. The custom-domain resources below create the
 # necessary DNS records + edge certificates automatically, so no cloudflare_dns_record
-# resources are managed here.
+# resources are needed for the Workers (Clerk's records live in clerk.tf).
 data "cloudflare_zone" "this" {
   filter = {
     name = var.zone_name

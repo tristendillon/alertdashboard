@@ -27,6 +27,12 @@ variable "web_hostname" {
   default     = "mfd.alertdashboard.com"
 }
 
+variable "clerk_instance_slug" {
+  type        = string
+  description = "Instance-specific subdomain in the Clerk-issued DKIM/mail CNAME targets (Clerk dashboard → Configure → Domains). Changes when porting to a new Clerk application — see docs/porting.md."
+  default     = "083ah0f8xra3"
+}
+
 variable "listener_hostname" {
   type        = string
   description = "Custom domain hostname for the listener Worker."

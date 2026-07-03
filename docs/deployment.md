@@ -89,10 +89,13 @@ streams logs from an in-memory ring buffer (volatile, cleared on restart). See
 
 **Convex** (`apps/convex`): live-query backend. Clerk JWT auth is configured in
 `src/api/auth.config.ts` (`applicationID: 'convex'`, issuer from the
-`CLERK_JWT_ISSUER_DOMAIN` dashboard env). Server-to-server callers (web Worker,
+`CLERK_JWT_ISSUER_DOMAIN` deployment env). Server-to-server callers (web Worker,
 listener) authenticate with an `API_KEY` app-auth check in `src/lib/auth.ts:21`
-that compares the caller-supplied key against `process.env.API_KEY` — this value
-must equal the `CONVEX_API_KEY` GitHub secret handed to web and listener.
+that compares the caller-supplied key against `process.env.API_KEY`. Both env
+vars are synced from GitHub by `deploy-to-convex.yml` on every deploy: `API_KEY`
+from the `CONVEX_API_KEY` secret (the same one handed to web and listener) and
+`CLERK_JWT_ISSUER_DOMAIN` from the GitHub variable of the same name
+(`https://clerk.<web-hostname>`, the tofu-managed Clerk frontend-API record).
 
 ---
 
@@ -139,9 +142,12 @@ target (see [`environment.md`](./environment.md)).
 ### `deploy-to-convex.yml`
 
 - **Triggers**: push to `main` on `apps/convex/**`; plus `workflow_dispatch`.
-- **Job** (`deploy`): install → `pnpm dlx convex deploy --cmd "pnpm lint"`. The
-  `--cmd` runs lint as the codegen/pre-push step; the only secret is
-  `CONVEX_DEPLOY_KEY`, which selects the target Convex project/deployment. No
+- **Job** (`deploy`): install → **env sync** → `pnpm dlx convex deploy --cmd
+  "pnpm lint"`. The env-sync step runs `convex env set` for `API_KEY` (from the
+  `CONVEX_API_KEY` secret) and `CLERK_JWT_ISSUER_DOMAIN` (from the GitHub
+  variable) before the deploy, so the deployment never runs with stale/missing
+  env. `--cmd` runs lint as the codegen/pre-push step; `CONVEX_DEPLOY_KEY`
+  selects the target Convex project/deployment and authenticates both steps. No
   concurrency group is declared.
 
 ### `deploy-infra.yml`
@@ -177,11 +183,12 @@ inventory of secrets and variables lives in [`environment.md`](./environment.md)
 
 ## What OpenTofu manages (and what it doesn't)
 
-`infra/` manages **only** the two `cloudflare_workers_custom_domain` bindings
+`infra/` manages the two `cloudflare_workers_custom_domain` bindings
 (`infra/workers.tf`) that attach `mfd.` and `listener.` to the deployed Workers —
-these create the DNS records and edge certificates automatically. State lives in
-the R2 bucket `sizeup-tofu-state` (S3-compatible backend, native lockfile
-locking).
+these create the DNS records and edge certificates automatically — plus the five
+Clerk production-instance CNAME records (`infra/clerk.tf`: accounts portal,
+frontend API, two DKIM keys, mail; all DNS-only/unproxied). State lives in the
+R2 bucket `sizeup-tofu-state` (S3-compatible backend, native lockfile locking).
 
 Deliberately **not** in tofu: Worker scripts and container config (wrangler),
 Worker secrets/vars (wrangler + GitHub Actions), the Convex backend, and the R2
