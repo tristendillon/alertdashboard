@@ -234,16 +234,9 @@ jobs:
             echo "NEXT_PUBLIC_CONVEX_URL=$CONVEX_URL"
             echo "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=$pk"
           } >> "$GITHUB_ENV"
-      - name: Build and deploy to Cloudflare Workers
-        working-directory: apps/web
-        env:
-          # Runtime server secrets (nodejs_compat exposes these via process.env at
-          # build). CONVEX_API_KEY and the NEXT_PUBLIC_* values are already in the
-          # job env from the derive steps above.
-          CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
-          NEXT_PUBLIC_GOOGLE_MAPS_API_KEY: ${{ vars.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY }}
-          NEXT_PUBLIC_MAP_ID: ${{ vars.NEXT_PUBLIC_MAP_ID }}
-        run: pnpm run deploy
+      # Secrets first, deploy second — the freshly deployed version starts with
+      # current runtime secrets instead of inheriting last deploy's for a few
+      # seconds (the API_KEY_PREVIOUS grace covers it either way).
       - name: Sync Worker runtime secrets
         working-directory: apps/web
         env:
@@ -254,6 +247,16 @@ jobs:
             '{ CONVEX_API_KEY: $convex, CLERK_SECRET_KEY: $clerk }' > /tmp/web-secrets.json
           pnpm exec wrangler secret bulk /tmp/web-secrets.json
           rm -f /tmp/web-secrets.json
+      - name: Build and deploy to Cloudflare Workers
+        working-directory: apps/web
+        env:
+          # Runtime server secrets (nodejs_compat exposes these via process.env at
+          # build). CONVEX_API_KEY and the NEXT_PUBLIC_* values are already in the
+          # job env from the derive steps above.
+          CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
+          NEXT_PUBLIC_GOOGLE_MAPS_API_KEY: ${{ vars.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY }}
+          NEXT_PUBLIC_MAP_ID: ${{ vars.NEXT_PUBLIC_MAP_ID }}
+        run: pnpm run deploy
 
   listener:
     if: >-
@@ -293,9 +296,10 @@ jobs:
           echo "::add-mask::$key"
           npx convex env set LISTENER_API_KEY "$key"
           echo "LISTENER_API_KEY=$key" >> "$GITHUB_ENV"
-      # The runner's Docker builds the container image during cf:deploy.
-      - name: Deploy to Cloudflare
-        run: pnpm --filter @sizeupdashboard/firstdue-listener cf:deploy
+      # Secrets go up BEFORE the code deploy so no version ever boots without its
+      # env (the container zod-validates on boot and exits 1 — a version deployed
+      # ahead of its secrets crash-loops and can wedge container provisioning).
+      # On first-ever bootstrap wrangler auto-creates a draft Worker to hold them.
       - name: Sync Worker secrets
         run: |
           set -euo pipefail
@@ -312,6 +316,9 @@ jobs:
         env:
           FIRSTDUE_API_KEY: ${{ secrets.FIRSTDUE_API_KEY }}
           WEATHER_API_KEY: ${{ secrets.WEATHER_API_KEY }}
+      # The runner's Docker builds the container image during cf:deploy.
+      - name: Deploy to Cloudflare
+        run: pnpm --filter @sizeupdashboard/firstdue-listener cf:deploy
 
   # Applies LAST: Worker custom domains require the Worker scripts to exist, so a
   # fresh account bootstraps in one cascade run (workers first, then domains).
