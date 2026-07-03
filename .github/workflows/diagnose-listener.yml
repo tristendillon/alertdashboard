@@ -40,3 +40,18 @@ jobs:
             | jq '.result[] | {name, id, instances, max_instances, version, scheduling_policy, health: .health, rollouts: (.rollouts // [] | map({id, status, step_states: (.step_states // "n/a")}))}' || \
           curl -s -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
             "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/containers/applications" | head -c 4000
+      - name: Container info and instance detail
+        working-directory: apps/firstdue-listener
+        run: |
+          APP_ID=$(curl -sf -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+            "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/containers/applications" \
+            | jq -er '.result[0].id')
+          echo "=== wrangler containers info ==="
+          pnpm exec wrangler containers info "$APP_ID" || true
+          echo "=== instances endpoint ==="
+          curl -s -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+            "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/containers/applications/${APP_ID}/instances" | head -c 4000
+          echo
+          echo "=== deployments endpoint ==="
+          curl -s -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+            "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/containers/applications/${APP_ID}/deployments" | head -c 4000
