@@ -1,7 +1,6 @@
 {
   "extends": "@sizeupdashboard/typescript-config/node.json",
   "compilerOptions": {
-    "moduleResolution": "node",
     "strictPropertyInitialization": false,
     "noImplicitAny": false,
     "noImplicitOverride": false,

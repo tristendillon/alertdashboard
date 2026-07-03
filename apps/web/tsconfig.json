@@ -1,7 +1,10 @@
 {
   "extends": "@sizeupdashboard/typescript-config/nextjs.json",
   "compilerOptions": {
-    "baseUrl": ".",
+    // TS 6 no longer auto-includes node_modules/@types; list the ambient
+    // type packages the app relies on (google.maps provides the global
+    // `google` namespace used by the map components).
+    "types": ["node", "google.maps"],
     "paths": {
       "@/*": ["./src/*"]
     }

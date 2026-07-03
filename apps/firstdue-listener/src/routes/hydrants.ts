@@ -3,7 +3,7 @@ import {
   RoutineRouterOptions,
   RoutineStats,
 } from './routineRouter'
-import { PostHydrant } from '@sizeupdashboard/convex/src/api/schema'
+import { PostHydrant } from '@sizeupdashboard/convex/src/api/schema.js'
 import { config } from '@/config'
 import { api } from '@sizeupdashboard/convex/src/api/_generated/api.js'
 import { Request, Response } from 'express'

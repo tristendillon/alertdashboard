@@ -75,7 +75,7 @@ export function HourlyActivityChart() {
             <ChartTooltipContent
               className="w-[150px]"
               nameKey="dispatches"
-              labelFormatter={(value: string, payload) => {
+              labelFormatter={(value, payload) => {
                 const data = payload[0]?.payload;
                 if (!data) return value;
                 const hour = data?.hour;

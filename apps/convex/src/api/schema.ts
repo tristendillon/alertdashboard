@@ -1,4 +1,4 @@
-import { convexToZod, zid, zodToConvex } from 'convex-helpers/server/zod'
+import { convexToZod, zid, zodToConvex } from 'convex-helpers/server/zod4'
 import { defineSchema } from 'convex/server'
 import { v } from 'convex/values'
 import { Table } from 'convex-helpers/server'
@@ -225,7 +225,7 @@ export const FieldTransformationSchema = z.object({
     'random_string',
     'merge_data',
   ]),
-  params: z.record(z.any()), // strategy-specific parameters
+  params: z.record(z.string(), z.any()), // strategy-specific parameters
 })
 
 export type FieldTransformation = z.infer<typeof FieldTransformationSchema> & {

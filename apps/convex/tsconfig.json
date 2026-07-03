@@ -1,5 +1,8 @@
 {
   "extends": "@sizeupdashboard/typescript-config/convex.json",
+  "compilerOptions": {
+    "types": ["node"]
+  },
   "include": ["./**/*"],
   "exclude": ["./_generated"]
 }

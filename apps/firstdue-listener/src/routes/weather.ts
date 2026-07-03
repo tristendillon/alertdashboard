@@ -10,11 +10,11 @@ import {
   PostWeatherDay,
   PostCurrentWeather,
   PostWeatherDetail,
-} from '@sizeupdashboard/convex/src/api/schema'
+} from '@sizeupdashboard/convex/src/api/schema.js'
 import { config } from '@/config'
 import { Request, Response } from 'express'
 import { FormattedDateTime, formatDateTime } from '@/lib/utils'
-import { Id } from '@sizeupdashboard/convex/src/api/_generated/dataModel'
+import { Id } from '@sizeupdashboard/convex/src/api/_generated/dataModel.js'
 import { createDefaultRetryStats } from '@/lib/fetch-with-retry'
 
 const WEATHER_INTERVAL = 60_000 * 15 // 15 minutes

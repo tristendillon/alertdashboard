@@ -6,7 +6,7 @@ import type { Id } from "@sizeupdashboard/convex/src/api/_generated/dataModel.js
 import { fetchQuery } from "convex/nextjs";
 import z from "zod";
 
-const viewTokenSchema = z.string().uuid();
+const viewTokenSchema = z.uuid();
 
 type TokenIdPageParams = Promise<{ viewToken?: string[] }>;
 

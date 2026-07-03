@@ -12,8 +12,7 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { exportTableToCSV } from "@/lib/export";
 
-const actions = ["export", "delete"] as const;
-type Action = (typeof actions)[number];
+type Action = "export" | "delete";
 
 interface TableActionBarProps<TData> {
   table: Table<TData>;

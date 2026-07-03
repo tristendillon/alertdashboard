@@ -16,18 +16,18 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@convex-dev/aggregate": "^0.1.23",
-    "@convex-dev/geospatial": "^0.1.9",
-    "bcryptjs": "^3.0.2",
-    "convex": "^1.23.0",
-    "convex-helpers": "^0.1.94",
-    "zod": "^3.25.67"
+    "@convex-dev/aggregate": "^0.2.2",
+    "@convex-dev/geospatial": "^0.2.1",
+    "bcryptjs": "^3.0.3",
+    "convex": "catalog:",
+    "convex-helpers": "catalog:",
+    "zod": "catalog:"
   },
   "devDependencies": {
     "@sizeupdashboard/eslint-config": "workspace:*",
     "@sizeupdashboard/typescript-config": "workspace:*",
-    "@types/node": "^24.0.3",
-    "eslint": "^9.23.0",
-    "typescript": "^5.8.2"
+    "@types/node": "catalog:",
+    "eslint": "catalog:",
+    "typescript": "catalog:"
   }
 }

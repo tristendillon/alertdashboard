@@ -11,13 +11,12 @@
     "./node": "./node.js"
   },
   "dependencies": {
-    "@eslint/eslintrc": "^3.3.1",
-    "@eslint/js": "^9.23.0",
-    "eslint-config-next": "15.5.2",
-    "globals": "^16.0.0",
-    "typescript-eslint": "^8.62.0"
+    "@eslint/js": "^10.0.1",
+    "eslint-config-next": "16.2.10",
+    "globals": "^17.7.0",
+    "typescript-eslint": "^8.62.1"
   },
   "peerDependencies": {
-    "eslint": "^9"
+    "eslint": "^10"
   }
 }

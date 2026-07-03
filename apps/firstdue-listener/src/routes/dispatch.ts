@@ -8,7 +8,7 @@ import {
   Dispatch,
   DispatchType,
   PostDispatch,
-} from '@sizeupdashboard/convex/src/api/schema'
+} from '@sizeupdashboard/convex/src/api/schema.js'
 import { config } from '@/config'
 import { Request, Response } from 'express'
 import {

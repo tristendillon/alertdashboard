@@ -8,8 +8,8 @@ import { z } from 'zod'
 // and collapse the gate to a constant.
 const runtimeEnv: NodeJS.ProcessEnv = process.env
 if (runtimeEnv.NODE_ENV !== 'production') {
-  dotenv.config({ path: '.env.local' })
-  dotenv.config({ path: '.env' })
+  dotenv.config({ path: '.env.local', quiet: true })
+  dotenv.config({ path: '.env', quiet: true })
 }
 
 export type LogLevel = 'error' | 'warn' | 'info' | 'timer' | 'debug' | 'verbose'
@@ -36,7 +36,7 @@ const envSchema = z.object({
   WEATHER_LAT: z.string().min(1),
   WEATHER_LNG: z.string().min(1),
   WEATHER_UNITS: z.string().min(1).default('imperial'),
-  CONVEX_URL: z.string().url(),
+  CONVEX_URL: z.url(),
   CONVEX_API_KEY: z.string().min(1),
   // Optional: when unset the API/WebSocket run unauthenticated (a warning is
   // logged on every request).
