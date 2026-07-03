@@ -6,24 +6,24 @@
 locals {
   clerk_dns_records = {
     accounts = {
-      name   = "accounts.${var.web_hostname}"
+      name   = "accounts.${local.web_hostname}"
       target = "accounts.clerk.services"
     }
     frontend = {
-      name   = "clerk.${var.web_hostname}"
+      name   = "clerk.${local.web_hostname}"
       target = "frontend-api.clerk.services"
     }
     dkim1 = {
-      name   = "clk._domainkey.${var.web_hostname}"
-      target = "dkim1.${var.clerk_instance_slug}.clerk.services"
+      name   = "clk._domainkey.${local.web_hostname}"
+      target = "dkim1.${local.clerk_instance_slug}.clerk.services"
     }
     dkim2 = {
-      name   = "clk2._domainkey.${var.web_hostname}"
-      target = "dkim2.${var.clerk_instance_slug}.clerk.services"
+      name   = "clk2._domainkey.${local.web_hostname}"
+      target = "dkim2.${local.clerk_instance_slug}.clerk.services"
     }
     mail = {
-      name   = "clkmail.${var.web_hostname}"
-      target = "mail.${var.clerk_instance_slug}.clerk.services"
+      name   = "clkmail.${local.web_hostname}"
+      target = "mail.${local.clerk_instance_slug}.clerk.services"
     }
   }
 }

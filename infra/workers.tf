@@ -3,7 +3,7 @@
 # resources are needed for the Workers (Clerk's records live in clerk.tf).
 data "cloudflare_zone" "this" {
   filter = {
-    name = var.zone_name
+    name = local.zone_name
   }
 }
 
@@ -14,14 +14,14 @@ data "cloudflare_zone" "this" {
 resource "cloudflare_workers_custom_domain" "web" {
   account_id = var.account_id
   zone_id    = data.cloudflare_zone.this.zone_id
-  hostname   = var.web_hostname
-  service    = var.web_worker_name
+  hostname   = local.web_hostname
+  service    = local.web_worker_name
 }
 
 # Binds the listener Worker to its production custom domain.
 resource "cloudflare_workers_custom_domain" "listener" {
   account_id = var.account_id
   zone_id    = data.cloudflare_zone.this.zone_id
-  hostname   = var.listener_hostname
-  service    = var.listener_worker_name
+  hostname   = local.listener_hostname
+  service    = local.listener_worker_name
 }
