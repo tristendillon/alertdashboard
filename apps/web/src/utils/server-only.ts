@@ -6,7 +6,8 @@ import type { Id } from "@sizeupdashboard/convex/src/api/_generated/dataModel.js
 import { fetchQuery } from "convex/nextjs";
 import z from "zod";
 
-const viewTokenSchema = z.uuid();
+// close enough i guess bro
+const viewTokenSchema = z.guid();
 
 type TokenIdPageParams = Promise<{ viewToken?: string[] }>;
 
@@ -20,6 +21,7 @@ export const getTokenIdFromParams = async (params: TokenIdPageParams) => {
   }
   const viewToken = awaited.viewToken[0];
   const { error } = viewTokenSchema.safeParse(viewToken);
+
   if (error && viewToken) {
     return {
       data: undefined,
