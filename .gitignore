@@ -1,6 +1,7 @@
 # Build output directories
 dist/
 build/
+.next/
 
 # Node.js dependencies
 node_modules/
@@ -30,3 +31,5 @@ Thumbs.db
 **/.claude
 
 .turbo
+
+.direnv/

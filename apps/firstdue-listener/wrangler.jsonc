@@ -1,0 +1,52 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "firstdue-listener",
+  "main": "worker/index.ts",
+  "compatibility_date": "2025-11-01",
+  "observability": {
+    "enabled": true
+  },
+  // The listener Docker image, built with the repo root as context so the
+  // multi-stage pnpm/turbo build can see the whole workspace.
+  "containers": [
+    {
+      "class_name": "FirstdueListenerContainer",
+      "image": "./Dockerfile",
+      "image_build_context": "../..",
+      "max_instances": 1,
+      // "dev" is the cheapest instance (~256 MiB). Bump to "basic" if it OOMs.
+      "instance_type": "dev"
+    }
+  ],
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "LISTENER",
+        "class_name": "FirstdueListenerContainer"
+      }
+    ]
+  },
+  "migrations": [
+    {
+      "tag": "v1",
+      "new_sqlite_classes": ["FirstdueListenerContainer"]
+    }
+  ],
+  // Restart the container after a host restart by probing /health.
+  "triggers": {
+    "crons": ["*/5 * * * *"]
+  },
+  // Non-secret config forwarded into the container. Secrets (FIRSTDUE_API_KEY,
+  // WEATHER_API_KEY, CONVEX_API_KEY, API_KEY) are set via `wrangler secret put`
+  // (synced from GitHub secrets by deploy-listener.yml).
+  // CONVEX_URL is the PRODUCTION deployment (dev is useful-sardine-117, used
+  // only in local .env files).
+  "vars": {
+    "TIMEZONE": "America/Chicago",
+    "LOG_LEVEL": "info",
+    "WEATHER_LAT": "39.19296187328465",
+    "WEATHER_LNG": "-96.58551325178348",
+    "WEATHER_UNITS": "imperial",
+    "CONVEX_URL": "https://unique-grasshopper-23.convex.cloud"
+  }
+}

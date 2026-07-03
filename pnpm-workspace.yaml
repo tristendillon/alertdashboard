@@ -1,4 +1,19 @@
 packages:
-  - 'convex'
-  - 'firstdue-listener'
-  - 'web'
+  - apps/*
+  - packages/*
+
+overrides:
+  "@types/react": 19.1.12
+  "@types/react-dom": 19.1.9
+
+allowBuilds:
+  esbuild: true
+  workerd: true
+  "@clerk/shared": false
+  "@tailwindcss/oxide": false
+  sharp: false
+  unrs-resolver: false
+
+minimumReleaseAgeExclude:
+  - miniflare@4.20260701.0
+  - wrangler@4.107.0

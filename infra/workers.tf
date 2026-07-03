@@ -1,0 +1,27 @@
+# Look up the existing zone by name. The custom-domain resources below create the
+# necessary DNS records + edge certificates automatically, so no cloudflare_dns_record
+# resources are managed here.
+data "cloudflare_zone" "this" {
+  filter = {
+    name = var.zone_name
+  }
+}
+
+# Binds the web Worker to its production custom domain.
+# The Worker script itself must already be deployed by wrangler before this applies.
+resource "cloudflare_workers_custom_domain" "web" {
+  account_id  = var.account_id
+  zone_id     = data.cloudflare_zone.this.zone_id
+  hostname    = var.web_hostname
+  service     = var.web_worker_name
+  environment = "production"
+}
+
+# Binds the listener Worker to its production custom domain.
+resource "cloudflare_workers_custom_domain" "listener" {
+  account_id  = var.account_id
+  zone_id     = data.cloudflare_zone.this.zone_id
+  hostname    = var.listener_hostname
+  service     = var.listener_worker_name
+  environment = "production"
+}

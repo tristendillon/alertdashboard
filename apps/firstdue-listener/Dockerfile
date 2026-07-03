@@ -1,0 +1,44 @@
+# Build with the repo root as context:
+#   docker build -f apps/firstdue-listener/Dockerfile -t firstdue-listener .
+# (Cloudflare Containers builds it via wrangler with image_build_context "../..".)
+
+# Builder stage
+FROM node:22-alpine AS builder
+
+RUN npm install -g pnpm@11.9.0 turbo@2.10.2
+WORKDIR /app
+
+COPY pnpm-lock.yaml pnpm-workspace.yaml turbo.json package.json ./
+COPY apps/convex/package.json ./apps/convex/
+COPY apps/firstdue-listener/package.json ./apps/firstdue-listener/
+# web is part of the pnpm workspace + lockfile; its manifest must be present so the
+# frozen-lockfile install sees a workspace set matching the lockfile (web source is NOT copied).
+COPY apps/web/package.json ./apps/web/
+# workspace packages referenced by the apps' package.jsons — pnpm needs their manifests to install.
+COPY packages/eslint-config/package.json ./packages/eslint-config/
+COPY packages/typescript-config/package.json ./packages/typescript-config/
+RUN pnpm install --frozen-lockfile
+
+COPY apps/convex ./apps/convex
+COPY apps/firstdue-listener ./apps/firstdue-listener
+COPY packages ./packages
+RUN turbo run build --filter=@sizeupdashboard/firstdue-listener --cache-dir=.turbo
+
+# Final stage
+FROM node:22-alpine
+RUN npm install -g pnpm@11.9.0
+WORKDIR /app
+
+COPY --from=builder /app/apps/convex ./apps/convex
+COPY --from=builder /app/apps/firstdue-listener ./apps/firstdue-listener
+COPY --from=builder /app/apps/web/package.json ./apps/web/package.json
+COPY --from=builder /app/packages ./packages
+COPY --from=builder /app/pnpm-lock.yaml ./pnpm-lock.yaml
+COPY --from=builder /app/pnpm-workspace.yaml ./pnpm-workspace.yaml
+COPY --from=builder /app/package.json ./package.json
+
+RUN pnpm install --prod --frozen-lockfile
+WORKDIR /app/apps/firstdue-listener
+EXPOSE 8080
+# Run node directly (no pnpm wrapper) so SIGTERM reaches Node for graceful shutdown.
+CMD ["node", "dist/index.js"]

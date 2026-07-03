@@ -1,0 +1,6 @@
+# Local Worker runtime secrets for `opennextjs-cloudflare preview` / `wrangler dev`.
+# Copy to `.dev.vars` (gitignored) and fill in real values.
+# NEXT_PUBLIC_* vars are inlined at build time (see .env / CI vars), not here.
+
+CONVEX_API_KEY=""
+CLERK_SECRET_KEY=""

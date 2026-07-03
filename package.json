@@ -1,22 +1,17 @@
 {
+  "name": "sizeupdashboard",
+  "private": true,
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck"
+  },
   "devDependencies": {
-    "turbo": "^2.5.3",
-    "typescript": "^5.8.2"
+    "turbo": "^2.10.2"
   },
-  "packageManager": "pnpm@10.11.1",
-  "pnpm": {
-    "ignoredBuiltDependencies": [
-      "@tailwindcss/oxide",
-      "sharp"
-    ],
-    "overrides": {
-      "@types/react": "19.0.12",
-      "@types/react-dom": "19.0.4"
-    }
-  },
+  "packageManager": "pnpm@11.9.0",
   "engines": {
-    "node": ">=22.0.0",
-    "pnpm": ">=9.0.0"
-  },
-  "engineStrict": true
+    "node": ">=22"
+  }
 }

@@ -1,0 +1,33 @@
+{
+  "name": "@sizeupdashboard/convex",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "exports": {
+    "./*": {
+      "import": "./*"
+    }
+  },
+  "scripts": {
+    "dev": "convex dev",
+    "predev": "convex dev --until-success",
+    "logs": "convex logs",
+    "lint": "eslint . --max-warnings 0",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@convex-dev/aggregate": "^0.1.23",
+    "@convex-dev/geospatial": "^0.1.9",
+    "bcryptjs": "^3.0.2",
+    "convex": "^1.23.0",
+    "convex-helpers": "^0.1.94",
+    "zod": "^3.25.67"
+  },
+  "devDependencies": {
+    "@sizeupdashboard/eslint-config": "workspace:*",
+    "@sizeupdashboard/typescript-config": "workspace:*",
+    "@types/node": "^24.0.3",
+    "eslint": "^9.23.0",
+    "typescript": "^5.8.2"
+  }
+}

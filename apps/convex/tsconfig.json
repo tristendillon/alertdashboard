@@ -1,0 +1,5 @@
+{
+  "extends": "@sizeupdashboard/typescript-config/convex.json",
+  "include": ["./**/*"],
+  "exclude": ["./_generated"]
+}

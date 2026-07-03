@@ -1,0 +1,11 @@
+# Copy to terraform.tfvars (gitignored) and fill in.
+# All other variables have sensible defaults in variables.tf.
+
+account_id = "<ACCOUNT_ID>"
+
+# Override defaults only if they change:
+# zone_name            = "alertdashboard.com"
+# web_worker_name      = "sizeup-web"
+# listener_worker_name = "firstdue-listener"
+# web_hostname         = "mfd.alertdashboard.com"
+# listener_hostname    = "listener.alertdashboard.com"

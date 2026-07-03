@@ -1,0 +1,8 @@
+# Local state (state lives in R2), lock caches, and filled-in configs.
+*.tfstate
+*.tfstate.*
+.terraform/
+backend.hcl
+terraform.tfvars
+*.auto.tfvars
+crash.log

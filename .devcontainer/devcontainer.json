@@ -1,41 +1,43 @@
 {
-  "name": "Alert Dashboard",
-  "image": "mcr.microsoft.com/devcontainers/typescript-node:22-bookworm",
-  "customizations": {
-    "vscode": {
-      "extensions": [
-        "esbenp.prettier-vscode",
-        "dbaeumer.vscode-eslint",
-        "bradlc.vscode-tailwindcss",
-        "ms-vscode.vscode-typescript-next"
-      ],
-      "settings": {
-        "terminal.integrated.defaultProfile.linux": "bash"
-      }
-    }
+  "name": "${localWorkspaceFolderBasename} — Nix Dev Environment",
+  "build": {
+    "context": ".",
+    "dockerfile": "Dockerfile"
   },
+
+  "workspaceFolder": "/workspace",
+  "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=cached",
+
+  "mounts": ["source=lunarhue-containers-nix-store,target=/nix,type=volume"],
+
+  "containerEnv": {
+    "NIX_CONFIG": "experimental-features = nix-command flakes"
+  },
+
   "features": {
     "ghcr.io/devcontainers/features/common-utils:2": {
-      "installJq": true,
-      "upgradePackages": true
+      "username": "vscode",
+      "uid": "1000",
+      "gid": "1000",
+      "installZsh": false,
+      "installOhMyZsh": false,
+      "configureZshAsDefaultShell": false
     },
-    "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {},
-    "ghcr.io/devcontainers/features/git:1": {},
-    "ghcr.io/devcontainers/features/git-lfs:1": {},
-    "ghcr.io/devcontainers/features/github-cli:1": {},
-    "ghcr.io/devcontainers-extra/features/curl-apt-get:1": {},
-    "ghcr.io/devcontainers-extra/features/pnpm:2": {}
-  },
-  "forwardPorts": [3000],
-  "portsAttributes": {
-    "3000": {
-      "label": "Web",
-      "onAutoForward": "openBrowser"
+    "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {
+      "version": "latest",
+      "enableNonRootDocker": "true",
+      "moby": "false"
     }
   },
-  "postCreateCommand": "sed -i 's/\r//g' .devcontainer/post-create.sh && bash .devcontainer/post-create.sh"
 
-  // "remoteUser": "vscode"
-  // "workspaceFolder": "/workspace",
-  // "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=cached"
+  "postCreateCommand": "bash .devcontainer/create.sh",
+  "postStartCommand": "bash .devcontainer/start.sh",
+
+  "customizations": {
+    "vscode": {
+      "extensions": ["mkhl.direnv", "jnoortheen.nix-ide", "hashicorp.terraform"]
+    }
+  },
+  "forwardPorts": [3000],
+  "remoteUser": "vscode"
 }

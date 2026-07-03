@@ -5,8 +5,10 @@ node_modules
 # Build artifacts
 **/dist
 firstdue-listener/dist
+**/.turbo
 
 # Logs
+**/logs
 **/*.log
 *.log
 
@@ -19,8 +21,24 @@ firstdue-listener/dist
 # Git and documentation
 .git
 .gitignore
+.github
 README.md
 .dockerignore
+
+# Nix / devcontainer
+flake.nix
+flake.lock
+.direnv
+.envrc
+
+# Cloudflare worker (not needed in the container image)
+**/wrangler.jsonc
+apps/firstdue-listener/worker
+apps/firstdue-listener/worker-configuration.d.ts
+
+# web app source is not built in the listener image (only its package.json is copied)
+apps/web/*
+!apps/web/package.json
 
 # IDE files
 .vscode
