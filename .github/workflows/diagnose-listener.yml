@@ -22,6 +22,12 @@ jobs:
           cache: 'pnpm'
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+      - name: Identify the CI token
+        run: |
+          set -euo pipefail
+          echo "Token id (match this in dashboard -> My Profile -> API Tokens):"
+          curl -sf -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+            https://api.cloudflare.com/client/v4/user/tokens/verify | jq '.result'
       - name: Derive account id
         run: |
           set -euo pipefail
