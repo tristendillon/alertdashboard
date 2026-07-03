@@ -2,6 +2,11 @@ name: Diagnose listener containers
 
 on:
   workflow_dispatch:
+    inputs:
+      delete_application:
+        description: 'DELETE the stuck containers application (a redeploy recreates it)'
+        type: boolean
+        default: false
 
 jobs:
   diagnose:
@@ -55,3 +60,19 @@ jobs:
           echo "=== deployments endpoint ==="
           curl -s -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
             "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/containers/applications/${APP_ID}/deployments" | head -c 4000
+      # Recovery for a wedged rollout (instances stuck 'starting', config pinned to
+      # an old image): delete the application; the next `wrangler deploy` recreates
+      # it cleanly on the current image. The listener is stateless (data in Convex).
+      - name: Delete stuck containers application
+        if: inputs.delete_application == true
+        working-directory: apps/firstdue-listener
+        run: |
+          set -euo pipefail
+          APP_ID=$(curl -sf -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+            "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/containers/applications" \
+            | jq -er '.result[0].id')
+          echo "Deleting containers application $APP_ID"
+          pnpm exec wrangler containers delete "$APP_ID" || \
+            curl -sf -X DELETE -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+              "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/containers/applications/${APP_ID}"
+          echo "Deleted. Redeploy the listener to recreate it."
