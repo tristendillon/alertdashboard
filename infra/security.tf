@@ -54,10 +54,11 @@ resource "cloudflare_ruleset" "rate_limit" {
       enabled     = true
       expression  = "(http.host eq \"${local.web_hostname}\" and not starts_with(http.request.uri.path, \"/_next/\") and not starts_with(http.request.uri.path, \"/rssfeed\"))"
       ratelimit = {
+        # Free plan only permits a 10s window and a matching mitigation timeout.
         characteristics     = ["ip.src", "cf.colo.id"]
-        period              = 60
-        requests_per_period = 120
-        mitigation_timeout  = 600
+        period              = 10
+        requests_per_period = 50
+        mitigation_timeout  = 10
       }
     },
   ]
