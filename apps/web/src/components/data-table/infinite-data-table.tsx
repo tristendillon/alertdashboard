@@ -23,6 +23,8 @@ interface InfiniteDataTableProps<TData> extends React.ComponentProps<"div"> {
   status: PaginationStatus;
   onLoadMore: (numItems: number) => void;
   actionBar?: React.ReactNode;
+  /** Optional per-row class (e.g. dim inactive rows). */
+  rowClassName?: (original: TData) => string | undefined;
 }
 
 /**
@@ -34,6 +36,7 @@ export function InfiniteDataTable<TData>({
   status,
   onLoadMore,
   actionBar,
+  rowClassName,
   children,
   className,
   ...props
@@ -98,6 +101,7 @@ export function InfiniteDataTable<TData>({
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
+                  className={rowClassName?.(row.original)}
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell

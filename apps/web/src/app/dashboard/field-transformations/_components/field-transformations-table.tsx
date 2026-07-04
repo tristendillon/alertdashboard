@@ -8,9 +8,12 @@ import { ActionCell } from "@/components/ui/action-cell";
 import { Cell, CellContent } from "@/components/ui/cell";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Plus } from "lucide-react";
 import { useInfiniteTable } from "@/hooks/use-infinite-table";
 import { useSearchList } from "@/hooks/use-search-list";
-import { Modals } from "@/lib/enums";
+import { useDrawerState } from "@/hooks/nuqs/use-drawer-state";
+import { DrawerEntity, DrawerMode } from "@/lib/enums";
 import { TableActionBar } from "@/components/table-action-bar";
 import { api } from "@sizeupdashboard/convex/src/api/_generated/api.js";
 import type { FieldTransformation } from "@sizeupdashboard/convex/src/api/schema.js";
@@ -18,6 +21,7 @@ import type { ColumnDef } from "@tanstack/react-table";
 import { useMemo } from "react";
 
 export function FieldTransformationsTable() {
+  const { open } = useDrawerState();
   const { results, status, loadMore, search, setSearch } = useSearchList(
     api.transformations.listFieldTransformations,
   );
@@ -134,7 +138,7 @@ export function FieldTransformationsTable() {
         cell: ({ row }) => {
           return (
             <ActionCell
-              modalType={Modals.FIELD_TRANSFORMATION}
+              entity={DrawerEntity.FIELD_TRANSFORMATION}
               itemId={row.original._id}
             />
           );
@@ -161,13 +165,20 @@ export function FieldTransformationsTable() {
         <TableActionBar table={table} entityName="field transformations" />
       }
     >
-      <div className="flex items-center gap-2">
+      <div className="flex items-center justify-between gap-2">
         <Input
           placeholder="Search by name..."
           value={search}
           onChange={(event) => setSearch(event.target.value)}
           className="max-w-sm"
         />
+        <Button
+          size="sm"
+          onClick={() => open(DrawerEntity.FIELD_TRANSFORMATION, DrawerMode.CREATE)}
+        >
+          <Plus className="mr-1 size-4" />
+          New transformation
+        </Button>
       </div>
     </InfiniteDataTable>
   );

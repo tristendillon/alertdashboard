@@ -1,4 +1,5 @@
 import z from "zod";
-import { Modals } from "./enums";
+import { DrawerEntity, DrawerMode } from "./enums";
 
-export const modalSchema = z.enum(Modals);
+export const drawerEntitySchema = z.enum(DrawerEntity);
+export const drawerModeSchema = z.enum(DrawerMode);
