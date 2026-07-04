@@ -1,6 +1,12 @@
 import { v } from 'convex/values'
 import { authedOrThrowMutation, authedOrThrowQuery } from '../lib/auth'
+import { internalMutation } from './_generated/server'
+import type { Id } from './_generated/dataModel'
 import { paginationOptsValidator } from 'convex/server'
+
+// A client is "online" if it pinged within this window; the cleanup cron
+// deletes rows older than it. Keep in sync with the client heartbeat (30s).
+const ONLINE_WINDOW_MS = 90_000
 
 export const createViewToken = authedOrThrowMutation({
   args: {
@@ -54,5 +60,72 @@ export const listViewTokens = authedOrThrowQuery({
       .query('viewTokens')
       .order('desc')
       .paginate(paginationOpts)
+  },
+})
+
+// Public viewer heartbeat: upsert this client's presence row for the view token
+// it is authenticated as. The token id comes from the auth context (the
+// injected `viewToken` arg), so only genuine viewers report presence.
+export const pingViewToken = authedOrThrowMutation({
+  args: {
+    clientId: v.string(),
+  },
+  handler: async (ctx, { clientId }) => {
+    const viewTokenId = ctx.viewToken
+    if (!viewTokenId) return // e.g. a Clerk operator with no view token
+    const now = Date.now()
+    const existing = await ctx.db
+      .query('viewTokenClients')
+      .withIndex('by_token_client', (q) =>
+        q.eq('viewTokenId', viewTokenId).eq('clientId', clientId)
+      )
+      .first()
+    if (existing) {
+      await ctx.db.patch(existing._id, { lastSeen: now })
+    } else {
+      await ctx.db.insert('viewTokenClients', {
+        viewTokenId,
+        clientId,
+        lastSeen: now,
+      })
+    }
+    // Give lastPing a purpose: last time any client was active on this token.
+    await ctx.db.patch(viewTokenId, { lastPing: now })
+  },
+})
+
+// Dashboard-facing: live count of currently-online clients per view token.
+// Reactive — re-runs when pings arrive and when the cleanup cron prunes rows.
+export const getActiveViewTokenClients = authedOrThrowQuery({
+  args: {},
+  handler: async (ctx) => {
+    const cutoff = Date.now() - ONLINE_WINDOW_MS
+    const fresh = await ctx.db
+      .query('viewTokenClients')
+      .withIndex('by_lastSeen', (q) => q.gt('lastSeen', cutoff))
+      .collect()
+    const counts = new Map<Id<'viewTokens'>, number>()
+    for (const client of fresh) {
+      counts.set(client.viewTokenId, (counts.get(client.viewTokenId) ?? 0) + 1)
+    }
+    return Array.from(counts, ([viewTokenId, count]) => ({
+      viewTokenId,
+      count,
+    }))
+  },
+})
+
+// Cron-driven sweep of clients that stopped pinging (see src/api/crons.ts).
+export const cleanupStaleViewTokenClients = internalMutation({
+  args: {},
+  handler: async (ctx) => {
+    const cutoff = Date.now() - ONLINE_WINDOW_MS
+    const stale = await ctx.db
+      .query('viewTokenClients')
+      .withIndex('by_lastSeen', (q) => q.lt('lastSeen', cutoff))
+      .take(500)
+    for (const client of stale) {
+      await ctx.db.delete(client._id)
+    }
   },
 })

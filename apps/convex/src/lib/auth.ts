@@ -46,7 +46,7 @@ export const authedOrThrowQuery = customQuery(query, {
       throw new Error('Unauthorized')
     }
 
-    return { ctx: { ...ctx, authStatus }, args: {} }
+    return { ctx: { ...ctx, authStatus, viewToken }, args: {} }
   },
 })
 
@@ -62,7 +62,7 @@ export const authedOrThrowMutation = customMutation(mutation, {
       throw new Error('Unauthorized')
     }
 
-    return { ctx: { ...ctx, authStatus }, args: {} }
+    return { ctx: { ...ctx, authStatus, viewToken }, args: {} }
   },
 })
 
@@ -74,7 +74,7 @@ export const queryWithAuthStatus = customQuery(query, {
   input: async (ctx, { apiKey, viewToken }) => {
     const authStatus = await getAuthStatus(ctx, apiKey, viewToken)
 
-    return { ctx: { ...ctx, authStatus }, args: {} }
+    return { ctx: { ...ctx, authStatus, viewToken }, args: {} }
   },
 })
 
@@ -86,6 +86,6 @@ export const mutationWithAuthStatus = customMutation(mutation, {
   input: async (ctx, { apiKey, viewToken }) => {
     const authStatus = await getAuthStatus(ctx, apiKey, viewToken)
 
-    return { ctx: { ...ctx, authStatus }, args: {} }
+    return { ctx: { ...ctx, authStatus, viewToken }, args: {} }
   },
 })

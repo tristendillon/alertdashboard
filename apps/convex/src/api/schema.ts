@@ -219,6 +219,14 @@ export type ViewToken = z.infer<typeof ViewTokensSchema> & {
 }
 export type PostViewToken = WithoutSystemFields<Doc<'viewTokens'>>
 
+// One row per (view token, client) heartbeat. Clients re-ping periodically;
+// rows past the online window are swept by the cleanup cron.
+export const ViewTokenClients = Table('viewTokenClients', {
+  viewTokenId: v.id('viewTokens'),
+  clientId: v.string(),
+  lastSeen: v.number(),
+})
+
 // Field Transformations - Reusable transformation definitions
 export const FieldTransformationSchema = z.object({
   name: z.string(),
@@ -303,6 +311,9 @@ export default defineSchema({
     .index('by_token', ['token'])
     .index('by_name', ['name'])
     .searchIndex('search_name', { searchField: 'name' }),
+  viewTokenClients: ViewTokenClients.table
+    .index('by_token_client', ['viewTokenId', 'clientId'])
+    .index('by_lastSeen', ['lastSeen']),
   fieldTransformations: FieldTransformations.table
     .index('by_name', ['name'])
     .index('by_field', ['field'])
