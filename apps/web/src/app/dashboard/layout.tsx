@@ -4,7 +4,7 @@ import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { cookies } from "next/headers";
 import React from "react";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
-import { ModalRouter } from "@/components/modals/modal-router";
+import { EntityDrawer } from "@/components/dashboard/entity-drawer";
 
 export default async function DashboardLayout({
   children,
@@ -17,7 +17,7 @@ export default async function DashboardLayout({
       <SidebarProvider defaultOpen={defaultOpen}>
         <DashboardSidebar />
         <SidebarInset>
-          <ModalRouter />
+          <EntityDrawer />
           <DashboardHeader />
           <div className="flex flex-1 flex-col gap-4 p-4">{children}</div>
         </SidebarInset>

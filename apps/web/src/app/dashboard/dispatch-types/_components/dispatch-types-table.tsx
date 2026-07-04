@@ -15,9 +15,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
+import { Plus, Upload } from "lucide-react";
 import { useInfiniteTable } from "@/hooks/use-infinite-table";
 import { useSearchList } from "@/hooks/use-search-list";
-import { Modals } from "@/lib/enums";
+import { useDrawerState } from "@/hooks/nuqs/use-drawer-state";
+import { DrawerEntity, DrawerMode } from "@/lib/enums";
+import { DISPATCH_GROUPS } from "@/lib/dispatch-groups";
 import { TableActionBar } from "@/components/table-action-bar";
 import { api } from "@sizeupdashboard/convex/src/api/_generated/api.js";
 import type {
@@ -28,23 +32,10 @@ import type { ColumnDef } from "@tanstack/react-table";
 import { parseAsStringEnum, useQueryState } from "nuqs";
 import { useMemo } from "react";
 
-// The convex package ships TypeScript sources, so its zod enum can only be
-// imported as a type here; `satisfies` keeps this list in sync with it.
-const DISPATCH_GROUPS = [
-  "aircraft",
-  "fire",
-  "hazmat",
-  "mva",
-  "marine",
-  "law",
-  "rescue",
-  "medical",
-  "other",
-] as const satisfies readonly DispatchGroupEnum[];
-
 const ALL_GROUPS = "all";
 
 export function DispatchTypesTable() {
+  const { open } = useDrawerState();
   const [group, setGroup] = useQueryState(
     "group",
     parseAsStringEnum<DispatchGroupEnum>([...DISPATCH_GROUPS]),
@@ -145,7 +136,7 @@ export function DispatchTypesTable() {
         cell: ({ row }) => {
           return (
             <ActionCell
-              modalType={Modals.DISPATCH_TYPE}
+              entity={DrawerEntity.DISPATCH_TYPE}
               itemId={row.original._id}
             />
           );
@@ -170,33 +161,52 @@ export function DispatchTypesTable() {
       onLoadMore={loadMore}
       actionBar={<TableActionBar table={table} entityName="dispatch types" />}
     >
-      <div className="flex items-center gap-2">
-        <Input
-          placeholder="Search by code or name..."
-          value={search}
-          onChange={(event) => setSearch(event.target.value)}
-          className="max-w-sm"
-        />
-        <Select
-          value={group ?? ALL_GROUPS}
-          onValueChange={(value) =>
-            setGroup(
-              value === ALL_GROUPS ? null : (value as DispatchGroupEnum),
-            )
-          }
-        >
-          <SelectTrigger className="w-40">
-            <SelectValue placeholder="All groups" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value={ALL_GROUPS}>All groups</SelectItem>
-            {DISPATCH_GROUPS.map((option) => (
-              <SelectItem key={option} value={option} className="capitalize">
-                {option}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="flex items-center gap-2">
+          <Input
+            placeholder="Search by code or name..."
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+            className="max-w-sm"
+          />
+          <Select
+            value={group ?? ALL_GROUPS}
+            onValueChange={(value) =>
+              setGroup(
+                value === ALL_GROUPS ? null : (value as DispatchGroupEnum),
+              )
+            }
+          >
+            <SelectTrigger className="w-40">
+              <SelectValue placeholder="All groups" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value={ALL_GROUPS}>All groups</SelectItem>
+              {DISPATCH_GROUPS.map((option) => (
+                <SelectItem key={option} value={option} className="capitalize">
+                  {option}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => open(DrawerEntity.DISPATCH_TYPE, DrawerMode.IMPORT)}
+          >
+            <Upload className="mr-1 size-4" />
+            Import
+          </Button>
+          <Button
+            size="sm"
+            onClick={() => open(DrawerEntity.DISPATCH_TYPE, DrawerMode.CREATE)}
+          >
+            <Plus className="mr-1 size-4" />
+            New dispatch type
+          </Button>
+        </div>
       </div>
     </InfiniteDataTable>
   );

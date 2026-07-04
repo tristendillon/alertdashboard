@@ -5,23 +5,44 @@ import { RegexCell } from "@/components/ui/regex-cell";
 import { ArrayCell } from "@/components/ui/array-cell";
 import { TimestampCell } from "@/components/ui/timestamp-cell";
 import { NumberCell } from "@/components/ui/number-cell";
-import { StatusCell } from "@/components/ui/status-cell";
 import { ActionCell } from "@/components/ui/action-cell";
 import { Cell, CellContent } from "@/components/ui/cell";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
+import { Plus } from "lucide-react";
 import { useInfiniteTable } from "@/hooks/use-infinite-table";
 import { useSearchList } from "@/hooks/use-search-list";
-import { Modals } from "@/lib/enums";
+import { useDrawerState } from "@/hooks/nuqs/use-drawer-state";
+import { DrawerEntity, DrawerMode } from "@/lib/enums";
 import { TableActionBar } from "@/components/table-action-bar";
 import { api } from "@sizeupdashboard/convex/src/api/_generated/api.js";
+import type { Id } from "@sizeupdashboard/convex/src/api/_generated/dataModel.js";
 import type { TransformationRule } from "@sizeupdashboard/convex/src/api/schema.js";
 import type { ColumnDef } from "@tanstack/react-table";
-import { useMemo } from "react";
+import { useMutation } from "convex/react";
+import { useCallback, useMemo } from "react";
+import { toast } from "sonner";
 
 export function TransformationRulesTable() {
+  const { open } = useDrawerState();
   const { results, status, loadMore, search, setSearch } = useSearchList(
     api.transformations.listTransformationRules,
+  );
+  const setEnabled = useMutation(api.transformations.setTransformationRuleEnabled);
+
+  const toggleEnabled = useCallback(
+    async (id: Id<"transformationRules">, enabled: boolean) => {
+      try {
+        await setEnabled({ id, enabled });
+      } catch (error) {
+        toast.error(
+          error instanceof Error ? error.message : "Failed to update rule",
+        );
+      }
+    },
+    [setEnabled],
   );
 
   const columns = useMemo<ColumnDef<TransformationRule>[]>(
@@ -70,15 +91,25 @@ export function TransformationRulesTable() {
       {
         accessorKey: "enabled",
         header: "Status",
-        size: 110,
+        size: 130,
         enableResizing: true,
         cell: ({ row }) => {
           const enabled = row.original.enabled !== false;
           return (
-            <StatusCell
-              status={enabled ? "Enabled" : "Disabled"}
-              variant="custom"
-            />
+            <Cell>
+              <div className="flex items-center gap-2">
+                <Switch
+                  checked={enabled}
+                  onCheckedChange={(next) =>
+                    void toggleEnabled(row.original._id, next)
+                  }
+                  aria-label={enabled ? "Disable rule" : "Enable rule"}
+                />
+                <span className="text-muted-foreground text-xs">
+                  {enabled ? "Enabled" : "Disabled"}
+                </span>
+              </div>
+            </Cell>
           );
         },
         enableSorting: false,
@@ -171,7 +202,7 @@ export function TransformationRulesTable() {
         cell: ({ row }) => {
           return (
             <ActionCell
-              modalType={Modals.TRANSFORMATION_RULE}
+              entity={DrawerEntity.TRANSFORMATION_RULE}
               itemId={row.original._id}
             />
           );
@@ -180,7 +211,7 @@ export function TransformationRulesTable() {
         enableHiding: false,
       },
     ],
-    [],
+    [toggleEnabled],
   );
 
   const { table } = useInfiniteTable({
@@ -194,17 +225,25 @@ export function TransformationRulesTable() {
       table={table}
       status={status}
       onLoadMore={loadMore}
+      rowClassName={(rule) => (rule.enabled === false ? "opacity-55" : undefined)}
       actionBar={
         <TableActionBar table={table} entityName="transformation rules" />
       }
     >
-      <div className="flex items-center gap-2">
+      <div className="flex items-center justify-between gap-2">
         <Input
           placeholder="Search by name..."
           value={search}
           onChange={(event) => setSearch(event.target.value)}
           className="max-w-sm"
         />
+        <Button
+          size="sm"
+          onClick={() => open(DrawerEntity.TRANSFORMATION_RULE, DrawerMode.CREATE)}
+        >
+          <Plus className="mr-1 size-4" />
+          New rule
+        </Button>
       </div>
     </InfiniteDataTable>
   );
