@@ -33,3 +33,6 @@ Thumbs.db
 .turbo
 
 .direnv/
+
+# graphify knowledge-graph output (generated)
+graphify-out/

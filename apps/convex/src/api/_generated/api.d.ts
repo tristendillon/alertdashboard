@@ -8,6 +8,7 @@
  * @module
  */
 
+import type * as crons from "../crons.js";
 import type * as customization from "../customization.js";
 import type * as dispatches from "../dispatches.js";
 import type * as hydrants from "../hydrants.js";
@@ -21,17 +22,9 @@ import type {
   FilterApi,
   FunctionReference,
 } from "convex/server";
-import type { ComponentApi as GeospatialComponentApi } from "@convex-dev/geospatial/_generated/component.js";
 
-/**
- * A utility for referencing Convex functions in your app's API.
- *
- * Usage:
- * ```js
- * const myFunctionReference = api.myModule.myFunction;
- * ```
- */
 declare const fullApi: ApiFromModules<{
+  crons: typeof crons;
   customization: typeof customization;
   dispatches: typeof dispatches;
   hydrants: typeof hydrants;
@@ -40,17 +33,33 @@ declare const fullApi: ApiFromModules<{
   viewToken: typeof viewToken;
   weather: typeof weather;
 }>;
-declare const fullApiWithMounts: typeof fullApi;
 
+/**
+ * A utility for referencing Convex functions in your app's public API.
+ *
+ * Usage:
+ * ```js
+ * const myFunctionReference = api.myModule.myFunction;
+ * ```
+ */
 export declare const api: FilterApi<
-  typeof fullApiWithMounts,
+  typeof fullApi,
   FunctionReference<any, "public">
 >;
+
+/**
+ * A utility for referencing Convex functions in your app's internal API.
+ *
+ * Usage:
+ * ```js
+ * const myFunctionReference = internal.myModule.myFunction;
+ * ```
+ */
 export declare const internal: FilterApi<
-  typeof fullApiWithMounts,
+  typeof fullApi,
   FunctionReference<any, "internal">
 >;
 
 export declare const components: {
-  geospatial: GeospatialComponentApi;
+  geospatial: import("@convex-dev/geospatial/_generated/component.js").ComponentApi<"geospatial">;
 };

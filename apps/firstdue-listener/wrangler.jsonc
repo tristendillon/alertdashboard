@@ -9,7 +9,7 @@
     "enabled": true
   },
   // The listener Docker image, built with the repo root as context so the
-  // multi-stage pnpm/turbo build can see the whole workspace.
+  // multi-stage pnpm build can see the whole workspace.
   "containers": [
     {
       "class_name": "FirstdueListenerContainer",
@@ -18,9 +18,9 @@
       // 2, not 1: a replacement instance must be able to provision while the old
       // version's instance drains, or deploys wedge on "no container instance".
       "max_instances": 2,
-      // "basic" (4 GB disk), not "lite"/"dev" (2 GB): the unpacked image exceeds
-      // 2 GB, which fails provisioning with ImagePullRequestedDiskSizeToSmall.
-      "instance_type": "basic"
+      // "lite" (2 GB disk) fits again: the image is a single self-contained
+      // tsup bundle on node:22-alpine (~160 MB unpacked).
+      "instance_type": "lite"
     }
   ],
   "durable_objects": {

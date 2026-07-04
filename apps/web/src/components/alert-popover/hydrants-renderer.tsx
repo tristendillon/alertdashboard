@@ -2,7 +2,8 @@
 
 import { api } from "@sizeupdashboard/convex/src/api/_generated/api.js";
 import React, { useEffect } from "react";
-import { Marker } from "@vis.gl/react-google-maps";
+import { AdvancedMarker } from "@vis.gl/react-google-maps";
+import Image from "next/image";
 import { useBounds } from "@/hooks/use-bounds";
 import type { LatLngBounds } from "@/lib/types";
 import { getFlowRateColor } from "@/utils/icons";
@@ -52,22 +53,20 @@ const Hydrants = (bounds: LatLngBounds) => {
 
   const hydrantsWithIcons = results.map((hydrant) => ({
     ...hydrant,
-    icon: `icons/hydrants/hydrant-${getFlowRateColor(Number(hydrant.calculatedFlowRate))}.png`,
+    icon: `/icons/hydrants/hydrant-${getFlowRateColor(Number(hydrant.calculatedFlowRate))}.png`,
   }));
   return (
     <React.Fragment>
       {hydrantsWithIcons.map((hydrant) => (
-        <Marker
+        <AdvancedMarker
           key={hydrant._id}
           position={{
             lat: hydrant.location.latitude,
             lng: hydrant.location.longitude,
           }}
-          icon={{
-            url: hydrant.icon,
-            scaledSize: new google.maps.Size(40, 40),
-          }}
-        />
+        >
+          <Image src={hydrant.icon} alt="hydrant" width={40} height={40} />
+        </AdvancedMarker>
       ))}
     </React.Fragment>
   );

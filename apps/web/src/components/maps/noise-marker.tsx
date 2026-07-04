@@ -17,6 +17,9 @@ import { SquareArrowOutUpRight } from "lucide-react";
 interface NoiseMarkerProps {
   dispatch: DispatchWithType;
   className?: string;
+  markerRef?: (
+    marker: google.maps.marker.AdvancedMarkerElement | null,
+  ) => void;
 }
 
 interface NoiseCardProps {
@@ -62,7 +65,11 @@ function NoiseCard({ dispatch, className, closePopover }: NoiseCardProps) {
   );
 }
 
-export default function NoiseMarker({ dispatch, className }: NoiseMarkerProps) {
+export default function NoiseMarker({
+  dispatch,
+  className,
+  markerRef,
+}: NoiseMarkerProps) {
   const { getDispatchesInRadius } = useDispatches();
   const [isOpen, _setIsOpen] = useState(false);
   const setIsOpen = useDebounce(_setIsOpen, 100);
@@ -90,6 +97,7 @@ export default function NoiseMarker({ dispatch, className }: NoiseMarkerProps) {
     <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
         <AdvancedMarker
+          ref={markerRef}
           zIndex={100}
           onClick={handleMarkerClick}
           className={cn("relative cursor-pointer", className)}
