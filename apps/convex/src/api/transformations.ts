@@ -1,48 +1,14 @@
 import { v } from 'convex/values'
 import { FieldTransformations, TransformationRules } from './schema'
 import { authedOrThrowMutation, authedOrThrowQuery } from '../lib/auth'
-import { TableAggregate } from '@convex-dev/aggregate'
-import { components } from './_generated/api'
-import type { DataModel } from './_generated/dataModel'
 import { paginationOptsValidator } from 'convex/server'
-import {
-  BetterPaginate,
-  BetterPaginateValidator,
-  BetterPaginationSortValidator,
-} from '../lib/better-paginate'
-
-export const FieldTransformationsAggregate = new TableAggregate<{
-  Namespace: string
-  Key: number
-  DataModel: DataModel
-  TableName: 'fieldTransformations'
-}>(components.aggregate, {
-  namespace: () => 'fieldTransformations',
-  sortKey: (doc) => doc._creationTime,
-})
-
-export const TransformationRulesAggregate = new TableAggregate<{
-  Key: number
-  Namespace: string
-  DataModel: DataModel
-  TableName: 'transformationRules'
-}>(components.aggregate, {
-  namespace: () => 'transformationRules',
-  sortKey: (doc) => doc._creationTime,
-})
 
 // Field Transformations CRUD
 
 export const createFieldTransformation = authedOrThrowMutation({
   args: FieldTransformations.withoutSystemFields,
   handler: async (ctx, args) => {
-    const id = await ctx.db.insert('fieldTransformations', args)
-    await FieldTransformationsAggregate.insert(ctx, {
-      ...args,
-      _id: id,
-      _creationTime: Date.now(),
-    })
-    return id
+    return await ctx.db.insert('fieldTransformations', args)
   },
 })
 
@@ -71,8 +37,6 @@ export const deleteFieldTransformation = authedOrThrowMutation({
       )
     }
 
-    const doc = await ctx.db.get(id)
-    await FieldTransformationsAggregate.delete(ctx, doc!)
     return await ctx.db.delete(id)
   },
 })
@@ -134,11 +98,6 @@ export const createTransformationRule = authedOrThrowMutation({
     }
 
     const ruleId = await ctx.db.insert('transformationRules', args)
-    await TransformationRulesAggregate.insert(ctx, {
-      ...args,
-      _id: ruleId,
-      _creationTime: Date.now(),
-    })
 
     // Create mapping entries for efficient lookups
     await Promise.all(
@@ -215,8 +174,6 @@ export const deleteTransformationRule = authedOrThrowMutation({
 
     await Promise.all(mappings.map((mapping) => ctx.db.delete(mapping._id)))
 
-    const doc = await ctx.db.get(id)
-    await TransformationRulesAggregate.delete(ctx, doc!)
     return await ctx.db.delete(id)
   },
 })
@@ -307,76 +264,52 @@ export const getRulesByTransformationId = authedOrThrowQuery({
   },
 })
 
-export const paginatedFieldTransformations = authedOrThrowQuery({
-  args: {
-    paginationOpts: BetterPaginateValidator,
-    sort: BetterPaginationSortValidator,
-  },
-  handler: async (ctx, args) => {
-    return await BetterPaginate(
-      ctx,
-      'fieldTransformations',
-      FieldTransformationsAggregate,
-      args.paginationOpts,
-      args.sort
-    )
-  },
-})
-
-export const paginatedTransformationRules = authedOrThrowQuery({
-  args: {
-    paginationOpts: BetterPaginateValidator,
-    sort: BetterPaginationSortValidator,
-  },
-  handler: async (ctx, args) => {
-    return await BetterPaginate(
-      ctx,
-      'transformationRules',
-      TransformationRulesAggregate,
-      args.paginationOpts,
-      args.sort
-    )
-  },
-})
-
-export const backFillFieldTransformationsAggregate = authedOrThrowMutation({
+export const listFieldTransformations = authedOrThrowQuery({
   args: {
     paginationOpts: paginationOptsValidator,
+    search: v.optional(v.string()),
   },
-  handler: async (ctx, args) => {
-    const fieldTransformations = await ctx.db
+  handler: async (ctx, { paginationOpts, search }) => {
+    const term = search?.trim()
+    if (term) {
+      return await ctx.db
+        .query('fieldTransformations')
+        .withSearchIndex('search_name', (q) => q.search('name', term))
+        .paginate(paginationOpts)
+    }
+    return await ctx.db
       .query('fieldTransformations')
-      .paginate(args.paginationOpts)
-    for (const fieldTransformation of fieldTransformations.page) {
-      try {
-        await FieldTransformationsAggregate.insert(ctx, fieldTransformation)
-      } catch {
-        continue
-      }
-    }
-    return !fieldTransformations.isDone
-      ? fieldTransformations.continueCursor
-      : null
+      .order('desc')
+      .paginate(paginationOpts)
   },
 })
 
-export const backFillTransformationRulesAggregate = authedOrThrowMutation({
+export const listTransformationRules = authedOrThrowQuery({
   args: {
     paginationOpts: paginationOptsValidator,
+    search: v.optional(v.string()),
   },
-  handler: async (ctx, args) => {
-    const transformationRules = await ctx.db
-      .query('transformationRules')
-      .paginate(args.paginationOpts)
-    for (const transformationRule of transformationRules.page) {
-      try {
-        await TransformationRulesAggregate.insert(ctx, transformationRule)
-      } catch {
-        continue
-      }
+  handler: async (ctx, { paginationOpts, search }) => {
+    const term = search?.trim()
+    if (term) {
+      return await ctx.db
+        .query('transformationRules')
+        .withSearchIndex('search_name', (q) => q.search('name', term))
+        .paginate(paginationOpts)
     }
-    return !transformationRules.isDone
-      ? transformationRules.continueCursor
-      : null
+    return await ctx.db
+      .query('transformationRules')
+      .order('desc')
+      .paginate(paginationOpts)
+  },
+})
+
+export const setTransformationRuleEnabled = authedOrThrowMutation({
+  args: {
+    id: v.id('transformationRules'),
+    enabled: v.boolean(),
+  },
+  handler: async (ctx, { id, enabled }) => {
+    return await ctx.db.patch(id, { enabled })
   },
 })

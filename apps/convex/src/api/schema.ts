@@ -53,6 +53,10 @@ export const DispatchTypes = z.object({
   group: DispatchGroupEnumSchema,
   name: z.string().optional(),
   default: z.boolean().optional(),
+  // Derived `${code} ${name}` text backing the search index (search indexes
+  // allow a single searchField). Maintained by the customization mutations;
+  // optional so pre-existing docs stay valid until backfilled.
+  search: z.string().optional(),
 })
 
 export const DispatchTypesSchema = DispatchTypes.extend({
@@ -245,6 +249,8 @@ export const TransformationRuleSchema = z.object({
   keywords: z.array(z.string()),
   dispatchTypes: z.array(zid('dispatchTypes')),
   transformations: z.array(zid('fieldTransformations')), // references to reusable transformations
+  // undefined is treated as enabled so pre-existing rules keep applying.
+  enabled: z.boolean().optional(),
 })
 
 export type TransformationRule = z.infer<typeof TransformationRuleSchema> & {
@@ -295,16 +301,25 @@ export default defineSchema({
 
   viewTokens: ViewTokens.table
     .index('by_token', ['token'])
-    .index('by_name', ['name']),
+    .index('by_name', ['name'])
+    .searchIndex('search_name', { searchField: 'name' }),
   fieldTransformations: FieldTransformations.table
     .index('by_name', ['name'])
     .index('by_field', ['field'])
-    .index('by_strategy', ['strategy']),
+    .index('by_strategy', ['strategy'])
+    .searchIndex('search_name', { searchField: 'name' }),
   transformationRules: TransformationRules.table
     .index('by_name', ['name'])
-    .index('by_transformations', ['transformations']),
+    .index('by_transformations', ['transformations'])
+    .searchIndex('search_name', { searchField: 'name' }),
   transformationRuleMappings: TransformationRuleMappings.table
     .index('by_transformation', ['transformationId'])
     .index('by_rule', ['ruleId']),
-  dispatchTypes: DispatchTypesTable.table.index('by_code', ['code']),
+  dispatchTypes: DispatchTypesTable.table
+    .index('by_code', ['code'])
+    .index('by_group', ['group', 'code'])
+    .searchIndex('search_text', {
+      searchField: 'search',
+      filterFields: ['group'],
+    }),
 })

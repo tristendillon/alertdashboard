@@ -1,30 +1,59 @@
 "use client";
 
-import { DataTable } from "@/components/data-table/data-table";
-import { DataTableSortList } from "@/components/data-table/data-table-sort-list";
-import { DataTableToolbar } from "@/components/data-table/data-table-toolbar";
+import { InfiniteDataTable } from "@/components/data-table/infinite-data-table";
 import { CopyCell } from "@/components/ui/copy-cell";
 import { StatusCell } from "@/components/ui/status-cell";
 import { TimestampCell } from "@/components/ui/timestamp-cell";
 import { ActionCell } from "@/components/ui/action-cell";
 import { Cell, CellContent } from "@/components/ui/cell";
 import { Checkbox } from "@/components/ui/checkbox";
-import { useDataTable } from "@/hooks/use-data-table";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useInfiniteTable } from "@/hooks/use-infinite-table";
+import { useSearchList } from "@/hooks/use-search-list";
 import { Modals } from "@/lib/enums";
 import { TableActionBar } from "@/components/table-action-bar";
-import type { api } from "@sizeupdashboard/convex/src/api/_generated/api.js";
-import type { DispatchType } from "@sizeupdashboard/convex/src/api/schema.js";
+import { api } from "@sizeupdashboard/convex/src/api/_generated/api.js";
+import type {
+  DispatchGroupEnum,
+  DispatchType,
+} from "@sizeupdashboard/convex/src/api/schema.js";
 import type { ColumnDef } from "@tanstack/react-table";
-import { usePreloadedQuery, type Preloaded } from "convex/react";
+import { parseAsStringEnum, useQueryState } from "nuqs";
 import { useMemo } from "react";
 
-interface DispatchTypesTableProps {
-  preloaded: Preloaded<typeof api.customization.paginatedDispatchTypes>;
-}
+// The convex package ships TypeScript sources, so its zod enum can only be
+// imported as a type here; `satisfies` keeps this list in sync with it.
+const DISPATCH_GROUPS = [
+  "aircraft",
+  "fire",
+  "hazmat",
+  "mva",
+  "marine",
+  "law",
+  "rescue",
+  "medical",
+  "other",
+] as const satisfies readonly DispatchGroupEnum[];
 
-export function DispatchTypesTable({ preloaded }: DispatchTypesTableProps) {
-  const data = usePreloadedQuery(preloaded);
-  
+const ALL_GROUPS = "all";
+
+export function DispatchTypesTable() {
+  const [group, setGroup] = useQueryState(
+    "group",
+    parseAsStringEnum<DispatchGroupEnum>([...DISPATCH_GROUPS]),
+  );
+  const { results, status, loadMore, search, setSearch } = useSearchList(
+    api.customization.listDispatchTypes,
+    { group: group ?? undefined },
+  );
+
   const columns = useMemo<ColumnDef<DispatchType>[]>(
     () => [
       {
@@ -69,8 +98,8 @@ export function DispatchTypesTable({ preloaded }: DispatchTypesTableProps) {
         enableResizing: true,
         cell: ({ row }) => {
           return (
-            <StatusCell 
-              status={row.original.group} 
+            <StatusCell
+              status={row.original.group}
               variant="dispatch"
               statusType={row.original.group}
             />
@@ -98,17 +127,14 @@ export function DispatchTypesTable({ preloaded }: DispatchTypesTableProps) {
         header: "Created At",
         size: 140,
         enableResizing: true,
+        enableSorting: false,
         cell: ({ row }) => {
           return (
-            <TimestampCell 
-              timestamp={row.original._creationTime} 
-              format="short-12h" 
+            <TimestampCell
+              timestamp={row.original._creationTime}
+              format="short-12h"
             />
           );
-        },
-        sortDescFirst: true,
-        meta: {
-          variant: "number",
         },
       },
       {
@@ -131,27 +157,47 @@ export function DispatchTypesTable({ preloaded }: DispatchTypesTableProps) {
     [],
   );
 
-  const { table } = useDataTable({
-    data: data.data,
+  const { table } = useInfiniteTable({
+    data: results,
     columns,
-    pageCount: data.pagination.totalPages,
-    enableAdvancedFilter: true,
-    initialState: {
-      sorting: [{ id: "_creationTime", desc: true }],
-    },
     getRowId: (originalRow) => originalRow._id,
-    shallow: false,
-    clearOnDefault: true,
   });
 
   return (
-    <DataTable 
+    <InfiniteDataTable
       table={table}
+      status={status}
+      onLoadMore={loadMore}
       actionBar={<TableActionBar table={table} entityName="dispatch types" />}
     >
-      <DataTableToolbar table={table}>
-        <DataTableSortList table={table} />
-      </DataTableToolbar>
-    </DataTable>
+      <div className="flex items-center gap-2">
+        <Input
+          placeholder="Search by code or name..."
+          value={search}
+          onChange={(event) => setSearch(event.target.value)}
+          className="max-w-sm"
+        />
+        <Select
+          value={group ?? ALL_GROUPS}
+          onValueChange={(value) =>
+            setGroup(
+              value === ALL_GROUPS ? null : (value as DispatchGroupEnum),
+            )
+          }
+        >
+          <SelectTrigger className="w-40">
+            <SelectValue placeholder="All groups" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value={ALL_GROUPS}>All groups</SelectItem>
+            {DISPATCH_GROUPS.map((option) => (
+              <SelectItem key={option} value={option} className="capitalize">
+                {option}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+    </InfiniteDataTable>
   );
 }

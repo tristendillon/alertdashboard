@@ -190,7 +190,11 @@ export class TransformationEngine {
     dispatches: DispatchWithType[],
     ctx: QueryCtx
   ): Promise<DispatchWithType[]> {
-    const allRules = await ctx.db.query('transformationRules').collect()
+    // undefined counts as enabled so rules created before the flag existed
+    // keep applying.
+    const allRules = (
+      await ctx.db.query('transformationRules').collect()
+    ).filter((rule) => rule.enabled !== false)
 
     return await Promise.all(
       dispatches.map(async (dispatch) => {

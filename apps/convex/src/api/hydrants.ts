@@ -1,28 +1,10 @@
 import { v } from 'convex/values'
 import { Hydrants } from './schema'
 import { query } from './_generated/server'
-import { authedOrThrowMutation, authedOrThrowQuery } from '../lib/auth'
+import { authedOrThrowMutation } from '../lib/auth'
 import { geospatial } from '.'
 import { paginationOptsValidator } from 'convex/server'
-import type { DataModel } from './_generated/dataModel'
-import { TableAggregate } from '@convex-dev/aggregate'
-import { components } from './_generated/api'
 import { partial } from 'convex-helpers/validators'
-import {
-  BetterPaginate,
-  BetterPaginateValidator,
-  BetterPaginationSortValidator,
-} from '../lib/better-paginate'
-
-export const HydrantsAggregate = new TableAggregate<{
-  Namespace: string
-  Key: number
-  DataModel: DataModel
-  TableName: 'hydrants'
-}>(components.aggregate, {
-  namespace: () => 'hydrants',
-  sortKey: (doc) => doc._creationTime,
-})
 
 export const paginatedCreateHydrants = authedOrThrowMutation({
   args: {
@@ -74,11 +56,6 @@ export const paginatedCreateHydrants = authedOrThrowMutation({
         } else {
           const id = await ctx.db.insert('hydrants', hydrant)
           await geospatial.insert(ctx, id, { latitude, longitude }, {})
-          await HydrantsAggregate.insert(ctx, {
-            ...hydrant,
-            _id: id,
-            _creationTime: Date.now(),
-          })
           return { ...hydrant, _id: id }
         }
       })
@@ -92,8 +69,6 @@ export const deleteHydrant = authedOrThrowMutation({
     id: v.id('hydrants'),
   },
   handler: async (ctx, { id }) => {
-    const doc = await ctx.db.get(id)
-    await HydrantsAggregate.delete(ctx, doc!)
     await geospatial.remove(ctx, id)
     return await ctx.db.delete(id)
   },
@@ -144,22 +119,6 @@ export const updateHydrant = authedOrThrowMutation({
   },
 })
 
-export const paginatedHydrants = authedOrThrowQuery({
-  args: {
-    paginationOpts: BetterPaginateValidator,
-    sort: BetterPaginationSortValidator,
-  },
-  handler: async (ctx, args) => {
-    return await BetterPaginate(
-      ctx,
-      'hydrants',
-      HydrantsAggregate,
-      args.paginationOpts,
-      args.sort
-    )
-  },
-})
-
 export const paginatedDeleteHydrants = authedOrThrowMutation({
   args: {
     cursor: v.union(v.string(), v.null()),
@@ -171,7 +130,6 @@ export const paginatedDeleteHydrants = authedOrThrowMutation({
     })
     for (const hydrant of hydrants.page) {
       await ctx.db.delete(hydrant._id)
-      await HydrantsAggregate.delete(ctx, hydrant)
       await geospatial.remove(ctx, hydrant._id)
     }
     return hydrants.continueCursor
@@ -225,24 +183,5 @@ export const getHydrantsByBounds = query({
       isDone: result.nextCursor === undefined,
       continueCursor: result.nextCursor ?? '',
     }
-  },
-})
-
-export const backFillHydrantsAggregate = authedOrThrowMutation({
-  args: {
-    paginationOpts: paginationOptsValidator,
-  },
-  handler: async (ctx, args) => {
-    const hydrants = await ctx.db
-      .query('hydrants')
-      .paginate(args.paginationOpts)
-    for (const hydrant of hydrants.page) {
-      try {
-        await HydrantsAggregate.insert(ctx, hydrant)
-      } catch {
-        continue
-      }
-    }
-    return !hydrants.isDone ? hydrants.continueCursor : null
   },
 })

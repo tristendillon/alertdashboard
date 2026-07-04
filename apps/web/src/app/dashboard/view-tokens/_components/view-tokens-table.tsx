@@ -1,30 +1,26 @@
 "use client";
 
-import { DataTable } from "@/components/data-table/data-table";
-import { DataTableSortList } from "@/components/data-table/data-table-sort-list";
-import { DataTableToolbar } from "@/components/data-table/data-table-toolbar";
+import { InfiniteDataTable } from "@/components/data-table/infinite-data-table";
 import { CopyCell } from "@/components/ui/copy-cell";
 import { TimestampCell } from "@/components/ui/timestamp-cell";
 import { ActionCell } from "@/components/ui/action-cell";
 import { Cell, CellContent } from "@/components/ui/cell";
 import { Checkbox } from "@/components/ui/checkbox";
-import { useDataTable } from "@/hooks/use-data-table";
+import { Input } from "@/components/ui/input";
+import { useInfiniteTable } from "@/hooks/use-infinite-table";
+import { useSearchList } from "@/hooks/use-search-list";
 import { Modals } from "@/lib/enums";
-import type { api } from "@sizeupdashboard/convex/src/api/_generated/api.js";
+import { api } from "@sizeupdashboard/convex/src/api/_generated/api.js";
 import type { ViewToken } from "@sizeupdashboard/convex/src/api/schema.js";
 import type { ColumnDef } from "@tanstack/react-table";
-import { usePreloadedQuery, type Preloaded } from "convex/react";
 import { useMemo } from "react";
-import { DataTableColumnHeader } from "@/components/data-table/data-table-column-header";
 import { TableActionBar } from "@/components/table-action-bar";
 
-interface ViewTokensTableProps {
-  preloaded: Preloaded<typeof api.viewToken.paginatedViewTokens>;
-}
+export function ViewTokensTable() {
+  const { results, status, loadMore, search, setSearch } = useSearchList(
+    api.viewToken.listViewTokens,
+  );
 
-export function ViewTokensTable({ preloaded }: ViewTokensTableProps) {
-  const data = usePreloadedQuery(preloaded);
-  console.log(data);
   const columns = useMemo<ColumnDef<ViewToken>[]>(
     () => [
       {
@@ -78,11 +74,10 @@ export function ViewTokensTable({ preloaded }: ViewTokensTableProps) {
       },
       {
         accessorKey: "_creationTime",
-        header: ({ column }) => (
-          <DataTableColumnHeader column={column} title="Created At" />
-        ),
+        header: "Created At",
         size: 140,
         enableResizing: true,
+        enableSorting: false,
         cell: ({ row }) => {
           return (
             <TimestampCell
@@ -91,7 +86,6 @@ export function ViewTokensTable({ preloaded }: ViewTokensTableProps) {
             />
           );
         },
-        sortDescFirst: true,
       },
       {
         id: "actions",
@@ -113,27 +107,27 @@ export function ViewTokensTable({ preloaded }: ViewTokensTableProps) {
     [],
   );
 
-  const { table } = useDataTable({
-    data: data.data,
+  const { table } = useInfiniteTable({
+    data: results,
     columns,
-    pageCount: data.pagination.totalPages,
-    enableAdvancedFilter: true,
-    initialState: {
-      sorting: [{ id: "_creationTime", desc: true }],
-    },
     getRowId: (originalRow) => originalRow._id,
-    shallow: false,
-    clearOnDefault: true,
   });
 
   return (
-    <DataTable
+    <InfiniteDataTable
       table={table}
+      status={status}
+      onLoadMore={loadMore}
       actionBar={<TableActionBar table={table} entityName="view tokens" />}
     >
-      <DataTableToolbar table={table}>
-        <DataTableSortList table={table} />
-      </DataTableToolbar>
-    </DataTable>
+      <div className="flex items-center gap-2">
+        <Input
+          placeholder="Search by name..."
+          value={search}
+          onChange={(event) => setSearch(event.target.value)}
+          className="max-w-sm"
+        />
+      </div>
+    </InfiniteDataTable>
   );
 }

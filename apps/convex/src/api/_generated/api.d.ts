@@ -22,7 +22,6 @@ import type {
   FunctionReference,
 } from "convex/server";
 import type { ComponentApi as GeospatialComponentApi } from "@convex-dev/geospatial/_generated/component.js";
-import type { ComponentApi as AggregateComponentApi } from "@convex-dev/aggregate/_generated/component.js";
 
 /**
  * A utility for referencing Convex functions in your app's API.
@@ -54,5 +53,4 @@ export declare const internal: FilterApi<
 
 export declare const components: {
   geospatial: GeospatialComponentApi;
-  aggregate: AggregateComponentApi;
 };

@@ -15,20 +15,15 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { UserButton } from "@clerk/nextjs";
-import { Database, FileText, Home, Key, Shield, Wrench } from "lucide-react";
+import { FileText, Key, Shield, Wrench } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { cn } from "@/utils/ui";
 
-const DASHBOARD_URL = "/dashboardv2";
+const DASHBOARD_URL = "/dashboard";
 
 // Navigation items
 const navigationItems = [
-  {
-    title: "Dashboard",
-    url: DASHBOARD_URL,
-    icon: Home,
-  },
   {
     title: "View Tokens",
     url: `${DASHBOARD_URL}/view-tokens`,
@@ -37,11 +32,6 @@ const navigationItems = [
 ];
 
 const dataManagementItems = [
-  {
-    title: "Hydrants",
-    url: `${DASHBOARD_URL}/hydrants`,
-    icon: Database,
-  },
   {
     title: "Dispatch Types",
     url: `${DASHBOARD_URL}/dispatch-types`,
