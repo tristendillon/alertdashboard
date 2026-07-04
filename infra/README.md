@@ -5,15 +5,24 @@ This module binds the two deployed Workers to their production custom domains on
 
 | Worker              | Script name (wrangler)          | Custom domain                  |
 | ------------------- | ------------------------------- | ------------------------------ |
-| Web (`apps/web`)    | `sizeup-web`                    | `mfd.alertdashboard.com`       |
+| Web (`apps/web`)    | `alertdashboard`                    | `mfd.alertdashboard.com`       |
 | Listener            | `firstdue-listener`             | `listener.alertdashboard.com`  |
 
 **What tofu manages:** the `cloudflare_workers_custom_domain` bindings (they create
-the DNS records + edge certs automatically) and the five Clerk production-instance
+the DNS records + edge certs automatically); the five Clerk production-instance
 CNAME records in `clerk.tf` (accounts portal, frontend API, two DKIM keys, mail —
-all `proxied = false`; Clerk verification and DKIM break if they're ever proxied).
-The instance-specific part of the DKIM/mail targets comes from the
+all `proxied = false`; Clerk verification and DKIM break if they're ever proxied);
+and the free-tier bot/scanner hardening in `security.tf` (two `cloudflare_ruleset`
+resources — a custom firewall that blocks common scanner/exploit paths and
+managed-challenges automated hits to `/dashboard`, plus a per-IP rate-limit rule
+scoped to the web host, excluding `/_next/` and `/rssfeed`). The
+instance-specific part of the DKIM/mail targets comes from the
 `clerk_instance_slug` variable.
+
+**Not in tofu (manual, one-time):** enable **Bot Fight Mode** (CF dashboard →
+Security → Bots) — its Terraform resource is unreliable on the Free plan and a
+failed apply would break the deploy cascade. After a worker rename, delete the
+orphaned old worker script once the new one is confirmed serving.
 
 **What tofu does NOT manage** (deliberately): Worker scripts, container config, Worker
 secrets/vars, and the R2 state bucket itself. Those are handled by `wrangler` and GitHub

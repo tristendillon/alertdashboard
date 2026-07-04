@@ -1,6 +1,6 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "sizeup-web",
+  "name": "alertdashboard",
   "main": ".open-next/worker.js",
   "compatibility_date": "2026-06-01",
   "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
@@ -11,7 +11,7 @@
   "services": [
     {
       "binding": "WORKER_SELF_REFERENCE",
-      "service": "sizeup-web"
+      "service": "alertdashboard"
     }
   ],
   // Custom domain (mfd.alertdashboard.com) is the only public host.

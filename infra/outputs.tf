@@ -27,3 +27,13 @@ output "clerk_frontend_api_url" {
   description = "Clerk frontend-API URL; CLERK_JWT_ISSUER_DOMAIN in the Convex environment must equal this."
   value       = "https://${cloudflare_dns_record.clerk["frontend"].name}"
 }
+
+output "waf_custom_ruleset_id" {
+  description = "Cloudflare id of the custom firewall ruleset."
+  value       = cloudflare_ruleset.waf_custom.id
+}
+
+output "rate_limit_ruleset_id" {
+  description = "Cloudflare id of the rate-limiting ruleset."
+  value       = cloudflare_ruleset.rate_limit.id
+}

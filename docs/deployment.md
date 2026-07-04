@@ -65,10 +65,10 @@ Four independently deployed pieces:
               └────────────────────────────────────────┘
 ```
 
-**Web Worker** (`apps/web/wrangler.jsonc`): script `sizeup-web`, entry
+**Web Worker** (`apps/web/wrangler.jsonc`): script `alertdashboard`, entry
 `.open-next/worker.js`, `compatibility_date 2026-06-01`, flags `nodejs_compat` +
 `global_fetch_strictly_public`, `ASSETS` binding for static output, a
-`WORKER_SELF_REFERENCE` service binding pointing back at `sizeup-web` (OpenNext
+`WORKER_SELF_REFERENCE` service binding pointing back at `alertdashboard` (OpenNext
 needs it), `workers_dev: false` (only the custom domain serves), and
 `placement.mode: smart`. It reads live data from Convex over
 `convex/react-clerk` (Clerk-authenticated live queries). `middleware.ts` runs on

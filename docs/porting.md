@@ -128,7 +128,7 @@ read its note carefully. Make these on a branch and merge to `main` (CI deploys 
 
 | # | File:line | Change | Applies when |
 | --- | --- | --- | --- |
-| 1 | [`apps/web/wrangler.jsonc:3`](../apps/web/wrangler.jsonc) **and** `:14` | Worker `name`, and the `WORKER_SELF_REFERENCE` service — **both must match** (currently both `sizeup-web`) | renaming workers |
+| 1 | [`apps/web/wrangler.jsonc:3`](../apps/web/wrangler.jsonc) **and** `:14` | Worker `name`, and the `WORKER_SELF_REFERENCE` service — **both must match** (currently both `alertdashboard`) | renaming workers |
 | 2 | [`apps/firstdue-listener/wrangler.jsonc:3`](../apps/firstdue-listener/wrangler.jsonc) | Worker `name` (currently `firstdue-listener`) | renaming workers |
 | 3 | [`apps/firstdue-listener/wrangler.jsonc:52`](../apps/firstdue-listener/wrangler.jsonc) | `CONVEX_URL` → new Convex prod URL | fresh Convex |
 | 4 | [`apps/firstdue-listener/wrangler.jsonc:49-50`](../apps/firstdue-listener/wrangler.jsonc) | `WEATHER_LAT` / `WEATHER_LNG` (currently Manhattan, KS) | new location |
@@ -296,7 +296,7 @@ to stop billing and avoid split-brain:
 
 1. **Custom domains** — `tofu destroy` against the old state (or delete the two
    custom domains in the old dashboard). This frees the old hostnames' DNS records.
-2. **Workers** — delete `sizeup-web` and `firstdue-listener` (and the listener's
+2. **Workers** — delete `alertdashboard` and `firstdue-listener` (and the listener's
    Durable Object / container) on the old account.
 3. **R2 state bucket** — delete `sizeup-tofu-state` (and its R2 API token) once you
    no longer need the old tofu state.
