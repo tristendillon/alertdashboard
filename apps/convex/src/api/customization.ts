@@ -1,23 +1,27 @@
 import { DispatchTypesTable, DispatchTypesValidator } from './schema'
 import { v } from 'convex/values'
-import { authedOrThrowMutation, authedOrThrowQuery } from '../lib/auth'
-import type { Id } from './_generated/dataModel'
+import { authedOrThrowMutation, queryWithAuthStatus } from '../lib/auth'
+import type { Doc, Id } from './_generated/dataModel'
 import { paginationOptsValidator } from 'convex/server'
 import { partial } from 'convex-helpers/validators'
 import { omit } from 'convex-helpers'
+import { emptyPage } from '../lib/pagination'
 
 // Derived text backing the search_text index, so one search matches both
 // code and name.
 const dispatchTypeSearchText = (t: { code: string; name?: string }) =>
   `${t.code} ${t.name ?? ''}`.trim()
 
-export const listDispatchTypes = authedOrThrowQuery({
+export const listDispatchTypes = queryWithAuthStatus({
   args: {
     paginationOpts: paginationOptsValidator,
     search: v.optional(v.string()),
     group: v.optional(DispatchTypesValidator.fields.group),
   },
   handler: async (ctx, { paginationOpts, search, group }) => {
+    if (ctx.authStatus === 'unauthorized') {
+      return emptyPage<Doc<'dispatchTypes'>>()
+    }
     const term = search?.trim()
     if (term) {
       return await ctx.db
