@@ -53,6 +53,7 @@
           bashInteractive
           bash-completion
           nix-bash-completions
+          uv
 
           gh
           wrangler

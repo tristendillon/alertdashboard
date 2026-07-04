@@ -125,6 +125,8 @@ const StreetView: React.FC<StreetViewProps> = ({ dispatch }) => {
 
         panoramaRef.current = panorama;
 
+        // AdvancedMarkerElement cannot attach to a StreetViewPanorama (its
+        // `map` only accepts google.maps.Map), so the legacy Marker stays.
         new google.maps.Marker({
           position: target,
           map: panorama,
