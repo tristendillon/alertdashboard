@@ -1,8 +1,13 @@
 import { v } from 'convex/values'
-import { authedOrThrowMutation, authedOrThrowQuery } from '../lib/auth'
+import {
+  authedOrThrowMutation,
+  authedOrThrowQuery,
+  queryWithAuthStatus,
+} from '../lib/auth'
 import { internalMutation } from './_generated/server'
-import type { Id } from './_generated/dataModel'
+import type { Doc, Id } from './_generated/dataModel'
 import { paginationOptsValidator } from 'convex/server'
+import { emptyPage } from '../lib/pagination'
 
 // A client is "online" if it pinged within this window; the cleanup cron
 // deletes rows older than it. Keep in sync with the client heartbeat (30s).
@@ -43,12 +48,13 @@ export const getViewToken = authedOrThrowQuery({
   },
 })
 
-export const listViewTokens = authedOrThrowQuery({
+export const listViewTokens = queryWithAuthStatus({
   args: {
     paginationOpts: paginationOptsValidator,
     search: v.optional(v.string()),
   },
   handler: async (ctx, { paginationOpts, search }) => {
+    if (ctx.authStatus === 'unauthorized') return emptyPage<Doc<'viewTokens'>>()
     const term = search?.trim()
     if (term) {
       return await ctx.db
@@ -96,9 +102,12 @@ export const pingViewToken = authedOrThrowMutation({
 
 // Dashboard-facing: live count of currently-online clients per view token.
 // Reactive — re-runs when pings arrive and when the cleanup cron prunes rows.
-export const getActiveViewTokenClients = authedOrThrowQuery({
+export const getActiveViewTokenClients = queryWithAuthStatus({
   args: {},
   handler: async (ctx) => {
+    if (ctx.authStatus === 'unauthorized') {
+      return [] as { viewTokenId: Id<'viewTokens'>; count: number }[]
+    }
     const cutoff = Date.now() - ONLINE_WINDOW_MS
     const fresh = await ctx.db
       .query('viewTokenClients')

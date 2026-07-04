@@ -1,7 +1,13 @@
 import { v } from 'convex/values'
 import { FieldTransformations, TransformationRules } from './schema'
-import { authedOrThrowMutation, authedOrThrowQuery } from '../lib/auth'
+import {
+  authedOrThrowMutation,
+  authedOrThrowQuery,
+  queryWithAuthStatus,
+} from '../lib/auth'
+import type { Doc } from './_generated/dataModel'
 import { paginationOptsValidator } from 'convex/server'
+import { emptyPage } from '../lib/pagination'
 
 // Field Transformations CRUD
 
@@ -41,9 +47,10 @@ export const deleteFieldTransformation = authedOrThrowMutation({
   },
 })
 
-export const getFieldTransformations = authedOrThrowQuery({
+export const getFieldTransformations = queryWithAuthStatus({
   args: {},
   handler: async (ctx) => {
+    if (ctx.authStatus === 'unauthorized') return []
     return await ctx.db.query('fieldTransformations').collect()
   },
 })
@@ -178,9 +185,10 @@ export const deleteTransformationRule = authedOrThrowMutation({
   },
 })
 
-export const getTransformationRules = authedOrThrowQuery({
+export const getTransformationRules = queryWithAuthStatus({
   args: {},
   handler: async (ctx) => {
+    if (ctx.authStatus === 'unauthorized') return []
     return await ctx.db.query('transformationRules').collect()
   },
 })
@@ -264,12 +272,15 @@ export const getRulesByTransformationId = authedOrThrowQuery({
   },
 })
 
-export const listFieldTransformations = authedOrThrowQuery({
+export const listFieldTransformations = queryWithAuthStatus({
   args: {
     paginationOpts: paginationOptsValidator,
     search: v.optional(v.string()),
   },
   handler: async (ctx, { paginationOpts, search }) => {
+    if (ctx.authStatus === 'unauthorized') {
+      return emptyPage<Doc<'fieldTransformations'>>()
+    }
     const term = search?.trim()
     if (term) {
       return await ctx.db
@@ -284,12 +295,15 @@ export const listFieldTransformations = authedOrThrowQuery({
   },
 })
 
-export const listTransformationRules = authedOrThrowQuery({
+export const listTransformationRules = queryWithAuthStatus({
   args: {
     paginationOpts: paginationOptsValidator,
     search: v.optional(v.string()),
   },
   handler: async (ctx, { paginationOpts, search }) => {
+    if (ctx.authStatus === 'unauthorized') {
+      return emptyPage<Doc<'transformationRules'>>()
+    }
     const term = search?.trim()
     if (term) {
       return await ctx.db
