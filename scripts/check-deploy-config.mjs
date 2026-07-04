@@ -37,6 +37,16 @@ if (web.name !== config.webWorkerName) {
     `apps/web/wrangler.jsonc name "${web.name}" != webWorkerName "${config.webWorkerName}"`
   )
 }
+// The self-reference service binding must track the worker name too — wrangler
+// does not enforce this, so it can silently drift on a rename.
+const webSelfRef = (web.services ?? []).find(
+  (s) => s.binding === 'WORKER_SELF_REFERENCE'
+)
+if (webSelfRef && webSelfRef.service !== config.webWorkerName) {
+  fail(
+    `apps/web/wrangler.jsonc WORKER_SELF_REFERENCE service "${webSelfRef.service}" != webWorkerName "${config.webWorkerName}"`
+  )
+}
 
 const listener = readJsonc('apps/firstdue-listener/wrangler.jsonc')
 if (listener.name !== config.listenerWorkerName) {

@@ -129,7 +129,7 @@ ms; the UI buckets/formats in the **viewer's** browser timezone
 **Escape hatch:** `SKIP_ENV_VALIDATION=1` skips t3-env validation.
 `emptyStringAsUndefined: true` means empty string = missing for required vars.
 
-**Non-secret Worker config** lives in `apps/web/wrangler.jsonc` (name `sizeup-web`,
+**Non-secret Worker config** lives in `apps/web/wrangler.jsonc` (name `alertdashboard`,
 `nodejs_compat`, `workers_dev: false`, no `vars` block).
 
 ### 3b. `apps/firstdue-listener` (Cloudflare Containers)
@@ -238,7 +238,7 @@ covers changing all of these for a new account/domain.
 | DNS zone | `alertdashboard.com` | `deploy.config.json` |
 | Web hostname | `mfd.alertdashboard.com` | `deploy.config.json` |
 | Listener hostname | `listener.alertdashboard.com` | `deploy.config.json` |
-| Web Worker name | `sizeup-web` | `deploy.config.json` + `apps/web/wrangler.jsonc` (checked for drift in CI) |
+| Web Worker name | `alertdashboard` | `deploy.config.json` + `apps/web/wrangler.jsonc` (checked for drift in CI) |
 | Listener Worker name | `firstdue-listener` | `deploy.config.json` + `apps/firstdue-listener/wrangler.jsonc` |
 | Clerk instance slug | `083ah0f8xra3` | `deploy.config.json` (DKIM/mail CNAME targets) |
 | Prod Convex deployment | `unique-grasshopper-23` | encoded in `CONVEX_DEPLOY_KEY`; URL derived at deploy time |

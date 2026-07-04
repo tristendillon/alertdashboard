@@ -39,5 +39,5 @@ it in; for `preview`/`wrangler dev` Worker runtime secrets, copy
   auth routing lives in `middleware.ts`.
 - `images.unoptimized: true` (`next.config.ts`) — no Next image optimizer on
   Workers.
-- Cloudflare config is in `wrangler.jsonc` (script `sizeup-web`, `ASSETS`
+- Cloudflare config is in `wrangler.jsonc` (script `alertdashboard`, `ASSETS`
   binding, `WORKER_SELF_REFERENCE`, smart placement, custom domain only).

@@ -1,6 +1,6 @@
 {
   "zoneName": "alertdashboard.com",
-  "webWorkerName": "sizeup-web",
+  "webWorkerName": "alertdashboard",
   "listenerWorkerName": "firstdue-listener",
   "webHostname": "mfd.alertdashboard.com",
   "listenerHostname": "listener.alertdashboard.com",
