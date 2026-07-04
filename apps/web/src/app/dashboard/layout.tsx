@@ -5,6 +5,7 @@ import { cookies } from "next/headers";
 import React from "react";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 import { EntityDrawer } from "@/components/dashboard/entity-drawer";
+import { AuthedGate } from "@/components/dashboard/authed-gate";
 
 export default async function DashboardLayout({
   children,
@@ -19,7 +20,9 @@ export default async function DashboardLayout({
         <SidebarInset>
           <EntityDrawer />
           <DashboardHeader />
-          <div className="flex flex-1 flex-col gap-4 p-4">{children}</div>
+          <div className="flex flex-1 flex-col gap-4 p-4">
+            <AuthedGate>{children}</AuthedGate>
+          </div>
         </SidebarInset>
       </SidebarProvider>
     </NuqsAdapter>
