@@ -49,10 +49,12 @@ resource "cloudflare_ruleset" "rate_limit" {
 
   rules = [
     {
-      description = "Challenge high-volume per-IP traffic to the web host"
-      action      = "managed_challenge"
-      enabled     = true
-      expression  = "(http.host eq \"${local.web_hostname}\" and not starts_with(http.request.uri.path, \"/_next/\") and not starts_with(http.request.uri.path, \"/rssfeed\"))"
+      description = "Block high-volume per-IP traffic to the web host"
+      # Free plan only permits the `block` action in the ratelimiting phase
+      # (managed_challenge is not entitled here).
+      action     = "block"
+      enabled    = true
+      expression = "(http.host eq \"${local.web_hostname}\" and not starts_with(http.request.uri.path, \"/_next/\") and not starts_with(http.request.uri.path, \"/rssfeed\"))"
       ratelimit = {
         # Free plan only permits a 10s window and a matching mitigation timeout.
         characteristics     = ["ip.src", "cf.colo.id"]
