@@ -15,7 +15,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { UserButton } from "@clerk/nextjs";
-import { FileText, Key, Shield, Wrench } from "lucide-react";
+import { FileText, Key, Shield, Users, Wrench } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { cn } from "@/utils/ui";
@@ -28,6 +28,11 @@ const navigationItems = [
     title: "View Tokens",
     url: `${DASHBOARD_URL}/view-tokens`,
     icon: Key,
+  },
+  {
+    title: "Admins",
+    url: `${DASHBOARD_URL}/admins`,
+    icon: Users,
   },
 ];
 
