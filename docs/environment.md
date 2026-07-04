@@ -124,8 +124,7 @@ Validation schema: `apps/web/src/env.ts` (t3-env + zod).
 
 Timezone note: there is no timezone config anymore. Timestamps are stored as UTC epoch
 ms; the UI buckets/formats in the **viewer's** browser timezone
-(`utils/timestamp.ts`), and `getDispatchStats` takes the browser timezone as an arg
-(`hooks/use-dispatch-analytics.ts`).
+(`utils/timestamp.ts`).
 
 **Escape hatch:** `SKIP_ENV_VALIDATION=1` skips t3-env validation.
 `emptyStringAsUndefined: true` means empty string = missing for required vars.

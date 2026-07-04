@@ -16,7 +16,6 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@convex-dev/aggregate": "^0.2.2",
     "@convex-dev/geospatial": "^0.2.1",
     "bcryptjs": "^3.0.3",
     "convex": "catalog:",

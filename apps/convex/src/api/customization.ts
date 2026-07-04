@@ -1,70 +1,70 @@
-import { DispatchTypesTable } from './schema'
+import { DispatchTypesTable, DispatchTypesValidator } from './schema'
 import { v } from 'convex/values'
 import { authedOrThrowMutation, authedOrThrowQuery } from '../lib/auth'
-import { TableAggregate } from '@convex-dev/aggregate'
-import { components } from './_generated/api'
-import type { DataModel, Id } from './_generated/dataModel'
+import type { Id } from './_generated/dataModel'
 import { paginationOptsValidator } from 'convex/server'
 import { partial } from 'convex-helpers/validators'
-import {
-  BetterPaginate,
-  BetterPaginateValidator,
-  BetterPaginationSortValidator,
-} from '../lib/better-paginate'
+import { omit } from 'convex-helpers'
 
-export const DispatchTypesAggregate = new TableAggregate<{
-  Namespace: string
-  Key: number
-  DataModel: DataModel
-  TableName: 'dispatchTypes'
-}>(components.aggregate, {
-  namespace: () => 'dispatchTypes',
-  sortKey: (doc) => doc._creationTime,
-})
+// Derived text backing the search_text index, so one search matches both
+// code and name.
+const dispatchTypeSearchText = (t: { code: string; name?: string }) =>
+  `${t.code} ${t.name ?? ''}`.trim()
 
-export const paginatedDispatchTypes = authedOrThrowQuery({
+export const listDispatchTypes = authedOrThrowQuery({
   args: {
-    paginationOpts: BetterPaginateValidator,
-    sort: BetterPaginationSortValidator,
+    paginationOpts: paginationOptsValidator,
+    search: v.optional(v.string()),
+    group: v.optional(DispatchTypesValidator.fields.group),
   },
-  handler: async (ctx, args) => {
-    const result = await BetterPaginate(
-      ctx,
-      'dispatchTypes',
-      DispatchTypesAggregate,
-      args.paginationOpts,
-      args.sort
-    )
-    return result
+  handler: async (ctx, { paginationOpts, search, group }) => {
+    const term = search?.trim()
+    if (term) {
+      return await ctx.db
+        .query('dispatchTypes')
+        .withSearchIndex('search_text', (q) =>
+          group ? q.search('search', term).eq('group', group) : q.search('search', term)
+        )
+        .paginate(paginationOpts)
+    }
+    if (group) {
+      return await ctx.db
+        .query('dispatchTypes')
+        .withIndex('by_group', (q) => q.eq('group', group))
+        .paginate(paginationOpts)
+    }
+    return await ctx.db
+      .query('dispatchTypes')
+      .withIndex('by_code')
+      .paginate(paginationOpts)
   },
 })
 
 export const createDispatchType = authedOrThrowMutation({
-  args: {
-    dispatchTypes: v.array(v.object(DispatchTypesTable.withoutSystemFields)),
-  },
-  handler: async (ctx, { dispatchTypes }) => {
-    const createdDispatchTypes: ((typeof dispatchTypes)[number] & {
-      _id: Id<'dispatchTypes'>
-    })[] = []
-    for (const dispatchType of dispatchTypes) {
-      const created = await ctx.db.insert('dispatchTypes', dispatchType)
-      createdDispatchTypes.push({
-        ...dispatchType,
-        _id: created,
-      })
-    }
-    return createdDispatchTypes
+  args: omit(DispatchTypesTable.withoutSystemFields, ['search']),
+  handler: async (ctx, args) => {
+    return await ctx.db.insert('dispatchTypes', {
+      ...args,
+      search: dispatchTypeSearchText(args),
+    })
   },
 })
 
 export const updateDispatchType = authedOrThrowMutation({
   args: {
     id: v.id('dispatchTypes'),
-    diff: v.object(partial(DispatchTypesTable.withoutSystemFields)),
+    diff: v.object(partial(omit(DispatchTypesTable.withoutSystemFields, ['search']))),
   },
   handler: async (ctx, { id, diff }) => {
-    return await ctx.db.patch(id, diff)
+    const current = await ctx.db.get(id)
+    if (!current) {
+      throw new Error('Dispatch type not found')
+    }
+    const next = { ...current, ...diff }
+    return await ctx.db.patch(id, {
+      ...diff,
+      search: dispatchTypeSearchText(next),
+    })
   },
 })
 
@@ -73,27 +73,105 @@ export const deleteDispatchType = authedOrThrowMutation({
     id: v.id('dispatchTypes'),
   },
   handler: async (ctx, { id }) => {
-    const doc = await ctx.db.get(id)
-    await DispatchTypesAggregate.delete(ctx, doc!)
     return await ctx.db.delete(id)
   },
 })
 
-export const backFillDispatchTypesAggregate = authedOrThrowMutation({
+/**
+ * Delete-all-then-replace import (NOT an upsert): every existing dispatch type
+ * is removed and the payload becomes the complete new set, atomically.
+ *
+ * Transformation rules that reference dispatch types by id are re-linked by
+ * code so they keep matching after the swap; codes missing from the import are
+ * dropped from the rules and reported in the return value.
+ *
+ * Old dispatches keep dangling dispatchType ids — readers already tolerate
+ * that (they fall back to group 'other'). The firstdue-listener caches
+ * dispatch-type ids in memory: after running this in production, restart the
+ * listener or trigger a full sync.
+ */
+export const importDispatchTypes = authedOrThrowMutation({
   args: {
-    paginationOpts: paginationOptsValidator,
+    dispatchTypes: v.array(
+      v.object(omit(DispatchTypesTable.withoutSystemFields, ['search']))
+    ),
   },
-  handler: async (ctx, args) => {
-    const dispatchTypes = await ctx.db
-      .query('dispatchTypes')
-      .paginate(args.paginationOpts)
-    for (const dispatchType of dispatchTypes.page) {
-      try {
-        await DispatchTypesAggregate.insert(ctx, dispatchType)
-      } catch (error) {
-        continue
-      }
+  handler: async (ctx, { dispatchTypes }) => {
+    if (dispatchTypes.length === 0) {
+      throw new Error('Import must contain at least one dispatch type')
     }
-    return !dispatchTypes.isDone ? dispatchTypes.continueCursor : null
+    if (dispatchTypes.length > 2000) {
+      throw new Error('Import too large; max 2000 dispatch types')
+    }
+    // The listener resolves unknown incoming types to the default type.
+    if (!dispatchTypes.some((t) => t.default)) {
+      throw new Error('Import must mark at least one dispatch type as default')
+    }
+    const codes = dispatchTypes.map((t) => t.code.toLowerCase())
+    if (new Set(codes).size !== codes.length) {
+      throw new Error('Import contains duplicate codes')
+    }
+
+    const oldTypes = await ctx.db.query('dispatchTypes').collect()
+    const oldIdToCode = new Map(
+      oldTypes.map((t) => [t._id, t.code.toLowerCase()])
+    )
+
+    // Snapshot each rule's referenced codes before the swap.
+    const rules = await ctx.db.query('transformationRules').collect()
+    const ruleCodes = rules.map((rule) => ({
+      rule,
+      codes: rule.dispatchTypes
+        .map((id) => oldIdToCode.get(id))
+        .filter((code): code is string => code !== undefined),
+    }))
+
+    for (const t of oldTypes) {
+      await ctx.db.delete(t._id)
+    }
+    const codeToNewId = new Map<string, Id<'dispatchTypes'>>()
+    for (const t of dispatchTypes) {
+      const id = await ctx.db.insert('dispatchTypes', {
+        ...t,
+        search: dispatchTypeSearchText(t),
+      })
+      codeToNewId.set(t.code.toLowerCase(), id)
+    }
+
+    const droppedByRule: Record<string, string[]> = {}
+    for (const { rule, codes: referencedCodes } of ruleCodes) {
+      const newIds = referencedCodes
+        .map((code) => codeToNewId.get(code))
+        .filter((id): id is Id<'dispatchTypes'> => id !== undefined)
+      const dropped = referencedCodes.filter((code) => !codeToNewId.has(code))
+      if (dropped.length > 0) {
+        droppedByRule[rule.name] = dropped
+      }
+      await ctx.db.patch(rule._id, { dispatchTypes: newIds })
+    }
+
+    return {
+      deleted: oldTypes.length,
+      created: dispatchTypes.length,
+      droppedByRule,
+    }
+  },
+})
+
+// One-time backfill of the derived search field for docs created before the
+// search_text index existed. Run post-deploy, looping until it returns null:
+//   npx convex run customization:backfillDispatchTypeSearch '{"cursor": null}'
+export const backfillDispatchTypeSearch = authedOrThrowMutation({
+  args: {
+    cursor: v.union(v.string(), v.null()),
+  },
+  handler: async (ctx, { cursor }) => {
+    const batch = await ctx.db
+      .query('dispatchTypes')
+      .paginate({ numItems: 100, cursor })
+    for (const t of batch.page) {
+      await ctx.db.patch(t._id, { search: dispatchTypeSearchText(t) })
+    }
+    return batch.isDone ? null : batch.continueCursor
   },
 })

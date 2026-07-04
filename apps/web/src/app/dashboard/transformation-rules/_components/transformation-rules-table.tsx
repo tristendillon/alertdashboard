@@ -1,31 +1,29 @@
 "use client";
 
-import { DataTable } from "@/components/data-table/data-table";
-import { DataTableSortList } from "@/components/data-table/data-table-sort-list";
-import { DataTableToolbar } from "@/components/data-table/data-table-toolbar";
+import { InfiniteDataTable } from "@/components/data-table/infinite-data-table";
 import { RegexCell } from "@/components/ui/regex-cell";
 import { ArrayCell } from "@/components/ui/array-cell";
 import { TimestampCell } from "@/components/ui/timestamp-cell";
 import { NumberCell } from "@/components/ui/number-cell";
+import { StatusCell } from "@/components/ui/status-cell";
 import { ActionCell } from "@/components/ui/action-cell";
 import { Cell, CellContent } from "@/components/ui/cell";
 import { Checkbox } from "@/components/ui/checkbox";
-import { useDataTable } from "@/hooks/use-data-table";
+import { Input } from "@/components/ui/input";
+import { useInfiniteTable } from "@/hooks/use-infinite-table";
+import { useSearchList } from "@/hooks/use-search-list";
 import { Modals } from "@/lib/enums";
 import { TableActionBar } from "@/components/table-action-bar";
-import type { api } from "@sizeupdashboard/convex/src/api/_generated/api.js";
+import { api } from "@sizeupdashboard/convex/src/api/_generated/api.js";
 import type { TransformationRule } from "@sizeupdashboard/convex/src/api/schema.js";
 import type { ColumnDef } from "@tanstack/react-table";
-import { usePreloadedQuery, type Preloaded } from "convex/react";
 import { useMemo } from "react";
 
-interface TransformationRulesTableProps {
-  preloaded: Preloaded<typeof api.transformations.paginatedTransformationRules>;
-}
+export function TransformationRulesTable() {
+  const { results, status, loadMore, search, setSearch } = useSearchList(
+    api.transformations.listTransformationRules,
+  );
 
-export function TransformationRulesTable({ preloaded }: TransformationRulesTableProps) {
-  const data = usePreloadedQuery(preloaded);
-  
   const columns = useMemo<ColumnDef<TransformationRule>[]>(
     () => [
       {
@@ -61,8 +59,26 @@ export function TransformationRulesTable({ preloaded }: TransformationRulesTable
         cell: ({ row }) => {
           return (
             <Cell>
-              <CellContent className="font-medium">{row.original.name}</CellContent>
+              <CellContent className="font-medium">
+                {row.original.name}
+              </CellContent>
             </Cell>
+          );
+        },
+        enableSorting: false,
+      },
+      {
+        accessorKey: "enabled",
+        header: "Status",
+        size: 110,
+        enableResizing: true,
+        cell: ({ row }) => {
+          const enabled = row.original.enabled !== false;
+          return (
+            <StatusCell
+              status={enabled ? "Enabled" : "Disabled"}
+              variant="custom"
+            />
           );
         },
         enableSorting: false,
@@ -74,7 +90,7 @@ export function TransformationRulesTable({ preloaded }: TransformationRulesTable
         enableResizing: true,
         cell: ({ row }) => {
           return (
-            <RegexCell 
+            <RegexCell
               pattern={row.original.dispatchTypeRegex}
               showValidation={true}
             />
@@ -89,7 +105,7 @@ export function TransformationRulesTable({ preloaded }: TransformationRulesTable
         enableResizing: true,
         cell: ({ row }) => {
           return (
-            <ArrayCell 
+            <ArrayCell
               items={row.original.keywords}
               maxVisible={2}
               badgeVariant="outline"
@@ -106,7 +122,7 @@ export function TransformationRulesTable({ preloaded }: TransformationRulesTable
         cell: ({ row }) => {
           const count = row.original.dispatchTypes.length;
           return (
-            <NumberCell 
+            <NumberCell
               value={count}
               suffix={count === 1 ? " type" : " types"}
               decimals={0}
@@ -123,7 +139,7 @@ export function TransformationRulesTable({ preloaded }: TransformationRulesTable
         cell: ({ row }) => {
           const count = row.original.transformations.length;
           return (
-            <NumberCell 
+            <NumberCell
               value={count}
               suffix={count === 1 ? " transform" : " transforms"}
               decimals={0}
@@ -137,17 +153,14 @@ export function TransformationRulesTable({ preloaded }: TransformationRulesTable
         header: "Created At",
         size: 140,
         enableResizing: true,
+        enableSorting: false,
         cell: ({ row }) => {
           return (
-            <TimestampCell 
-              timestamp={row.original._creationTime} 
-              format="short-12h" 
+            <TimestampCell
+              timestamp={row.original._creationTime}
+              format="short-12h"
             />
           );
-        },
-        sortDescFirst: true,
-        meta: {
-          variant: "number",
         },
       },
       {
@@ -170,27 +183,29 @@ export function TransformationRulesTable({ preloaded }: TransformationRulesTable
     [],
   );
 
-  const { table } = useDataTable({
-    data: data.data,
+  const { table } = useInfiniteTable({
+    data: results,
     columns,
-    pageCount: data.pagination.totalPages,
-    enableAdvancedFilter: true,
-    initialState: {
-      sorting: [{ id: "_creationTime", desc: true }],
-    },
     getRowId: (originalRow) => originalRow._id,
-    shallow: false,
-    clearOnDefault: true,
   });
 
   return (
-    <DataTable 
+    <InfiniteDataTable
       table={table}
-      actionBar={<TableActionBar table={table} entityName="transformation rules" />}
+      status={status}
+      onLoadMore={loadMore}
+      actionBar={
+        <TableActionBar table={table} entityName="transformation rules" />
+      }
     >
-      <DataTableToolbar table={table}>
-        <DataTableSortList table={table} />
-      </DataTableToolbar>
-    </DataTable>
+      <div className="flex items-center gap-2">
+        <Input
+          placeholder="Search by name..."
+          value={search}
+          onChange={(event) => setSearch(event.target.value)}
+          className="max-w-sm"
+        />
+      </div>
+    </InfiniteDataTable>
   );
 }

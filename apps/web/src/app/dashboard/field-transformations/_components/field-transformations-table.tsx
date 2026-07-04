@@ -1,30 +1,27 @@
 "use client";
 
-import { DataTable } from "@/components/data-table/data-table";
-import { DataTableSortList } from "@/components/data-table/data-table-sort-list";
-import { DataTableToolbar } from "@/components/data-table/data-table-toolbar";
+import { InfiniteDataTable } from "@/components/data-table/infinite-data-table";
 import { StatusCell } from "@/components/ui/status-cell";
 import { JsonCell } from "@/components/ui/json-cell";
 import { TimestampCell } from "@/components/ui/timestamp-cell";
 import { ActionCell } from "@/components/ui/action-cell";
 import { Cell, CellContent } from "@/components/ui/cell";
 import { Checkbox } from "@/components/ui/checkbox";
-import { useDataTable } from "@/hooks/use-data-table";
+import { Input } from "@/components/ui/input";
+import { useInfiniteTable } from "@/hooks/use-infinite-table";
+import { useSearchList } from "@/hooks/use-search-list";
 import { Modals } from "@/lib/enums";
 import { TableActionBar } from "@/components/table-action-bar";
-import type { api } from "@sizeupdashboard/convex/src/api/_generated/api.js";
+import { api } from "@sizeupdashboard/convex/src/api/_generated/api.js";
 import type { FieldTransformation } from "@sizeupdashboard/convex/src/api/schema.js";
 import type { ColumnDef } from "@tanstack/react-table";
-import { usePreloadedQuery, type Preloaded } from "convex/react";
 import { useMemo } from "react";
 
-interface FieldTransformationsTableProps {
-  preloaded: Preloaded<typeof api.transformations.paginatedFieldTransformations>;
-}
+export function FieldTransformationsTable() {
+  const { results, status, loadMore, search, setSearch } = useSearchList(
+    api.transformations.listFieldTransformations,
+  );
 
-export function FieldTransformationsTable({ preloaded }: FieldTransformationsTableProps) {
-  const data = usePreloadedQuery(preloaded);
-  
   const columns = useMemo<ColumnDef<FieldTransformation>[]>(
     () => [
       {
@@ -60,7 +57,9 @@ export function FieldTransformationsTable({ preloaded }: FieldTransformationsTab
         cell: ({ row }) => {
           return (
             <Cell>
-              <CellContent className="font-medium">{row.original.name}</CellContent>
+              <CellContent className="font-medium">
+                {row.original.name}
+              </CellContent>
             </Cell>
           );
         },
@@ -90,14 +89,14 @@ export function FieldTransformationsTable({ preloaded }: FieldTransformationsTab
         cell: ({ row }) => {
           const strategyLabels = {
             static_value: "Static Value",
-            random_offset: "Random Offset", 
+            random_offset: "Random Offset",
             random_string: "Random String",
             merge_data: "Merge Data",
           };
-          
+
           const strategy = row.original.strategy;
           const label = strategyLabels[strategy] || strategy;
-          
+
           return <StatusCell status={label} variant="custom" />;
         },
         enableSorting: false,
@@ -108,12 +107,7 @@ export function FieldTransformationsTable({ preloaded }: FieldTransformationsTab
         minSize: 200,
         enableResizing: true,
         cell: ({ row }) => {
-          return (
-            <JsonCell 
-              data={row.original.params}
-              maxPreviewKeys={1}
-            />
-          );
+          return <JsonCell data={row.original.params} maxPreviewKeys={1} />;
         },
         enableSorting: false,
       },
@@ -122,17 +116,14 @@ export function FieldTransformationsTable({ preloaded }: FieldTransformationsTab
         header: "Created At",
         size: 140,
         enableResizing: true,
+        enableSorting: false,
         cell: ({ row }) => {
           return (
-            <TimestampCell 
-              timestamp={row.original._creationTime} 
-              format="short-12h" 
+            <TimestampCell
+              timestamp={row.original._creationTime}
+              format="short-12h"
             />
           );
-        },
-        sortDescFirst: true,
-        meta: {
-          variant: "number",
         },
       },
       {
@@ -155,27 +146,29 @@ export function FieldTransformationsTable({ preloaded }: FieldTransformationsTab
     [],
   );
 
-  const { table } = useDataTable({
-    data: data.data,
+  const { table } = useInfiniteTable({
+    data: results,
     columns,
-    pageCount: data.pagination.totalPages,
-    enableAdvancedFilter: true,
-    initialState: {
-      sorting: [{ id: "_creationTime", desc: true }],
-    },
     getRowId: (originalRow) => originalRow._id,
-    shallow: false,
-    clearOnDefault: true,
   });
 
   return (
-    <DataTable 
+    <InfiniteDataTable
       table={table}
-      actionBar={<TableActionBar table={table} entityName="field transformations" />}
+      status={status}
+      onLoadMore={loadMore}
+      actionBar={
+        <TableActionBar table={table} entityName="field transformations" />
+      }
     >
-      <DataTableToolbar table={table}>
-        <DataTableSortList table={table} />
-      </DataTableToolbar>
-    </DataTable>
+      <div className="flex items-center gap-2">
+        <Input
+          placeholder="Search by name..."
+          value={search}
+          onChange={(event) => setSearch(event.target.value)}
+          className="max-w-sm"
+        />
+      </div>
+    </InfiniteDataTable>
   );
 }

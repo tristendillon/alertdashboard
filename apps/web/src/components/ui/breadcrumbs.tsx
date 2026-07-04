@@ -6,13 +6,12 @@ import Link from "next/link";
 
 // Define route mappings for breadcrumbs
 const routeLabels: Record<string, string> = {
-  "/dashboardv2": "Dashboard",
-  "/dashboardv2/view-tokens": "View Tokens",
-  "/dashboardv2/hydrants": "Hydrants",
-  "/dashboardv2/dispatch-types": "Dispatch Types",
-  "/dashboardv2/field-transformations": "Field Transformations",
-  "/dashboardv2/transformation-rules": "Transformation Rules",
-  "/dashboardv2/settings": "Settings",
+  "/dashboard": "Dashboard",
+  "/dashboard/view-tokens": "View Tokens",
+  "/dashboard/dispatch-types": "Dispatch Types",
+  "/dashboard/field-transformations": "Field Transformations",
+  "/dashboard/transformation-rules": "Transformation Rules",
+  "/dashboard/settings": "Settings",
 };
 
 function generateBreadcrumbs(pathname: string) {
@@ -27,11 +26,11 @@ function generateBreadcrumbs(pathname: string) {
   });
 
   // Add Dashboard if we're in dashboard routes
-  if (pathname.startsWith("/dashboardv2")) {
+  if (pathname.startsWith("/dashboard")) {
     breadcrumbs.push({
       label: "Dashboard",
-      href: "/dashboardv2",
-      isLast: pathname === "/dashboardv2",
+      href: "/dashboard",
+      isLast: pathname === "/dashboard",
     });
   }
 
@@ -40,8 +39,8 @@ function generateBreadcrumbs(pathname: string) {
   for (let i = 0; i < segments.length; i++) {
     currentPath += `/${segments[i]}`;
 
-    // Skip the base dashboardv2 segment since we already added it
-    if (currentPath === "/dashboardv2") continue;
+    // Skip the base dashboard segment since we already added it
+    if (currentPath === "/dashboard") continue;
 
     const label =
       routeLabels[currentPath] ||
