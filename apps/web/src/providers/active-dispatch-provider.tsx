@@ -9,13 +9,13 @@ import {
   useState,
 } from "react";
 import { useDispatches } from "./dispatches-provider";
-import type { DispatchWithType } from "@sizeupdashboard/convex/src/api/schema.ts";
+import type { TransformedDispatch } from "@sizeupdashboard/convex/src/api/schema.ts";
 
 interface ActiveDispatchContextType {
-  dispatch: DispatchWithType | null;
+  dispatch: TransformedDispatch | null;
   timeLeft: number;
   dismissDispatch: () => void;
-  activateDispatch: (dispatch: DispatchWithType) => void;
+  activateDispatch: (dispatch: TransformedDispatch) => void;
 }
 
 export const ActiveDispatchContext =
@@ -32,7 +32,7 @@ export function ActiveDispatchProvider({
   children,
 }: ActiveDispatchProviderProps) {
   const { dispatches } = useDispatches();
-  const [activeDispatch, setActiveDispatch] = useState<DispatchWithType | null>(
+  const [activeDispatch, setActiveDispatch] = useState<TransformedDispatch | null>(
     null,
   );
   const [timeLeft, setTimeLeft] = useState<number>(0);
@@ -64,7 +64,7 @@ export function ActiveDispatchProvider({
   }, [activeDispatch, clearAllTimers]);
 
   const activateDispatch = useCallback(
-    (dispatch: DispatchWithType, autoActivated = false) => {
+    (dispatch: TransformedDispatch, autoActivated = false) => {
       // Clear any existing timers
       clearAllTimers();
 

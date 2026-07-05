@@ -8,7 +8,7 @@ import {
   DEFAULT_NUM_DISPATCHES,
   useDispatches,
 } from "@/providers/dispatches-provider";
-import type { DispatchWithType } from "@sizeupdashboard/convex/src/api/schema.ts";
+import type { TransformedDispatch } from "@sizeupdashboard/convex/src/api/schema.ts";
 import { timeStampFormatter } from "@/utils/timestamp";
 import { CleanUnits } from "@/utils/units";
 import { Tooltip, TooltipTrigger, TooltipContent } from "./ui/tooltip";
@@ -23,7 +23,7 @@ const CleanType = (type: string) => {
 };
 
 interface DispatchListProps {
-  onDispatchClick?: (dispatch: DispatchWithType) => void;
+  onDispatchClick?: (dispatch: TransformedDispatch) => void;
   className?: string;
   limit?: number;
 }
@@ -120,8 +120,8 @@ export function DispatchSkeletonCard() {
 }
 
 interface DispatchCardProps {
-  dispatch: DispatchWithType;
-  onDispatchClick?: (dispatch: DispatchWithType) => void;
+  dispatch: TransformedDispatch;
+  onDispatchClick?: (dispatch: TransformedDispatch) => void;
 }
 
 export function DispatchCard({ dispatch, onDispatchClick }: DispatchCardProps) {
@@ -130,7 +130,9 @@ export function DispatchCard({ dispatch, onDispatchClick }: DispatchCardProps) {
   const [expanded, setExpanded] = useState(false);
 
   const UNITS_TO_SHOW_BASE = 4;
-  const sortedUnits = dispatch.unitCodes.sort((a, b) => a.length - b.length);
+  const sortedUnits = [...(dispatch.unitCodes ?? [])].sort(
+    (a, b) => a.length - b.length,
+  );
   const cleanedUnits = CleanUnits(sortedUnits);
   const totalUnits = cleanedUnits.length;
 

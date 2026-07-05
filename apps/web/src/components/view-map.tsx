@@ -4,7 +4,7 @@ import { MapPin } from "lucide-react";
 import { useActiveDispatch } from "@/providers/active-dispatch-provider";
 import { GoogleMap } from "@/components/maps/google-map";
 import { HydrantsRenderer } from "@/components/alert-popover/hydrants-renderer";
-import type { DispatchWithType } from "@sizeupdashboard/convex/src/api/schema.ts";
+import type { TransformedDispatch } from "@sizeupdashboard/convex/src/api/schema.ts";
 import IncidentMarker from "@/components/maps/incident-marker";
 import StreetView from "@/components/alert-popover/street-view";
 import { useDispatches } from "@/providers/dispatches-provider";
@@ -113,7 +113,9 @@ export function NormalMap({
   const { dispatches, status } = useDispatches();
   const mapRef = useRef<HTMLDivElement | null>(null);
 
-  const latLngs = dispatches.map((d) => d.location);
+  const latLngs = dispatches
+    .map((d) => d.location)
+    .filter((l): l is NonNullable<typeof l> => l !== undefined);
   const center = getCenterOfLatLngs(latLngs);
   if (status === "LoadingFirstPage") {
     return <MapLoadingState />;
@@ -135,7 +137,7 @@ export function NormalMap({
 }
 
 interface PopoverMapProps {
-  dispatch: DispatchWithType;
+  dispatch: TransformedDispatch;
   className?: string;
   mapClassName?: string;
   children: React.ReactNode;
@@ -147,6 +149,15 @@ export function PopoverMap({
   className,
   mapClassName,
 }: PopoverMapProps) {
+  // A transformation rule may have removed the location entirely — there is
+  // nothing to center on, so fall back to the normal map view.
+  if (!dispatch.location) {
+    return (
+      <NormalMap className={className} mapClassName={mapClassName}>
+        {children}
+      </NormalMap>
+    );
+  }
   return (
     <GoogleMap
       id={POPOVER_MAP_ID}

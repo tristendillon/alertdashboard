@@ -23,7 +23,6 @@ import { ViewTokenForm } from "./forms/view-token-form";
 import { DispatchTypeForm } from "./forms/dispatch-type-form";
 import { DispatchTypeImportForm } from "./forms/dispatch-type-import-form";
 import { FieldTransformationForm } from "./forms/field-transformation-form";
-import { TransformationRuleForm } from "./forms/transformation-rule-form";
 
 const ENTITY_LABEL: Record<DrawerEntity, string> = {
   [DrawerEntity.VIEW_TOKEN]: "view token",
@@ -91,7 +90,10 @@ export function EntityDrawer() {
       case DrawerEntity.FIELD_TRANSFORMATION:
         return <FieldTransformationForm id={id ?? undefined} onDone={close} />;
       case DrawerEntity.TRANSFORMATION_RULE:
-        return <TransformationRuleForm id={id ?? undefined} onDone={close} />;
+        // Create/edit now live in the full-page editor at
+        // /dashboard/transformation-rules/{new,[id]}; the drawer only handles
+        // this entity's DELETE flow (the AlertDialog branch below).
+        return null;
       default:
         return null;
     }

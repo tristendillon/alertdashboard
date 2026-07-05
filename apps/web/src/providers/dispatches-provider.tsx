@@ -6,16 +6,16 @@ import { usePaginatedQuery, type PaginationStatus } from "convex/react";
 import type { LatLng } from "@/lib/types";
 import { getLatLngDistances } from "@/utils/lat-lng";
 import { useViewToken } from "./view-providers";
-import type { DispatchWithType } from "@sizeupdashboard/convex/src/api/schema.ts";
+import type { TransformedDispatch } from "@sizeupdashboard/convex/src/api/schema.ts";
 
 interface DispatchesContextType {
-  dispatches: DispatchWithType[];
+  dispatches: TransformedDispatch[];
   status: PaginationStatus;
   loadMore: (numItems: number) => void;
   getDispatchesInRadius: (
     location: LatLng,
     distnace: number,
-  ) => DispatchWithType[];
+  ) => TransformedDispatch[];
 }
 
 const dispatchesContext = createContext<DispatchesContextType | null>(null);
@@ -49,7 +49,8 @@ export function DispatchesProvider({ children }: DispatchesProviderProps) {
   const getDispatchesInRadius = useCallback(
     (location: LatLng, distnace: number) => {
       return results.filter((l) => {
-        const distance = getLatLngDistances(location, l.location as LatLng);
+        if (!l.location) return false;
+        const distance = getLatLngDistances(location, l.location);
         return distance < distnace;
       });
     },

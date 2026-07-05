@@ -96,6 +96,7 @@ export function FieldTransformationsTable() {
             random_offset: "Random Offset",
             random_string: "Random String",
             merge_data: "Merge Data",
+            remove_field: "Remove Field",
           };
 
           const strategy = row.original.strategy;

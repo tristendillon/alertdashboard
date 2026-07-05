@@ -13,7 +13,8 @@
     "predev": "convex dev --until-success",
     "logs": "convex logs",
     "lint": "eslint . --max-warnings 0",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
   },
   "dependencies": {
     "@convex-dev/geospatial": "^0.2.1",
@@ -27,6 +28,7 @@
     "@sizeupdashboard/typescript-config": "workspace:*",
     "@types/node": "catalog:",
     "eslint": "catalog:",
-    "typescript": "catalog:"
+    "typescript": "catalog:",
+    "vitest": "^3.2.4"
   }
 }

@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { Edit, MoreHorizontal, Trash2 } from "lucide-react";
 import { Button } from "./button";
 import {
@@ -16,11 +17,17 @@ import { DrawerMode, type DrawerEntity } from "@/lib/enums";
 interface ActionCellProps extends Omit<CellProps, "variant" | "asChild"> {
   entity: DrawerEntity;
   itemId: string;
+  /**
+   * When set, the Edit item navigates to this route (full-page editor) instead
+   * of opening the drawer in EDIT mode. Delete keeps using the drawer flow.
+   */
+  editHref?: string;
 }
 
 export function ActionCell({
   entity,
   itemId,
+  editHref,
   className,
   ...props
 }: ActionCellProps) {
@@ -40,13 +47,22 @@ export function ActionCell({
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-40">
-          <DropdownMenuItem
-            onClick={() => open(entity, DrawerMode.EDIT, itemId)}
-            className="cursor-pointer"
-          >
-            <Edit className="mr-2 h-4 w-4" />
-            Edit
-          </DropdownMenuItem>
+          {editHref ? (
+            <DropdownMenuItem asChild className="cursor-pointer">
+              <Link href={editHref}>
+                <Edit className="mr-2 h-4 w-4" />
+                Edit
+              </Link>
+            </DropdownMenuItem>
+          ) : (
+            <DropdownMenuItem
+              onClick={() => open(entity, DrawerMode.EDIT, itemId)}
+              className="cursor-pointer"
+            >
+              <Edit className="mr-2 h-4 w-4" />
+              Edit
+            </DropdownMenuItem>
+          )}
           <DropdownMenuSeparator />
           <DropdownMenuItem
             onClick={() => open(entity, DrawerMode.DELETE, itemId)}

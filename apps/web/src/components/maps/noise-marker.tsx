@@ -11,11 +11,11 @@ import {
 import { useActiveDispatch } from "@/providers/active-dispatch-provider";
 import useDebounce from "@/hooks/use-debounce";
 import { ApproximationWarning } from "@/components/ui/approximation-warning";
-import type { DispatchWithType } from "@sizeupdashboard/convex/src/api/schema.ts";
+import type { TransformedDispatch } from "@sizeupdashboard/convex/src/api/schema.ts";
 import { SquareArrowOutUpRight } from "lucide-react";
 
 interface NoiseMarkerProps {
-  dispatch: DispatchWithType;
+  dispatch: TransformedDispatch;
   className?: string;
   markerRef?: (
     marker: google.maps.marker.AdvancedMarkerElement | null,
@@ -23,7 +23,7 @@ interface NoiseMarkerProps {
 }
 
 interface NoiseCardProps {
-  dispatch: DispatchWithType;
+  dispatch: TransformedDispatch;
   className?: string;
   closePopover: () => void;
 }
@@ -74,9 +74,12 @@ export default function NoiseMarker({
   const [isOpen, _setIsOpen] = useState(false);
   const setIsOpen = useDebounce(_setIsOpen, 100);
   const [similarDispatches, setSimilarDispatches] = useState<
-    DispatchWithType[]
+    TransformedDispatch[]
   >([]);
   const location = dispatch.location;
+
+  // A transformation rule may have removed the location — nothing to render.
+  if (!location) return null;
 
   const handleMarkerClick = async () => {
     if (isOpen) {
