@@ -77,6 +77,27 @@ export const DispatchTypesTable = Table(
 )
 export type DispatchWithType = z.infer<typeof DispatchesWithTypeSchema>
 
+// Shape of a dispatch after read-time transformations. remove_field can strip
+// any REMOVABLE_FIELDS entry, so those become optional. TS-only: NEVER pass
+// this through zodToConvex and NEVER use it as a returns validator.
+export const TransformedDispatchSchema = DispatchesWithTypeSchema.extend({
+  location: z
+    .object({
+      lat: z.number(),
+      lng: z.number(),
+    })
+    .optional(),
+  address: z.string().optional(),
+  address2: z.string().optional(),
+  city: z.string().optional(),
+  stateCode: z.string().optional(),
+  narrative: z.string().optional(),
+  unitCodes: z.array(z.string()).optional(),
+  xrefId: z.string().optional(),
+})
+
+export type TransformedDispatch = z.infer<typeof TransformedDispatchSchema>
+
 export type DispatchType = z.infer<typeof DispatchTypesSchema>
 
 export const ActiveWeatherAlerts = Table('activeWeatherAlerts', {
@@ -227,17 +248,24 @@ export const ViewTokenClients = Table('viewTokenClients', {
   lastSeen: v.number(),
 })
 
+// Transformation strategies. Derived once here so validators (Convex args) and
+// the pure core stay in lockstep — adding a strategy can't drift between them.
+export const TransformationStrategySchema = z.enum([
+  'static_value',
+  'random_offset',
+  'random_string',
+  'merge_data',
+  'remove_field',
+])
+
+export type TransformationStrategy = z.infer<typeof TransformationStrategySchema>
+
 // Field Transformations - Reusable transformation definitions
 export const FieldTransformationSchema = z.object({
   name: z.string(),
   field: z.string(), // e.g., "location.lat", "address", "narrative"
-  strategy: z.enum([
-    'static_value',
-    'random_offset',
-    'random_string',
-    'merge_data',
-  ]),
-  params: z.record(z.string(), z.any()), // strategy-specific parameters
+  strategy: TransformationStrategySchema,
+  params: z.record(z.string(), z.any()), // strategy-specific parameters (remove_field: {})
 })
 
 export type FieldTransformation = z.infer<typeof FieldTransformationSchema> & {
@@ -259,6 +287,9 @@ export const TransformationRuleSchema = z.object({
   transformations: z.array(zid('fieldTransformations')), // references to reusable transformations
   // undefined is treated as enabled so pre-existing rules keep applying.
   enabled: z.boolean().optional(),
+  // Sample dispatches the rule editor saves for later preview/testing. Ids may
+  // dangle after dispatch purges — readers must tolerate missing docs.
+  testDispatchIds: z.array(zid('dispatches')).optional(),
 })
 
 export type TransformationRule = z.infer<typeof TransformationRuleSchema> & {

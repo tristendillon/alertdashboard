@@ -1,10 +1,10 @@
 import { AdvancedMarker } from "@vis.gl/react-google-maps";
 import { cn } from "@/utils/ui";
 import Image from "next/image";
-import type { DispatchWithType } from "@sizeupdashboard/convex/src/api/schema.ts";
+import type { TransformedDispatch } from "@sizeupdashboard/convex/src/api/schema.ts";
 
 interface IncidentMarkerProps {
-  dispatch?: DispatchWithType;
+  dispatch?: TransformedDispatch;
   children?: React.ReactNode;
   className?: string;
   onClick?: () => void;

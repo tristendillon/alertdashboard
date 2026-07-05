@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react";
 import { getLatLngDistances } from "@/utils/lat-lng";
 import { env } from "@/env";
-import type { DispatchWithType } from "@sizeupdashboard/convex/src/api/schema.ts";
+import type { TransformedDispatch } from "@sizeupdashboard/convex/src/api/schema.ts";
 import { useMap } from "@vis.gl/react-google-maps";
 import type { LatLng } from "@/lib/types";
 
@@ -13,7 +13,7 @@ const containerStyle = {
 };
 
 interface StreetViewProps {
-  dispatch: DispatchWithType;
+  dispatch: TransformedDispatch;
 }
 
 type GeocodeResponse = {
@@ -33,7 +33,7 @@ type GeocodeResponse = {
  */
 const fetchGeocode = async (
   fullAddress: string,
-  dispatch: DispatchWithType,
+  dispatch: TransformedDispatch,
 ) => {
   const alertCoords = dispatch.location as LatLng;
   const encoded = encodeURIComponent(fullAddress);

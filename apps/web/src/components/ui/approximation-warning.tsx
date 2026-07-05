@@ -2,7 +2,7 @@ import * as React from "react";
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/utils/ui";
 import { useAuth } from "@clerk/nextjs";
-import { useViewToken } from "@/providers/view-providers";
+import { ViewTokenContext } from "@/providers/view-providers";
 
 const approximationWarningVariants = cva(
   "text-destructive text-center text-sm italic",
@@ -31,7 +31,9 @@ const ApproximationWarning = React.forwardRef<
   ApproximationWarningProps
 >(({ className, variant, dispatchGroup, ...props }, ref) => {
   const { isLoaded, isSignedIn } = useAuth();
-  const { tokenId } = useViewToken();
+  // Rendered both on the public view (inside ViewTokenProvider) and in
+  // dashboard previews (no provider). A missing provider means no view token.
+  const tokenId = React.useContext(ViewTokenContext)?.tokenId;
 
   const authStatus = {
     isLoaded: isLoaded,

@@ -10,12 +10,12 @@ import { NORMAL_MAP_ID } from "@/components/view-map";
 import NoiseMarker from "@/components/maps/noise-marker";
 import type {
   DispatchGroupEnum,
-  DispatchWithType,
+  TransformedDispatch,
 } from "@sizeupdashboard/convex/src/api/schema.ts";
 
 interface ClusteredDispatchMarkersProps {
   group: DispatchGroupEnum;
-  dispatches: DispatchWithType[];
+  dispatches: TransformedDispatch[];
 }
 
 const CLUSTER_Z_INDEX = 10000;

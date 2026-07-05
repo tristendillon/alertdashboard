@@ -1,0 +1,1307 @@
+<title>Privacy Transformations — UI Mock</title>
+<style>
+  /* ============ Tokens (mirrors apps/web/src/app/globals.css) ============ */
+  :root {
+    --background: oklch(0.9672 0 0);
+    --foreground: oklch(0.2621 0.0095 248.19);
+    --card: oklch(1 0 0);
+    --card-fg: oklch(0.2621 0.0095 248.19);
+    --popover: oklch(1 0 0);
+    --primary: oklch(0.2581 0.1057 281.21);
+    --primary-fg: oklch(1 0 0);
+    --muted: oklch(0.9417 0.0052 247.88);
+    --muted-fg: oklch(0.5575 0.0165 244.89);
+    --accent: oklch(0.8671 0.0106 247.95);
+    --destructive: oklch(0.5073 0.2082 29.23);
+    --border: oklch(0.9109 0.007 247.9);
+    --input: oklch(0.8671 0.0106 247.95);
+    --ring: oklch(0.3095 0.1074 280.93);
+    --radius: 0.3rem;
+    --shadow: 0px 4px 8px -2px hsl(0 0% 0% / 0.1), 0px 1px 2px -3px hsl(0 0% 0% / 0.1);
+    --tint-remove: oklch(0.55 0.19 27);
+    --tint-static: oklch(0.68 0.14 75);
+    --tint-offset: oklch(0.55 0.14 250);
+    --tint-random: oklch(0.55 0.16 300);
+    --map-bg: oklch(0.955 0.005 248);
+    --map-line: oklch(0.89 0.008 248);
+    --map-road: oklch(0.82 0.012 248);
+    --mark-bg: oklch(0.87 0.08 281 / 0.45);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --background: oklch(0.1572 0.0334 287.64);
+      --foreground: oklch(0.9816 0.0017 247.84);
+      --card: oklch(0.2308 0.0602 283.44);
+      --card-fg: oklch(0.9816 0.0017 247.84);
+      --popover: oklch(0.2308 0.0602 283.44);
+      --primary: oklch(0.4926 0.1217 283.89);
+      --primary-fg: oklch(1 0 0);
+      --muted: oklch(0.28 0.07 281);
+      --muted-fg: oklch(0.7692 0.0145 248.02);
+      --accent: oklch(0.7723 0.1202 286.45);
+      --destructive: oklch(0.5928 0.2106 26.53);
+      --border: oklch(0.3095 0.1074 280.93);
+      --input: oklch(0.3095 0.1074 280.93);
+      --ring: oklch(0.4926 0.1217 283.89);
+      --shadow: 0px 6px 12px -3px hsl(0 0% 0% / 0.25);
+      --tint-remove: oklch(0.68 0.19 27);
+      --tint-static: oklch(0.8 0.14 80);
+      --tint-offset: oklch(0.72 0.13 250);
+      --tint-random: oklch(0.72 0.15 300);
+      --map-bg: oklch(0.21 0.045 285);
+      --map-line: oklch(0.27 0.06 283);
+      --map-road: oklch(0.33 0.07 282);
+      --mark-bg: oklch(0.45 0.11 283 / 0.6);
+    }
+  }
+  :root[data-theme="dark"] {
+    --background: oklch(0.1572 0.0334 287.64);
+    --foreground: oklch(0.9816 0.0017 247.84);
+    --card: oklch(0.2308 0.0602 283.44);
+    --card-fg: oklch(0.9816 0.0017 247.84);
+    --popover: oklch(0.2308 0.0602 283.44);
+    --primary: oklch(0.4926 0.1217 283.89);
+    --primary-fg: oklch(1 0 0);
+    --muted: oklch(0.28 0.07 281);
+    --muted-fg: oklch(0.7692 0.0145 248.02);
+    --accent: oklch(0.7723 0.1202 286.45);
+    --destructive: oklch(0.5928 0.2106 26.53);
+    --border: oklch(0.3095 0.1074 280.93);
+    --input: oklch(0.3095 0.1074 280.93);
+    --ring: oklch(0.4926 0.1217 283.89);
+    --shadow: 0px 6px 12px -3px hsl(0 0% 0% / 0.25);
+    --tint-remove: oklch(0.68 0.19 27);
+    --tint-static: oklch(0.8 0.14 80);
+    --tint-offset: oklch(0.72 0.13 250);
+    --tint-random: oklch(0.72 0.15 300);
+    --map-bg: oklch(0.21 0.045 285);
+    --map-line: oklch(0.27 0.06 283);
+    --map-road: oklch(0.33 0.07 282);
+    --mark-bg: oklch(0.45 0.11 283 / 0.6);
+  }
+  :root[data-theme="light"] {
+    --background: oklch(0.9672 0 0);
+    --foreground: oklch(0.2621 0.0095 248.19);
+    --card: oklch(1 0 0);
+    --card-fg: oklch(0.2621 0.0095 248.19);
+    --popover: oklch(1 0 0);
+    --primary: oklch(0.2581 0.1057 281.21);
+    --primary-fg: oklch(1 0 0);
+    --muted: oklch(0.9417 0.0052 247.88);
+    --muted-fg: oklch(0.5575 0.0165 244.89);
+    --accent: oklch(0.8671 0.0106 247.95);
+    --destructive: oklch(0.5073 0.2082 29.23);
+    --border: oklch(0.9109 0.007 247.9);
+    --input: oklch(0.8671 0.0106 247.95);
+    --ring: oklch(0.3095 0.1074 280.93);
+    --shadow: 0px 4px 8px -2px hsl(0 0% 0% / 0.1);
+    --tint-remove: oklch(0.55 0.19 27);
+    --tint-static: oklch(0.68 0.14 75);
+    --tint-offset: oklch(0.55 0.14 250);
+    --tint-random: oklch(0.55 0.16 300);
+    --map-bg: oklch(0.955 0.005 248);
+    --map-line: oklch(0.89 0.008 248);
+    --map-road: oklch(0.82 0.012 248);
+    --mark-bg: oklch(0.87 0.08 281 / 0.45);
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--background);
+    color: var(--foreground);
+    font-family: Montserrat, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    font-size: 14px;
+    line-height: 1.45;
+  }
+  button { font: inherit; color: inherit; }
+  input, select { font: inherit; }
+
+  /* ============ App chrome ============ */
+  .topbar {
+    position: sticky; top: 0; z-index: 50;
+    display: flex; align-items: center; gap: 16px;
+    padding: 10px 20px;
+    background: var(--card); border-bottom: 1px solid var(--border);
+  }
+  .topbar h1 { font-size: 15px; font-weight: 700; margin: 0; letter-spacing: 0.01em; }
+  .topbar .mock-note {
+    font-size: 11px; color: var(--muted-fg);
+    border: 1px dashed var(--border); border-radius: 999px; padding: 2px 10px;
+  }
+  .tabs { display: flex; gap: 4px; margin-left: auto; }
+  .tab-btn {
+    border: 0; background: transparent; cursor: pointer;
+    padding: 6px 14px; border-radius: var(--radius);
+    color: var(--muted-fg); font-weight: 600; font-size: 13px;
+  }
+  .tab-btn:hover { background: var(--muted); color: var(--foreground); }
+  .tab-btn:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible {
+    outline: 2px solid var(--ring); outline-offset: 1px;
+  }
+  .tab-btn.active { background: var(--primary); color: var(--primary-fg); }
+
+  main { max-width: 1360px; margin: 0 auto; padding: 20px; }
+  section[hidden] { display: none; }
+
+  /* ============ Primitives ============ */
+  .card {
+    background: var(--card); color: var(--card-fg);
+    border: 1px solid var(--border); border-radius: calc(var(--radius) + 4px);
+    box-shadow: var(--shadow);
+  }
+  .btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    border: 1px solid var(--border); background: var(--card);
+    border-radius: var(--radius); padding: 6px 12px;
+    font-size: 13px; font-weight: 600; cursor: pointer;
+  }
+  .btn:hover { background: var(--muted); }
+  .btn.primary { background: var(--primary); border-color: var(--primary); color: var(--primary-fg); }
+  .btn.primary:hover { filter: brightness(1.12); }
+  .btn.ghost { border-color: transparent; background: transparent; color: var(--muted-fg); }
+  .btn.ghost:hover { background: var(--muted); color: var(--foreground); }
+  .btn.icon { padding: 5px; }
+  .btn.danger { color: var(--tint-remove); }
+  .btn.active-ctl { color: var(--primary); background: color-mix(in oklch, var(--primary) 12%, transparent); border-radius: var(--radius); }
+  .btn svg { width: 15px; height: 15px; flex: none; }
+
+  .input, select.input {
+    width: 100%; background: var(--card); color: var(--foreground);
+    border: 1px solid var(--input); border-radius: var(--radius);
+    padding: 7px 10px; font-size: 13px;
+  }
+  .input.mono { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; }
+  .input.invalid { border-color: var(--tint-remove); }
+  label.lbl { display: block; font-size: 12px; font-weight: 600; color: var(--muted-fg); margin: 0 0 4px; }
+
+  .chip {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 11.5px; font-weight: 600;
+    border-radius: 999px; padding: 3px 9px;
+    background: var(--muted); color: var(--foreground);
+    border: 1px solid transparent;
+  }
+  .chip svg { width: 12px; height: 12px; }
+  .chip.remove { background: color-mix(in oklch, var(--tint-remove) 14%, transparent); color: var(--tint-remove); }
+  .chip.static { background: color-mix(in oklch, var(--tint-static) 16%, transparent); color: var(--tint-static); }
+  .chip.offset { background: color-mix(in oklch, var(--tint-offset) 14%, transparent); color: var(--tint-offset); }
+  .chip.random { background: color-mix(in oklch, var(--tint-random) 14%, transparent); color: var(--tint-random); }
+  .chip.outline { background: transparent; border-color: var(--border); color: var(--muted-fg); }
+
+  .switch { position: relative; width: 34px; height: 19px; flex: none; cursor: pointer; }
+  .switch input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
+  .switch .track { position: absolute; inset: 0; border-radius: 999px; background: var(--input); transition: background 0.15s; }
+  .switch .thumb {
+    position: absolute; top: 2px; left: 2px; width: 15px; height: 15px;
+    border-radius: 999px; background: var(--card); box-shadow: var(--shadow);
+    transition: transform 0.15s;
+  }
+  .switch input:checked + .track { background: var(--primary); }
+  .switch input:checked + .track + .thumb { transform: translateX(15px); }
+  .switch input:focus-visible + .track { outline: 2px solid var(--ring); outline-offset: 1px; }
+
+  .seg { display: inline-flex; border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+  .seg button {
+    border: 0; background: transparent; cursor: pointer;
+    padding: 4px 10px; font-size: 11.5px; font-weight: 600; color: var(--muted-fg);
+  }
+  .seg button + button { border-left: 1px solid var(--border); }
+  .seg button.active { background: var(--primary); color: var(--primary-fg); }
+
+  .dot { display: inline-block; width: 7px; height: 7px; border-radius: 999px; }
+  .dot.ok { background: oklch(0.65 0.17 150); }
+  .dot.bad { background: var(--tint-remove); }
+
+  mark { background: var(--mark-bg); color: inherit; border-radius: 3px; padding: 0 1px; }
+
+  [data-tip] { position: relative; }
+  [data-tip]:hover::after, [data-tip]:focus-visible::after {
+    content: attr(data-tip);
+    position: absolute; bottom: calc(100% + 6px); left: 50%; transform: translateX(-50%);
+    background: var(--foreground); color: var(--background);
+    font-size: 11px; font-weight: 500; white-space: nowrap;
+    padding: 4px 8px; border-radius: 4px; z-index: 60; pointer-events: none;
+  }
+
+  .view-head { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
+  .view-head h2 { font-size: 18px; margin: 0; }
+  .view-head .spacer { flex: 1; }
+
+  /* ============ Overview: table ============ */
+  .tbl-tools { display: flex; gap: 10px; align-items: center; margin-bottom: 12px; }
+  .tbl-tools .input { max-width: 260px; }
+  .tbl-wrap { overflow-x: auto; }
+  table.rules { border-collapse: collapse; width: 100%; min-width: 760px; }
+  table.rules th, table.rules td { padding: 10px 14px; font-size: 13px; text-align: left; border-bottom: 1px solid var(--border); }
+  table.rules thead th {
+    font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em;
+    color: var(--muted-fg); font-weight: 700; background: var(--muted);
+  }
+  table.rules tbody tr { background: var(--card); }
+  table.rules tbody tr:hover { background: color-mix(in oklch, var(--muted) 55%, var(--card)); }
+  table.rules tbody tr.off > td:not(.keep) { opacity: 0.5; }
+  table.rules .r-name { font-weight: 700; white-space: nowrap; }
+  table.rules .r-fx { display: flex; flex-wrap: wrap; gap: 5px; }
+  table.rules code.rx {
+    font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 12px;
+    background: var(--muted); border-radius: 4px; padding: 1px 6px; white-space: nowrap;
+  }
+  table.rules .r-when { display: flex; flex-wrap: wrap; gap: 5px; align-items: center; }
+  table.rules .num { text-align: right; font-variant-numeric: tabular-nums; color: var(--muted-fg); white-space: nowrap; }
+  table.rules .row-actions { display: flex; gap: 4px; opacity: 0; transition: opacity 0.12s; justify-content: flex-end; }
+  table.rules tr:hover .row-actions, table.rules tr:focus-within .row-actions { opacity: 1; }
+
+  /* ============ Editor layout ============ */
+  .editor-grid { display: grid; grid-template-columns: minmax(340px, 430px) 1fr; gap: 18px; align-items: start; }
+  @media (max-width: 960px) { .editor-grid { grid-template-columns: 1fr; } }
+  .panel { padding: 16px; display: flex; flex-direction: column; gap: 14px; }
+  .panel h3 { margin: 0; font-size: 13px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted-fg); }
+  .frow { display: flex; flex-direction: column; gap: 3px; }
+  .kw-box, .combo-box { display: flex; flex-wrap: wrap; gap: 6px; padding: 6px; border: 1px solid var(--input); border-radius: var(--radius); background: var(--card); }
+  .kw-box input, .combo-box input { border: 0; outline: 0; background: transparent; color: inherit; flex: 1; min-width: 90px; font-size: 13px; padding: 3px; }
+  .kw-chip { display: inline-flex; align-items: center; gap: 4px; }
+  .kw-chip button { border: 0; background: none; cursor: pointer; padding: 0; line-height: 1; color: inherit; opacity: 0.6; }
+  .kw-chip button:hover { opacity: 1; }
+
+  /* combobox */
+  .combo { position: relative; }
+  .combo-pop {
+    position: absolute; top: calc(100% + 4px); left: 0; right: 0; z-index: 40;
+    background: var(--popover); border: 1px solid var(--border); border-radius: var(--radius);
+    box-shadow: var(--shadow); padding: 4px; max-height: 210px; overflow-y: auto;
+    display: flex; flex-direction: column; gap: 1px;
+  }
+  .combo-pop .opt {
+    display: flex; align-items: center; gap: 8px; border: 0; background: none; text-align: left;
+    padding: 6px 8px; border-radius: 4px; cursor: pointer; font-size: 12.5px;
+  }
+  .combo-pop .opt:hover { background: var(--muted); }
+  .combo-pop .opt .o-code { margin-left: auto; color: var(--muted-fg); font-size: 11px; font-family: ui-monospace, monospace; }
+  .combo-pop .opt .o-check { width: 14px; color: var(--primary); flex: none; }
+  .combo-pop .none { padding: 8px; font-size: 12px; color: var(--muted-fg); }
+
+  /* regex inline feedback */
+  .rx-feedback { font-size: 12px; color: var(--muted-fg); display: flex; align-items: center; gap: 8px; margin-top: 4px; }
+  .rx-feedback button { border: 0; background: none; cursor: pointer; color: var(--accent); text-decoration: underline; font-size: 12px; padding: 0; }
+  .rx-samples { margin-top: 6px; border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+  .rx-samples .sample {
+    display: flex; gap: 8px; align-items: baseline; padding: 6px 10px;
+    border-top: 1px solid var(--border);
+    font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 12px;
+  }
+  .rx-samples .sample:first-child { border-top: 0; }
+  .rx-samples .sample.nomatch { color: var(--muted-fg); }
+  .rx-samples .m-ind { flex: none; width: 12px; text-align: center; }
+
+  .type-hint { font-size: 11.5px; color: var(--muted-fg); }
+
+  .tx-row { border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+  .tx-head {
+    display: flex; align-items: center; gap: 8px; padding: 8px 10px;
+    background: var(--muted); cursor: pointer; border: 0; width: 100%; text-align: left;
+  }
+  .tx-head .tx-title { font-weight: 600; font-size: 13px; flex: 1; }
+  .tx-body { padding: 10px; display: grid; gap: 10px; }
+  .tx-body .two { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .tx-note { font-size: 12px; color: var(--muted-fg); background: var(--muted); border-radius: var(--radius); padding: 8px 10px; }
+  .tx-warn {
+    font-size: 12px; border-radius: var(--radius); padding: 8px 10px;
+    background: color-mix(in oklch, var(--tint-static) 15%, transparent);
+    color: var(--tint-static); display: flex; flex-direction: column; gap: 6px;
+  }
+  .tx-warn .warn-actions { display: flex; gap: 6px; }
+  .tx-warn .warn-actions .btn { padding: 3px 8px; font-size: 11.5px; }
+
+  .savebar {
+    position: sticky; bottom: 0; margin-top: 14px;
+    display: flex; align-items: center; gap: 10px;
+    background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 10px 14px; box-shadow: var(--shadow);
+  }
+  .savebar .dirty { font-size: 12px; color: var(--tint-static); font-weight: 600; }
+
+  /* ============ Preview workspace ============ */
+  .pw-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .pw-head h3 { margin: 0; font-size: 13px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted-fg); flex: 1; }
+
+  .pane { margin-top: 12px; overflow: visible; position: relative; }
+  .pane:first-of-type { margin-top: 14px; }
+  .pane.locked { border-color: color-mix(in oklch, var(--primary) 55%, var(--border)); }
+  .pane-head { display: flex; align-items: center; gap: 8px; padding: 10px 14px; border-bottom: 1px solid var(--border); flex-wrap: wrap; position: relative; }
+  .pane-head .p-title { font-weight: 700; font-size: 13px; }
+  .pane-head .p-time { font-size: 11px; color: var(--muted-fg); }
+  .pane-head .badge-match { font-size: 11px; font-weight: 700; border-radius: 999px; padding: 2px 9px; }
+  .badge-match.yes { background: color-mix(in oklch, oklch(0.65 0.17 150) 16%, transparent); color: oklch(0.55 0.15 150); }
+  .badge-match.no { background: var(--muted); color: var(--muted-fg); }
+  .pane-head .p-ctls { margin-left: auto; display: flex; align-items: center; gap: 4px; }
+  .pane-head .p-ctls .seg { margin-right: 6px; }
+
+  .pane-body { display: grid; grid-template-columns: minmax(260px, 5fr) minmax(300px, 6fr); }
+  @media (max-width: 1100px) { .pane-body { grid-template-columns: 1fr; } }
+  .pv-left { padding: 12px 14px; border-right: 1px solid var(--border); min-width: 0; display: flex; flex-direction: column; gap: 12px; }
+  @media (max-width: 1100px) { .pv-left { border-right: 0; border-bottom: 1px solid var(--border); } }
+  .pv-right { padding: 12px 14px; min-width: 0; display: flex; flex-direction: column; }
+  .pv-label { font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted-fg); margin-bottom: 6px; }
+  .pane.unmatched .pane-body { opacity: 0.55; }
+
+  /* replica: list card */
+  .rep-card { border: 1px solid var(--border); border-radius: calc(var(--radius) + 2px); padding: 10px 14px; background: var(--background); }
+  .rep-card .r-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 3px; gap: 8px; }
+  .rep-card .r-type { font-weight: 700; font-size: 13px; }
+  .rep-card .r-time { font-size: 11px; color: var(--muted-fg); white-space: nowrap; }
+  .rep-card .r-narr { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 11.5px; white-space: pre-wrap; margin: 0 0 4px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+  .rep-card .r-addr { font-size: 11px; color: var(--muted-fg); margin-bottom: 6px; }
+  .rep-card .r-units { display: flex; flex-wrap: wrap; gap: 4px; justify-content: flex-end; }
+  .rep-card .r-units .u, .rep-detail .d-units .u { font-size: 10px; font-weight: 600; background: var(--muted); border-radius: 4px; padding: 2px 6px; }
+  .rep-gone { font-style: italic; color: var(--muted-fg); }
+
+  /* replica: detail */
+  .rep-detail .d-type { color: oklch(0.58 0.21 27); font-weight: 800; font-size: 16px; text-transform: uppercase; line-height: 1.15; }
+  .rep-detail .d-addr { font-size: 13px; margin: 3px 0 8px; }
+  .rep-detail .d-sec { font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted-fg); margin-bottom: 4px; }
+  .rep-detail .d-units { display: flex; flex-wrap: wrap; gap: 4px; }
+
+  /* replica: map */
+  .rep-map {
+    position: relative; flex: 1; min-height: 210px; border-radius: calc(var(--radius) + 2px);
+    background:
+      linear-gradient(var(--map-line) 1px, transparent 1px) 0 0 / 26px 26px,
+      linear-gradient(90deg, var(--map-line) 1px, transparent 1px) 0 0 / 26px 26px,
+      var(--map-bg);
+    border: 1px solid var(--border); overflow: hidden;
+  }
+  .rep-map .road { position: absolute; background: var(--map-road); }
+  .rep-map .road.h { left: -10%; right: -10%; height: 7px; top: 58%; transform: rotate(-4deg); }
+  .rep-map .road.v { top: -10%; bottom: -10%; width: 5px; left: 34%; transform: rotate(7deg); }
+  .rep-map .pin { position: absolute; width: 26px; height: 26px; transform: translate(-50%, -92%); transition: left 0.25s, top 0.25s; }
+  .rep-map .pin svg { width: 100%; height: 100%; }
+  .rep-map .origin {
+    position: absolute; width: 12px; height: 12px; border: 2px solid var(--muted-fg);
+    border-radius: 999px; transform: translate(-50%, -50%); opacity: 0.8;
+  }
+  .rep-map .origin::after { content: ""; position: absolute; inset: 3px; border-radius: 999px; background: var(--muted-fg); }
+  .rep-map .radius {
+    position: absolute; border: 1.5px dashed color-mix(in oklch, var(--tint-offset) 65%, transparent);
+    background: color-mix(in oklch, var(--tint-offset) 6%, transparent);
+    border-radius: 999px; transform: translate(-50%, -50%);
+  }
+  .rep-map .map-chip {
+    position: absolute; left: 50%; bottom: 8px; transform: translateX(-50%);
+    display: inline-flex; align-items: center; gap: 5px; white-space: nowrap;
+    background: var(--card); border: 1px solid var(--border); border-radius: 999px;
+    font-size: 10.5px; font-weight: 600; padding: 3px 9px; box-shadow: var(--shadow);
+  }
+  .rep-map .map-chip svg { width: 12px; height: 12px; }
+  .rep-map.removed .map-overlay {
+    position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+    background: color-mix(in oklch, var(--background) 55%, transparent);
+  }
+  .rep-map.removed .map-overlay .map-chip { position: static; transform: none; color: var(--tint-remove); }
+
+  /* pane picker popover */
+  .pane-pop {
+    position: absolute; top: calc(100% + 4px); right: 10px; z-index: 40;
+    width: 300px; background: var(--popover); border: 1px solid var(--border);
+    border-radius: var(--radius); box-shadow: var(--shadow); padding: 8px;
+    display: flex; flex-direction: column; gap: 4px;
+  }
+  .pane-pop input { margin-bottom: 4px; }
+  .pane-pop .opt { border: 0; background: none; text-align: left; padding: 6px 8px; border-radius: 4px; cursor: pointer; font-size: 12.5px; }
+  .pane-pop .opt:hover { background: var(--muted); }
+  .pane-pop .opt .o-sub { color: var(--muted-fg); font-size: 11.5px; }
+  .pane-pop .grp { font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted-fg); padding: 4px 8px 0; }
+
+  /* changes list */
+  .changes { border-top: 1px dashed var(--border); padding: 10px 14px; display: flex; flex-direction: column; gap: 6px; }
+  .change { display: flex; gap: 8px; align-items: baseline; font-size: 12px; flex-wrap: wrap; }
+  .change .c-field { font-weight: 700; min-width: 80px; }
+  .change .c-before { text-decoration: line-through; color: var(--muted-fg); overflow-wrap: anywhere; }
+  .change .c-arrow { color: var(--muted-fg); }
+  .change .c-after { overflow-wrap: anywhere; }
+  .change .c-removed { font-size: 10px; font-weight: 700; text-transform: uppercase; background: color-mix(in oklch, var(--tint-remove) 15%, transparent); color: var(--tint-remove); padding: 1px 7px; border-radius: 999px; }
+  .no-changes { font-size: 12px; color: var(--muted-fg); font-style: italic; }
+
+  /* ============ Fields tab ============ */
+  .fields-grid { display: grid; grid-template-columns: minmax(300px, 2fr) 3fr; gap: 18px; align-items: start; }
+  @media (max-width: 900px) { .fields-grid { grid-template-columns: 1fr; } }
+  .field-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+  .field-chips .chip { cursor: pointer; border: 1px solid var(--border); background: var(--card); }
+  .field-chips .chip:hover { background: var(--muted); }
+  .field-chips .chip.sel { background: var(--primary); color: var(--primary-fg); border-color: var(--primary); }
+  .field-chips .chip .cnt { background: color-mix(in oklch, currentColor 18%, transparent); border-radius: 999px; padding: 0 6px; font-size: 10px; }
+
+  .anatomy { padding: 16px; display: flex; flex-direction: column; gap: 8px; }
+  .anatomy .a-hint { font-size: 11.5px; color: var(--muted-fg); margin-bottom: 4px; }
+  .zone {
+    position: relative; text-align: left; width: 100%;
+    border: 1.5px dashed transparent; border-radius: var(--radius);
+    background: none; padding: 6px 8px; cursor: pointer; color: inherit;
+  }
+  .zone:hover { border-color: var(--accent); background: var(--muted); }
+  .zone.sel { border-color: var(--primary); border-style: solid; background: color-mix(in oklch, var(--primary) 7%, transparent); }
+  .zone .z-badge {
+    position: absolute; top: -8px; right: -6px; z-index: 5;
+    font-size: 10px; font-weight: 700;
+    background: var(--primary); color: var(--primary-fg);
+    border-radius: 999px; padding: 1px 7px;
+  }
+  .zone.empty .z-badge { background: var(--muted); color: var(--muted-fg); }
+  .zone .z-name { display: block; font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted-fg); margin-bottom: 1px; }
+  .zone-row { display: flex; gap: 8px; }
+  .zone-row .zone { flex: 1; }
+  .a-map { min-height: 90px; height: 90px; flex: none; }
+
+  .fdetail { padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+  .fdetail .fd-head { display: flex; align-items: center; gap: 10px; }
+  .fdetail .fd-head h3 { margin: 0; font-size: 15px; flex: 1; }
+  .fd-tx { border: 1px solid var(--border); border-radius: var(--radius); padding: 12px; display: flex; flex-direction: column; gap: 8px; position: relative; }
+  .fd-tx .fd-row1 { display: flex; align-items: center; gap: 8px; }
+  .fd-tx .fd-name { font-weight: 700; font-size: 13px; flex: 1; }
+  .fd-tx .fd-actions { display: flex; gap: 4px; opacity: 0; transition: opacity 0.12s; }
+  .fd-tx:hover .fd-actions, .fd-tx:focus-within .fd-actions { opacity: 1; }
+  .fd-example {
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+    font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 12px;
+    background: var(--muted); border-radius: var(--radius); padding: 7px 10px;
+  }
+  .fd-example .ex-before { text-decoration: line-through; opacity: 0.65; }
+  .fd-example .ex-arrow { opacity: 0.6; }
+  .fd-example .ex-removed { color: var(--tint-remove); font-weight: 700; font-family: inherit; }
+  .fd-used { font-size: 11.5px; color: var(--muted-fg); }
+  .fd-used a { color: var(--accent); cursor: pointer; text-decoration: underline; }
+  .fd-empty { border: 1.5px dashed var(--border); border-radius: var(--radius); padding: 22px; text-align: center; color: var(--muted-fg); font-size: 13px; }
+
+  .subtabs { display: inline-flex; gap: 2px; background: var(--muted); padding: 3px; border-radius: calc(var(--radius) + 2px); }
+  .subtabs button {
+    border: 0; background: transparent; cursor: pointer;
+    padding: 5px 12px; border-radius: var(--radius); font-size: 12.5px; font-weight: 600; color: var(--muted-fg);
+  }
+  .subtabs button.active { background: var(--card); color: var(--foreground); box-shadow: var(--shadow); }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; }
+  }
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-eyeoff" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" x2="22" y1="2" y2="22"/></symbol>
+    <symbol id="i-type" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" x2="15" y1="20" y2="20"/><line x1="12" x2="12" y1="4" y2="20"/></symbol>
+    <symbol id="i-move" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="5 9 2 12 5 15"/><polyline points="9 5 12 2 15 5"/><polyline points="15 19 12 22 9 19"/><polyline points="19 9 22 12 19 15"/><line x1="2" x2="22" y1="12" y2="12"/><line x1="12" x2="12" y1="2" y2="22"/></symbol>
+    <symbol id="i-shuffle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 18h1.4c1.3 0 2.5-.6 3.3-1.7l6.1-8.6c.8-1.1 2-1.7 3.3-1.7H22"/><path d="m18 2 4 4-4 4"/><path d="M2 6h1.9c1.5 0 2.9.9 3.6 2.2"/><path d="M22 18h-5.9c-1.3 0-2.6-.7-3.3-1.8l-.5-.8"/><path d="m18 14 4 4-4 4"/></symbol>
+    <symbol id="i-merge" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m8 6 4-4 4 4"/><path d="M12 2v10.3a4 4 0 0 1-1.172 2.872L4 22"/><path d="m20 22-5-5"/></symbol>
+    <symbol id="i-dice" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="12" height="12" x="2" y="10" rx="2" ry="2"/><path d="m17.92 14 3.5-3.5a2.24 2.24 0 0 0 0-3l-5-4.92a2.24 2.24 0 0 0-3 0L10 6"/><path d="M6 18h.01"/><path d="M10 14h.01"/><path d="M15 6h.01"/><path d="M18 9h.01"/></symbol>
+    <symbol id="i-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></symbol>
+    <symbol id="i-unlock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></symbol>
+    <symbol id="i-pin" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 2a8 8 0 0 0-8 8c0 5.4 7 11.5 7.3 11.8a1 1 0 0 0 1.4 0C13 21.5 20 15.4 20 10a8 8 0 0 0-8-8zm0 11a3 3 0 1 1 0-6 3 3 0 0 1 0 6z"/></symbol>
+    <symbol id="i-pinoff" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.75 7.09a3 3 0 0 1 2.16 2.16"/><path d="M17.072 17.072c-1.634 2.17-3.527 3.912-4.471 4.727a1 1 0 0 1-1.202 0C9.539 20.193 4 15.093 4 10a8 8 0 0 1 1.432-4.568"/><path d="M8.475 2.818A8 8 0 0 1 20 10c0 1.183-.31 2.377-.81 3.533"/><path d="M9.13 9.13a3 3 0 0 0 3.74 3.74"/><line x1="2" x2="22" y1="2" y2="22"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></symbol>
+    <symbol id="i-edit" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></symbol>
+    <symbol id="i-trash" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></symbol>
+    <symbol id="i-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></symbol>
+  </defs>
+</svg>
+
+<div class="topbar">
+  <h1>Privacy Transformations</h1>
+  <span class="mock-note">interactive mock v2 — HTML/CSS + mock data only</span>
+  <nav class="tabs" aria-label="Mock screens">
+    <button class="tab-btn active" data-tab="overview">Rules</button>
+    <button class="tab-btn" data-tab="editor">Rule editor</button>
+    <button class="tab-btn" data-tab="fields">Field library</button>
+  </nav>
+</div>
+
+<main>
+  <!-- ================= OVERVIEW (table) ================= -->
+  <section id="tab-overview">
+    <div class="view-head">
+      <h2>Transformation rules</h2>
+      <div class="spacer"></div>
+      <button class="btn primary" id="btn-new-rule"><svg><use href="#i-plus"/></svg>New rule</button>
+    </div>
+    <div class="tbl-tools">
+      <input class="input" placeholder="Search rules…" aria-label="Search rules" />
+    </div>
+    <div class="card tbl-wrap"><table class="rules">
+      <thead><tr>
+        <th>Name</th>
+        <th>What it does</th>
+        <th>When it applies</th>
+        <th class="num">Test dispatches</th>
+        <th>Enabled</th>
+        <th></th>
+      </tr></thead>
+      <tbody id="rules-tbody"></tbody>
+    </table></div>
+    <p style="font-size:12px;color:var(--muted-fg);max-width:640px">
+      Same table as today — the only additions are the plain-language “What it does” chips column and Edit
+      navigating to the full-page editor. Sorting, pagination and bulk actions stay as they are.
+    </p>
+  </section>
+
+  <!-- ================= EDITOR ================= -->
+  <section id="tab-editor" hidden>
+    <div class="view-head">
+      <h2 id="editor-title">Edit rule — Medical privacy</h2>
+      <span class="mock-note">route: /dashboard/transformation-rules/[id]</span>
+    </div>
+    <div class="editor-grid">
+      <div>
+        <div class="card panel" id="rule-form"></div>
+        <div class="savebar">
+          <span class="dirty" id="dirty-pill" hidden>● Unsaved changes</span>
+          <div class="spacer" style="flex:1"></div>
+          <button class="btn ghost" id="btn-cancel">Back to rules</button>
+          <button class="btn primary" id="btn-save">Save rule</button>
+        </div>
+      </div>
+      <div>
+        <div class="pw-head">
+          <h3>Live preview — what the public will see</h3>
+          <button class="btn icon" id="btn-reroll" data-tip="Re-roll random values"><svg><use href="#i-dice"/></svg></button>
+          <button class="btn" id="btn-add-slot"><svg><use href="#i-plus"/></svg>Test dispatch</button>
+        </div>
+        <div id="panes"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= FIELDS ================= -->
+  <section id="tab-fields" hidden>
+    <div class="view-head">
+      <h2>Field library</h2>
+      <div class="subtabs">
+        <button class="active">Dispatch anatomy</button>
+        <button data-tip="The existing table remains as a tab (not mocked)">Table</button>
+      </div>
+      <div class="spacer"></div>
+      <button class="btn primary" id="btn-new-tx"><svg><use href="#i-plus"/></svg>New transformation</button>
+    </div>
+    <div class="field-chips" id="field-chips"></div>
+    <div class="fields-grid">
+      <div class="card anatomy" id="anatomy"></div>
+      <div class="card fdetail" id="fdetail"></div>
+    </div>
+  </section>
+</main>
+
+<script>
+/* ================================================================
+   Mock data + tiny transform core (mirrors the planned shared module):
+   mulberry32 seeded RNG, matchRule, applyConfigs (incl. remove_field).
+   ================================================================ */
+
+const DISPATCH_TYPES = [
+  { _id: "dt_fire",  code: "FIRE-STRUC",  name: "Structure Fire", group: "fire" },
+  { _id: "dt_grass", code: "FIRE-GRASS",  name: "Grass Fire",     group: "fire" },
+  { _id: "dt_med",   code: "EMS-MED",     name: "Medical Aid",    group: "medical" },
+  { _id: "dt_mva",   code: "MVA-INJ",     name: "MVA Injuries",   group: "mva" },
+  { _id: "dt_law",   code: "LAW-ASSLT",   name: "Assault",        group: "law" },
+  { _id: "dt_dom",   code: "LAW-DOM",     name: "Domestic Disturbance", group: "law" },
+  { _id: "dt_haz",   code: "HAZ-SPILL",   name: "Hazmat Spill",   group: "hazmat" },
+];
+
+const DISPATCHES = [
+  { _id: "d1", dispatchId: 240071, type: "STRUCTURE FIRE", typeId: "dt_fire", group: "fire",
+    narrative: "SMOKE SHOWING FROM SECOND STORY WINDOW. OCCUPANTS EVACUATING. FIRE ALARM SOUNDING.",
+    address: "412 W BIRCH ST", address2: "APT 3", city: "LUNAR HUE", stateCode: "WA",
+    location: { lat: 47.6621, lng: -117.4030 }, unitCodes: ["E1", "L2", "BC1", "M41", "E7"],
+    minsAgo: 6 },
+  { _id: "d2", dispatchId: 240072, type: "MEDICAL AID - CHEST PAIN", typeId: "dt_med", group: "medical",
+    narrative: "68YOM CHEST PAIN, CONSCIOUS AND BREATHING. HX OF CARDIAC.",
+    address: "1550 E SPRAGUE AVE", city: "LUNAR HUE", stateCode: "WA",
+    location: { lat: 47.6570, lng: -117.3901 }, unitCodes: ["M41", "E4"],
+    minsAgo: 14 },
+  { _id: "d3", dispatchId: 240073, type: "MVA WITH INJURIES", typeId: "dt_mva", group: "mva",
+    narrative: "TWO VEHICLE TC, AIRBAG DEPLOYMENT, ONE PARTY COMPLAINING OF NECK PAIN. BLOCKING LEFT LANE.",
+    address: "N DIVISION ST / E MISSION AVE", city: "LUNAR HUE", stateCode: "WA",
+    location: { lat: 47.6712, lng: -117.4110 }, unitCodes: ["E3", "M42", "PD12"],
+    minsAgo: 27 },
+  { _id: "d4", dispatchId: 240074, type: "ASSAULT - DOMESTIC", typeId: "dt_law", group: "law",
+    narrative: "CALLER REPORTS DISTURBANCE AT NEIGHBORING RESIDENCE. RP STATES YELLING AND GLASS BREAKING.",
+    address: "218 S OAK CT", city: "LUNAR HUE", stateCode: "WA",
+    location: { lat: 47.6485, lng: -117.4188 }, unitCodes: ["PD7", "PD9", "M43"],
+    minsAgo: 41 },
+  { _id: "d5", dispatchId: 240075, type: "GRASS FIRE", typeId: "dt_grass", group: "fire",
+    narrative: "SMALL GRASS FIRE NEAR TRAIL HEAD, APPROX 20X20, NO STRUCTURES THREATENED.",
+    address: "CENTENNIAL TRAIL MP 4", city: "LUNAR HUE", stateCode: "WA",
+    location: { lat: 47.6795, lng: -117.3822 }, unitCodes: ["BR1", "E6"],
+    minsAgo: 58 },
+];
+
+const CONFIGS = [
+  { _id: "tx_off_lat",  name: "Offset latitude",    field: "location.lat", strategy: "random_offset", params: { minOffset: -0.002, maxOffset: 0.002 } },
+  { _id: "tx_off_lng",  name: "Offset longitude",   field: "location.lng", strategy: "random_offset", params: { minOffset: -0.002, maxOffset: 0.002 } },
+  { _id: "tx_red_narr", name: "Redact narrative",   field: "narrative",    strategy: "static_value",  params: { value: "Details withheld for privacy." } },
+  { _id: "tx_rm_loc",   name: "Remove location",    field: "location",     strategy: "remove_field",  params: {} },
+  { _id: "tx_rm_addr",  name: "Remove address",     field: "address",      strategy: "remove_field",  params: {} },
+  { _id: "tx_rm_units", name: "Hide assigned units",field: "unitCodes",    strategy: "remove_field",  params: {} },
+  { _id: "tx_gen_addr", name: "Generalize address", field: "address",      strategy: "merge_data",    params: { template: "{city} area" } },
+];
+
+const RULES = [
+  { _id: "r_med", name: "Medical privacy", enabled: true,
+    dispatchTypeRegex: "^med|ems", keywords: ["medical", "chest"], dispatchTypes: ["dt_med"],
+    transformations: ["tx_off_lat", "tx_off_lng", "tx_red_narr"],
+    testDispatchIds: ["d2"] },
+  { _id: "r_law", name: "Law enforcement scrub", enabled: true,
+    dispatchTypeRegex: "assault|domestic|warrant", keywords: [], dispatchTypes: ["dt_law", "dt_dom"],
+    transformations: ["tx_rm_loc", "tx_rm_addr", "tx_rm_units", "tx_red_narr"],
+    testDispatchIds: ["d4"] },
+  { _id: "r_addr", name: "Generalize fire addresses", enabled: false,
+    dispatchTypeRegex: "^fire|grass", keywords: ["fire"], dispatchTypes: ["dt_fire", "dt_grass"],
+    transformations: ["tx_gen_addr"],
+    testDispatchIds: [] },
+];
+
+const FIELDS = [
+  { key: "type",       label: "Type",        kind: "string", removable: false },
+  { key: "narrative",  label: "Narrative",   kind: "string", removable: true },
+  { key: "address",    label: "Address",     kind: "string", removable: true },
+  { key: "address2",   label: "Address 2",   kind: "string", removable: true },
+  { key: "city",       label: "City",        kind: "string", removable: true },
+  { key: "stateCode",  label: "State",       kind: "string", removable: true },
+  { key: "location",   label: "Location",    kind: "object", removable: true },
+  { key: "location.lat", label: "Latitude",  kind: "number", removable: false, sub: true },
+  { key: "location.lng", label: "Longitude", kind: "number", removable: false, sub: true },
+  { key: "unitCodes",  label: "Units",       kind: "array",  removable: true },
+  { key: "dispatchId", label: "Dispatch ID", kind: "number", removable: false },
+];
+const MATRIX_FIELDS = FIELDS.filter((f) => !f.sub && f.key !== "dispatchId");
+
+const STRATEGIES = {
+  remove_field:  { label: "Remove entirely", tint: "remove", icon: "i-eyeoff" },
+  static_value:  { label: "Replace with fixed value", tint: "static", icon: "i-type" },
+  random_offset: { label: "Random offset", tint: "offset", icon: "i-move" },
+  random_string: { label: "Random string", tint: "random", icon: "i-shuffle" },
+  merge_data:    { label: "Build from other fields", tint: "random", icon: "i-merge" },
+};
+
+/* ---------------- transform core ---------------- */
+function mulberry32(seed) {
+  let a = seed >>> 0;
+  return function () {
+    a |= 0; a = (a + 0x6d2b79f5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+function hashStr(s) {
+  let h = 2166136261;
+  for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); }
+  return h >>> 0;
+}
+function getPath(obj, path) { return path.split(".").reduce((c, k) => (c == null ? c : c[k]), obj); }
+function setPath(obj, path, v) {
+  const keys = path.split("."); const last = keys.pop();
+  const t = keys.reduce((c, k) => (c[k] ??= {}), obj); t[last] = v;
+}
+function delPath(obj, path) {
+  const keys = path.split("."); const last = keys.pop();
+  const t = keys.reduce((c, k) => (c == null ? c : c[k]), obj);
+  if (t && typeof t === "object") delete t[last];
+}
+function compileSafeRegex(pattern) {
+  if (!pattern) return { regex: null };
+  if (pattern.length > 200) return { error: "Pattern too long (max 200 characters)" };
+  try { return { regex: new RegExp(pattern, "i") }; } catch (e) { return { error: e.message }; }
+}
+function matchRule(rule, dispatch) {
+  if (rule.dispatchTypes.includes(dispatch.typeId)) return true;
+  const { regex } = compileSafeRegex(rule.dispatchTypeRegex);
+  if (regex && rule.dispatchTypeRegex && regex.test(dispatch.type)) return true;
+  const t = dispatch.type.toLowerCase();
+  return rule.keywords.some((k) => k && t.includes(k.toLowerCase()));
+}
+function applyConfigs(dispatch, configs, rng) {
+  const out = structuredClone(dispatch);
+  for (const c of configs) {
+    if (c.strategy === "remove_field") { delPath(out, c.field); continue; }
+    const cur = getPath(out, c.field);
+    let next = cur;
+    if (c.strategy === "static_value") next = c.params.value;
+    else if (c.strategy === "random_offset") {
+      if (typeof cur === "number") next = cur + rng() * (c.params.maxOffset - c.params.minOffset) + c.params.minOffset;
+    } else if (c.strategy === "random_string") {
+      const chars = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
+      next = Array.from({ length: c.params.length ?? 8 }, () => chars[Math.floor(rng() * chars.length)]).join("");
+    } else if (c.strategy === "merge_data") {
+      next = (c.params.template ?? "").replace(/\{(\w+(?:\.\w+)*)\}/g, (m, p) => getPath(dispatch, p) ?? m);
+    }
+    setPath(out, c.field, next);
+  }
+  return out;
+}
+function diffDispatch(a, b) {
+  const out = [];
+  for (const f of MATRIX_FIELDS) {
+    const before = getPath(a, f.key), after = getPath(b, f.key);
+    const removed = before !== undefined && after === undefined;
+    const beforeS = fmtVal(f.key, before), afterS = fmtVal(f.key, after);
+    if (removed) out.push({ label: f.label, before: beforeS, removed: true });
+    else if (beforeS !== afterS) out.push({ label: f.label, before: beforeS, after: afterS });
+  }
+  return out;
+}
+function fmtVal(key, v) {
+  if (v === undefined || v === null) return undefined;
+  if (key === "location") return v.lat.toFixed(4) + ", " + v.lng.toFixed(4);
+  if (Array.isArray(v)) return v.join(" ");
+  return String(v);
+}
+function offsetMeters(cfgs) {
+  const lat = cfgs.find((c) => c.field === "location.lat" && c.strategy === "random_offset");
+  const lng = cfgs.find((c) => c.field === "location.lng" && c.strategy === "random_offset");
+  const deg = Math.max(lat ? Math.abs(lat.params.maxOffset) : 0, lng ? Math.abs(lng.params.maxOffset) : 0);
+  return Math.round(deg * 111000);
+}
+function esc(s) { return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;"); }
+
+function describeEffect(c) {
+  const f = FIELDS.find((x) => x.key === c.field);
+  const label = (f?.label ?? c.field).toLowerCase();
+  switch (c.strategy) {
+    case "remove_field": return c.field === "location" ? "remove from the map" : `hide ${label}`;
+    case "static_value": return `replace ${label} with “${esc(String(c.params.value).slice(0, 28))}”`;
+    case "random_offset":
+      if (c.field.startsWith("location.")) return `offset the map pin by up to ~${Math.round(Math.abs(c.params.maxOffset) * 111000)} m`;
+      return `offset ${label}`;
+    case "random_string": return `scramble ${label}`;
+    case "merge_data": return `rewrite ${label} as “${esc(c.params.template ?? "")}”`;
+  }
+}
+function effectChips(cfgs) {
+  const seen = new Set(); const chips = [];
+  for (const c of cfgs) {
+    if (c.field.startsWith("location.") && c.strategy === "random_offset") {
+      if (seen.has("loc-offset")) continue; seen.add("loc-offset");
+    }
+    chips.push(`<span class="chip ${STRATEGIES[c.strategy].tint}"><svg><use href="#${STRATEGIES[c.strategy].icon}"/></svg>${describeEffect(c)}</span>`);
+  }
+  return chips.join("");
+}
+
+/* ================================================================ state ================================================================ */
+const state = {
+  tab: "overview",
+  rules: structuredClone(RULES),
+  draft: null,
+  slots: [],            // [{dispatchId, locked, mode: before|after|changes, popOpen}]
+  seed: 1,
+  dirty: false,
+  selectedField: "narrative",
+  rxSamplesOpen: false,
+  comboOpen: false,
+  comboQuery: "",
+};
+const cfgById = (id) => CONFIGS.find((c) => c._id === id);
+const dispById = (id) => DISPATCHES.find((d) => d._id === id);
+const $ = (sel) => document.querySelector(sel);
+function usageCount(txId) { return state.rules.filter((r) => r.transformations.includes(txId)).length; }
+
+function loadDraft(ruleId) {
+  const r = state.rules.find((x) => x._id === ruleId) ?? {
+    _id: null, name: "", enabled: true, dispatchTypeRegex: "", keywords: [], dispatchTypes: [], transformations: [], testDispatchIds: [],
+  };
+  state.draft = {
+    id: r._id, name: r.name, enabled: r.enabled,
+    dispatchTypeRegex: r.dispatchTypeRegex, keywords: [...r.keywords], dispatchTypes: [...r.dispatchTypes],
+    configs: r.transformations.map((id) => ({ ...structuredClone(cfgById(id)), libraryId: id, open: false })),
+  };
+  state.slots = r.testDispatchIds.map((id) => ({ dispatchId: id, locked: true, mode: "after", popOpen: false }));
+  let cursor = 0;
+  while (state.slots.length < 2 && cursor < DISPATCHES.length) {
+    const d = DISPATCHES[cursor++];
+    if (!state.slots.some((s) => s.dispatchId === d._id)) state.slots.push({ dispatchId: d._id, locked: false, mode: "after", popOpen: false });
+  }
+  state.dirty = false;
+  state.rxSamplesOpen = false;
+  state.comboOpen = false; state.comboQuery = "";
+  $("#editor-title").textContent = r._id ? "Edit rule — " + r.name : "New rule";
+}
+
+/* ================================================================ overview: table ================================================================ */
+function renderTable() {
+  $("#rules-tbody").innerHTML = state.rules.map((r) => {
+    const cfgs = r.transformations.map(cfgById);
+    const { error } = compileSafeRegex(r.dispatchTypeRegex);
+    const typeNames = r.dispatchTypes.map((id) => DISPATCH_TYPES.find((t) => t._id === id)?.name).filter(Boolean);
+    return `<tr class="${r.enabled ? "" : "off"}">
+      <td class="r-name">${esc(r.name)}</td>
+      <td><div class="r-fx">${effectChips(cfgs) || '<span style="color:var(--muted-fg);font-size:12px">nothing yet</span>'}</div></td>
+      <td><div class="r-when">
+        ${r.dispatchTypeRegex ? `<span data-tip="${error ? "Invalid pattern" : "Pattern is valid"}"><code class="rx"><span class="dot ${error ? "bad" : "ok"}" style="margin-right:5px"></span>/${esc(r.dispatchTypeRegex)}/i</code></span>` : ""}
+        ${r.keywords.map((k) => `<span class="chip outline">“${esc(k)}”</span>`).join("")}
+        ${typeNames.length ? `<span class="chip outline" data-tip="${esc(typeNames.join(", "))}">${typeNames.length} type${typeNames.length > 1 ? "s" : ""}</span>` : ""}
+      </div></td>
+      <td class="num">${r.testDispatchIds.length || "—"}</td>
+      <td class="keep">
+        <label class="switch" data-tip="${r.enabled ? "Enabled — applies to public viewers" : "Disabled"}">
+          <input type="checkbox" ${r.enabled ? "checked" : ""} data-act="toggle" data-id="${r._id}" />
+          <span class="track"></span><span class="thumb"></span>
+        </label>
+      </td>
+      <td class="keep"><div class="row-actions">
+        <button class="btn ghost icon" data-act="edit" data-id="${r._id}" data-tip="Edit with live preview"><svg><use href="#i-edit"/></svg></button>
+        <button class="btn ghost icon danger" data-act="del" data-id="${r._id}" data-tip="Delete rule"><svg><use href="#i-trash"/></svg></button>
+      </div></td>
+    </tr>`;
+  }).join("");
+}
+
+/* ================================================================ editor: form ================================================================ */
+function fieldOptions(sel) {
+  return FIELDS.map((f) =>
+    `<option value="${f.key}" ${f.key === sel ? "selected" : ""}>${esc(f.label)}${f.key === "location" ? " (whole pin)" : ""}</option>`).join("");
+}
+function allowedStrategies(fieldKey) {
+  const f = FIELDS.find((x) => x.key === fieldKey);
+  if (!f) return [];
+  if (f.kind === "object") return ["remove_field"];
+  const out = [];
+  if (f.kind === "number") out.push("random_offset", "static_value");
+  if (f.kind === "string") out.push("static_value", "random_string", "merge_data");
+  if (f.kind === "array") out.push("static_value");
+  if (f.removable) out.push("remove_field");
+  return out;
+}
+
+function regexFeedback() {
+  const d = state.draft;
+  if (!d.dispatchTypeRegex) return "";
+  const { regex, error } = compileSafeRegex(d.dispatchTypeRegex);
+  if (error) return `<div class="rx-feedback" style="color:var(--tint-remove)">Invalid pattern — ${esc(error)}</div>`;
+  const samples = [
+    ...DISPATCHES.map((x) => ({ text: x.type, src: "recent" })),
+    ...DISPATCH_TYPES.map((t) => ({ text: t.code, src: "type code" })),
+  ];
+  let n = 0;
+  const rows = samples.map((s) => {
+    const m = regex.exec(s.text);
+    if (m && m[0].length) {
+      n++;
+      return { hit: true, html: `<div class="sample"><span class="m-ind">✓</span><span>${esc(s.text.slice(0, m.index))}<mark>${esc(m[0])}</mark>${esc(s.text.slice(m.index + m[0].length))}</span></div>` };
+    }
+    return { hit: false, html: `<div class="sample nomatch"><span class="m-ind">·</span><span>${esc(s.text)}</span></div>` };
+  });
+  rows.sort((a, b) => (b.hit ? 1 : 0) - (a.hit ? 1 : 0));
+  return `<div class="rx-feedback">
+      <span><b>${n}</b> of ${samples.length} recent type strings match</span>
+      <button data-act="rx-toggle">${state.rxSamplesOpen ? "hide" : "show"}</button>
+    </div>
+    ${state.rxSamplesOpen ? `<div class="rx-samples">${rows.map((r) => r.html).join("")}</div>` : ""}`;
+}
+
+function typeCombo() {
+  const d = state.draft;
+  const q = state.comboQuery.toLowerCase();
+  const options = DISPATCH_TYPES.filter((t) => !q || t.name.toLowerCase().includes(q) || t.code.toLowerCase().includes(q));
+  return `<div class="combo">
+    <div class="combo-box" data-act="combo-open-box">
+      ${d.dispatchTypes.map((id) => {
+        const t = DISPATCH_TYPES.find((x) => x._id === id);
+        return `<span class="chip kw-chip">${esc(t?.name ?? id)}<button data-act="combo-del" data-id="${id}" aria-label="Remove type"><svg style="width:11px;height:11px"><use href="#i-x"/></svg></button></span>`;
+      }).join("")}
+      <input id="f-combo" placeholder="${d.dispatchTypes.length ? "add another type…" : "search dispatch types…"}" value="${esc(state.comboQuery)}" autocomplete="off" />
+    </div>
+    ${state.comboOpen ? `<div class="combo-pop">
+      ${options.length ? options.map((t) => `<button class="opt" data-act="combo-pick" data-id="${t._id}">
+        <span class="o-check">${d.dispatchTypes.includes(t._id) ? '<svg style="width:13px;height:13px"><use href="#i-check"/></svg>' : ""}</span>
+        ${esc(t.name)}<span class="o-code">${esc(t.code)}</span>
+      </button>`).join("") : `<div class="none">No types match “${esc(state.comboQuery)}”</div>`}
+    </div>` : ""}
+  </div>`;
+}
+
+function renderForm() {
+  const d = state.draft;
+  const { error: rxErr } = compileSafeRegex(d.dispatchTypeRegex);
+  const txRows = d.configs.map((c, i) => {
+    const strat = STRATEGIES[c.strategy];
+    const shared = c.libraryId && usageCount(c.libraryId) > 1;
+    let params = "";
+    if (c.strategy === "static_value")
+      params = `<div class="frow"><label class="lbl">Replace with</label><input class="input" data-cfg="${i}" data-p="value" value="${esc(c.params.value ?? "")}" /></div>`;
+    else if (c.strategy === "random_offset")
+      params = `<div class="two">
+        <div class="frow"><label class="lbl">Min offset (°)</label><input class="input" type="number" step="0.0005" data-cfg="${i}" data-p="minOffset" value="${c.params.minOffset ?? -0.002}" /></div>
+        <div class="frow"><label class="lbl">Max offset (°)</label><input class="input" type="number" step="0.0005" data-cfg="${i}" data-p="maxOffset" value="${c.params.maxOffset ?? 0.002}" /></div>
+      </div><div class="tx-note">±${Math.round(Math.abs(c.params.maxOffset ?? 0.002) * 111000)} m on the map — the public pin lands somewhere random inside the dashed circle in the preview.</div>`;
+    else if (c.strategy === "random_string")
+      params = `<div class="frow"><label class="lbl">Length</label><input class="input" type="number" data-cfg="${i}" data-p="length" value="${c.params.length ?? 8}" /></div>`;
+    else if (c.strategy === "merge_data")
+      params = `<div class="frow"><label class="lbl">Template</label><input class="input mono" data-cfg="${i}" data-p="template" value="${esc(c.params.template ?? "")}" /></div>
+        <div class="tx-note">Use <code>{field}</code> placeholders, e.g. <code>{city} area</code>.</div>`;
+    else if (c.strategy === "remove_field")
+      params = `<div class="tx-note">The field is removed entirely for public viewers${c.field === "location" ? " — the dispatch will not appear on the map at all" : ""}. Nothing is shown in its place.</div>`;
+
+    return `<div class="tx-row">
+      <button class="tx-head" data-act="tx-toggle" data-i="${i}" aria-expanded="${c.open}">
+        <span class="chip ${strat.tint}"><svg><use href="#${strat.icon}"/></svg>${strat.label}</span>
+        <span class="tx-title">${esc(FIELDS.find((f) => f.key === c.field)?.label ?? c.field)}</span>
+        <svg style="width:14px;height:14px;transform:rotate(${c.open ? 180 : 0}deg)"><use href="#i-chev"/></svg>
+      </button>
+      ${c.open ? `<div class="tx-body">
+        <div class="two">
+          <div class="frow"><label class="lbl">Field</label><select class="input" data-cfg="${i}" data-p="__field">${fieldOptions(c.field)}</select></div>
+          <div class="frow"><label class="lbl">What happens to it</label><select class="input" data-cfg="${i}" data-p="__strategy">
+            ${allowedStrategies(c.field).map((s) => `<option value="${s}" ${s === c.strategy ? "selected" : ""}>${STRATEGIES[s].label}</option>`).join("")}
+          </select></div>
+        </div>
+        ${params}
+        ${shared ? `<div class="tx-warn"><span>⚠ Also used by ${usageCount(c.libraryId) - 1} other rule${usageCount(c.libraryId) > 2 ? "s" : ""} — editing here changes those too.</span>
+          <span class="warn-actions"><button class="btn" data-act="tx-detach" data-i="${i}">Detach as copy</button><span style="font-size:11px;align-self:center;color:var(--muted-fg)">or keep editing for all rules</span></span></div>` : ""}
+        <div><button class="btn ghost danger" data-act="tx-remove" data-i="${i}"><svg><use href="#i-trash"/></svg>Remove this transformation</button></div>
+      </div>` : ""}
+    </div>`;
+  }).join("");
+
+  $("#rule-form").innerHTML = `
+    <div class="frow"><label class="lbl">Rule name</label><input class="input" id="f-name" value="${esc(d.name)}" placeholder="e.g. Medical privacy" /></div>
+    <div style="display:flex;align-items:center;gap:10px">
+      <label class="switch"><input type="checkbox" id="f-enabled" ${d.enabled ? "checked" : ""} /><span class="track"></span><span class="thumb"></span></label>
+      <span style="font-size:13px">${d.enabled ? "Enabled — applies to public viewers" : "Disabled — saved but not applied"}</span>
+    </div>
+    <h3>When does this rule apply?</h3>
+    <div class="frow">
+      <label class="lbl">Dispatch type pattern (regex)</label>
+      <input class="input mono ${rxErr ? "invalid" : ""}" id="f-regex" value="${esc(d.dispatchTypeRegex)}" placeholder="^med|ems" spellcheck="false" />
+      <div id="rx-fb">${regexFeedback()}</div>
+    </div>
+    <div class="frow"><label class="lbl">Or the type contains any of these words</label>
+      <div class="kw-box" id="kw-box">
+        ${d.keywords.map((k, i) => `<span class="chip kw-chip">${esc(k)}<button data-act="kw-del" data-i="${i}" aria-label="Remove keyword"><svg style="width:11px;height:11px"><use href="#i-x"/></svg></button></span>`).join("")}
+        <input id="f-kw" placeholder="type a word, press Enter" />
+      </div>
+    </div>
+    <div class="frow"><label class="lbl">Or the dispatch type is exactly</label>
+      ${typeCombo()}
+    </div>
+    <h3>What gets changed</h3>
+    <div style="display:flex;flex-direction:column;gap:8px">${txRows || '<div class="tx-note">No transformations yet — this rule matches dispatches but changes nothing.</div>'}</div>
+    <div><button class="btn" id="btn-add-tx"><svg><use href="#i-plus"/></svg>Add a transformation</button></div>`;
+
+  $("#dirty-pill").hidden = !state.dirty;
+}
+
+/* ================================================================ editor: preview ================================================================ */
+function schematicMap(original, transformed, cfgs) {
+  const span = 0.004; /* box spans ±0.004° around the true location */
+  const px = (lng) => 50 + ((lng - original.location.lng) / span) * 50;
+  const py = (lat) => 50 - ((lat - original.location.lat) / span) * 50;
+  const hasLoc = transformed.location !== undefined;
+  const moved = hasLoc && (transformed.location.lat !== original.location.lat || transformed.location.lng !== original.location.lng);
+  const groupColor = { fire: "oklch(0.58 0.21 27)", medical: "oklch(0.55 0.14 250)", mva: "oklch(0.68 0.14 75)", law: "oklch(0.45 0.12 281)" };
+  const color = groupColor[original.group] ?? "var(--primary)";
+
+  let inner = `<div class="road h"></div><div class="road v"></div>`;
+  if (hasLoc) {
+    const x = Math.min(94, Math.max(6, px(transformed.location.lng)));
+    const y = Math.min(88, Math.max(12, py(transformed.location.lat)));
+    if (moved) {
+      const maxOff = Math.max(...cfgs.filter((c) => c.strategy === "random_offset" && c.field.startsWith("location.")).map((c) => Math.abs(c.params.maxOffset ?? 0)), 0);
+      const rPct = Math.min(48, (maxOff / span) * 50) * 2; /* diameter in % */
+      const ox = px(original.location.lng), oy = py(original.location.lat);
+      inner += `<div class="radius" style="left:${ox}%;top:${oy}%;width:${rPct}%;aspect-ratio:1" data-tip="Anywhere in this circle"></div>`;
+      inner += `<div class="origin" style="left:${ox}%;top:${oy}%" data-tip="True location — never shown publicly"></div>`;
+      inner += `<div class="map-chip"><svg style="color:var(--tint-offset)"><use href="#i-move"/></svg>pin lands anywhere within ~${offsetMeters(cfgs)} m</div>`;
+    }
+    inner += `<div class="pin" style="left:${x}%;top:${y}%;color:${color}"><svg><use href="#i-pin"/></svg></div>`;
+    return `<div class="rep-map">${inner}</div>`;
+  }
+  return `<div class="rep-map removed">${inner}<div class="map-overlay"><span class="map-chip"><svg><use href="#i-pinoff"/></svg>Removed — will not appear on the public map</span></div></div>`;
+}
+
+function repListCard(d) {
+  return `<div class="rep-card">
+    <div class="r-top"><span class="r-type">${esc(d.type)}</span><span class="r-time">${d.minsAgo} minutes ago</span></div>
+    <pre class="r-narr">${d.narrative !== undefined ? esc(d.narrative) : '<span class="rep-gone">No details available</span>'}</pre>
+    <div class="r-addr">${d.address !== undefined ? esc(d.address) : '<span class="rep-gone">no address shown</span>'}</div>
+    <div class="r-units">${d.unitCodes !== undefined ? d.unitCodes.map((u) => `<span class="u">${esc(u)}</span>`).join("") : '<span class="rep-gone" style="font-size:11px">no units shown</span>'}</div>
+  </div>`;
+}
+function repDetail(d) {
+  return `<div class="rep-detail">
+    <div class="d-type">${esc(d.type)}</div>
+    <div class="d-addr">${d.address !== undefined ? esc(d.address) : '<span class="rep-gone">no address shown</span>'}</div>
+    <div class="d-sec">Units assigned</div>
+    <div class="d-units">${d.unitCodes !== undefined ? d.unitCodes.map((u) => `<span class="u">${esc(u)}</span>`).join("") : '<span class="rep-gone" style="font-size:12px">none shown</span>'}</div>
+  </div>`;
+}
+
+function panePopover(i) {
+  const matches = DISPATCHES.filter((d) => matchRule(state.draft, d));
+  const others = DISPATCHES.filter((d) => !matches.includes(d));
+  const opt = (d) => `<button class="opt" data-act="slot-pick" data-i="${i}" data-d="${d._id}">${esc(d.type)}<div class="o-sub">${esc(d.address ?? "")} · ${d.minsAgo}m ago</div></button>`;
+  return `<div class="pane-pop">
+    <input class="input" placeholder="Search narratives… (mock: shows all)" />
+    ${matches.length ? `<div class="grp">Matches this rule</div>` + matches.map(opt).join("") : ""}
+    ${others.length ? `<div class="grp">Other recent</div>` + others.map(opt).join("") : ""}
+  </div>`;
+}
+
+function renderPanes() {
+  const d = state.draft;
+  $("#panes").innerHTML = state.slots.map((s, i) => {
+    const orig = dispById(s.dispatchId);
+    const matched = matchRule(d, orig);
+    const rng = mulberry32((state.seed ^ hashStr(orig._id)) >>> 0);
+    const transformed = matched ? applyConfigs(orig, d.configs, rng) : orig;
+    const shown = s.mode === "before" ? orig : transformed;
+    const changes = diffDispatch(orig, transformed);
+    return `<div class="card pane ${matched ? "" : "unmatched"} ${s.locked ? "locked" : ""}">
+      <div class="pane-head">
+        <span class="p-title">${esc(orig.type)}</span>
+        <span class="p-time">${orig.minsAgo}m ago</span>
+        <span class="badge-match ${matched ? "yes" : "no"}">${matched ? "Matches this rule" : "Not matched — shown unchanged"}</span>
+        <div class="p-ctls">
+          <div class="seg" role="group" aria-label="Preview mode">
+            ${["before", "after", "changes"].map((m) => `<button class="${s.mode === m ? "active" : ""}" data-act="pane-mode" data-i="${i}" data-m="${m}">${m[0].toUpperCase() + m.slice(1)}</button>`).join("")}
+          </div>
+          <button class="btn ghost icon ${s.locked ? "active-ctl" : ""}" data-act="slot-lock" data-i="${i}" data-tip="${s.locked ? "Saved with the rule — will be here next time" : "Lock: save this dispatch with the rule"}">
+            <svg><use href="#${s.locked ? "i-lock" : "i-unlock"}"/></svg></button>
+          <button class="btn ghost icon" data-act="slot-shuffle" data-i="${i}" data-tip="Swap in a different recent dispatch"><svg><use href="#i-shuffle"/></svg></button>
+          <button class="btn ghost icon" data-act="slot-search" data-i="${i}" data-tip="Choose a specific dispatch"><svg><use href="#i-search"/></svg></button>
+          ${state.slots.length > 1 ? `<button class="btn ghost icon" data-act="slot-remove" data-i="${i}" data-tip="Remove this test dispatch"><svg><use href="#i-x"/></svg></button>` : ""}
+        </div>
+        ${s.popOpen ? panePopover(i) : ""}
+      </div>
+      <div class="pane-body">
+        <div class="pv-left">
+          <div><div class="pv-label">In the list</div>${repListCard(shown)}</div>
+          <div><div class="pv-label">When opened</div>${repDetail(shown)}</div>
+        </div>
+        <div class="pv-right">
+          <div class="pv-label">On the map</div>
+          ${s.mode === "before" ? schematicMap(orig, orig, []) : schematicMap(orig, transformed, d.configs)}
+        </div>
+      </div>
+      ${s.mode === "changes" ? `<div class="changes">${
+        changes.length ? changes.map((c) => `<div class="change"><span class="c-field">${esc(c.label)}</span>${
+          c.removed ? `<span class="c-before">${esc(c.before ?? "")}</span><span class="c-removed">removed</span>`
+                    : `<span class="c-before">${esc(c.before ?? "—")}</span><span class="c-arrow">→</span><span class="c-after">${esc(c.after ?? "—")}</span>`}</div>`).join("")
+        : `<div class="no-changes">${matched ? "Rule matches but changes nothing yet — add a transformation." : "This dispatch is not matched by the rule."}</div>`
+      }</div>` : ""}
+    </div>`;
+  }).join("");
+}
+function renderEditor() { renderForm(); renderPanes(); }
+
+/* ================================================================ fields tab ================================================================ */
+function txForField(key) {
+  return CONFIGS.filter((c) => c.field === key || (key === "location" && c.field.startsWith("location.")));
+}
+function renderFieldChips() {
+  $("#field-chips").innerHTML = MATRIX_FIELDS.map((f) => {
+    const n = txForField(f.key).length;
+    return `<button class="chip ${state.selectedField === f.key ? "sel" : ""}" data-act="pick-field" data-f="${f.key}">${esc(f.label)}<span class="cnt">${n}</span></button>`;
+  }).join("");
+}
+function renderAnatomy() {
+  const d = DISPATCHES[0];
+  const zone = (key, label, content) => {
+    const n = txForField(key).length;
+    return `<button class="zone ${n ? "" : "empty"} ${state.selectedField === key ? "sel" : ""}" data-act="pick-field" data-f="${key}">
+      <span class="z-badge">${n ? `${n} transformation${n > 1 ? "s" : ""}` : "+"}</span>
+      <span class="z-name">${label}</span>${content}</button>`;
+  };
+  $("#anatomy").innerHTML = `
+    <div class="a-hint">A recent dispatch, annotated. Click any part to see how it can be transformed.</div>
+    <div class="zone-row">
+      ${zone("type", "type", `<b>${esc(d.type)}</b>`)}
+      ${zone("dispatchId", "dispatch id", `<span style="font-family:ui-monospace,monospace;font-size:12px">#${d.dispatchId}</span>`)}
+    </div>
+    ${zone("narrative", "narrative", `<span style="font-family:ui-monospace,monospace;font-size:11.5px">${esc(d.narrative.slice(0, 96))}…</span>`)}
+    <div class="zone-row">
+      ${zone("address", "address", esc(d.address))}
+      ${zone("address2", "address 2", esc(d.address2 ?? "—"))}
+    </div>
+    <div class="zone-row">
+      ${zone("city", "city", esc(d.city))}
+      ${zone("stateCode", "state", esc(d.stateCode))}
+    </div>
+    ${zone("unitCodes", "units", d.unitCodes.map((u) => `<span style="font-size:10px;font-weight:600;background:var(--muted);border-radius:4px;padding:2px 6px;margin-right:3px">${esc(u)}</span>`).join(""))}
+    ${zone("location", "location — the map pin", `<div class="rep-map a-map"><div class="road h"></div><div class="road v"></div><div class="pin" style="left:46%;top:44%;color:oklch(0.58 0.21 27)"><svg><use href="#i-pin"/></svg></div></div>`)}`;
+}
+function renderFieldDetail() {
+  const f = FIELDS.find((x) => x.key === state.selectedField) ?? MATRIX_FIELDS[0];
+  const txs = txForField(f.key);
+  const sample = DISPATCHES[0];
+  const rng = mulberry32(42);
+  $("#fdetail").innerHTML = `
+    <div class="fd-head"><h3>${esc(f.label)}</h3><span class="chip outline">${f.kind}</span>${f.removable || f.kind === "object" ? '<span class="chip remove"><svg><use href="#i-eyeoff"/></svg>can be removed</span>' : ""}</div>
+    ${txs.length ? txs.map((c) => {
+      const strat = STRATEGIES[c.strategy];
+      const used = usageCount(c._id);
+      const key = c.field.startsWith("location.") ? "location" : c.field;
+      const before = fmtVal(key, getPath(sample, key));
+      let after;
+      if (c.strategy === "remove_field") after = null;
+      else {
+        const t = applyConfigs(sample, [c], rng);
+        after = fmtVal(key, getPath(t, key));
+      }
+      return `<div class="fd-tx">
+        <div class="fd-row1">
+          <span class="chip ${strat.tint}"><svg><use href="#${strat.icon}"/></svg>${strat.label}</span>
+          <span class="fd-name">${esc(c.name)}</span>
+          <span class="fd-actions">
+            <button class="btn ghost icon" data-tip="Edit (opens the existing drawer form)"><svg><use href="#i-edit"/></svg></button>
+            <button class="btn ghost icon danger" data-tip="${used ? "In use — remove from rules first" : "Delete"}"><svg><use href="#i-trash"/></svg></button>
+          </span>
+        </div>
+        <div class="fd-example">
+          <span class="ex-before">${esc((before ?? "—").slice(0, 44))}</span><span class="ex-arrow">→</span>
+          ${after === null ? '<span class="ex-removed">removed entirely</span>' : `<span>${esc(String(after).slice(0, 44))}</span>`}
+        </div>
+        <div class="fd-used">Used by <b>${used}</b> rule${used === 1 ? "" : "s"}${used ? ": " + state.rules.filter((r) => r.transformations.includes(c._id)).map((r) => `<a data-act="edit" data-id="${r._id}">${esc(r.name)}</a>`).join(", ") : ""}</div>
+      </div>`;
+    }).join("") : `<div class="fd-empty">Nothing transforms <b>${esc(f.label.toLowerCase())}</b> yet.<br/><br/><button class="btn primary"><svg><use href="#i-plus"/></svg>New transformation for this field</button></div>`}
+  `;
+}
+function renderFields() { renderFieldChips(); renderAnatomy(); renderFieldDetail(); }
+
+/* ================================================================ wiring ================================================================ */
+function setTab(t) {
+  state.tab = t;
+  document.querySelectorAll(".tab-btn").forEach((b) => b.classList.toggle("active", b.dataset.tab === t));
+  $("#tab-overview").hidden = t !== "overview";
+  $("#tab-editor").hidden = t !== "editor";
+  $("#tab-fields").hidden = t !== "fields";
+  if (t === "overview") renderTable();
+  if (t === "editor") { if (!state.draft) loadDraft("r_med"); renderEditor(); }
+  if (t === "fields") renderFields();
+}
+
+document.addEventListener("click", (e) => {
+  const btn = e.target.closest("[data-tab],[data-act],#btn-new-rule,#btn-reroll,#btn-add-slot,#btn-add-tx,#btn-save,#btn-cancel,#btn-new-tx");
+  if (!btn) {
+    let redo = false;
+    if (!e.target.closest(".pane-pop")) state.slots.forEach((s) => { if (s.popOpen) { s.popOpen = false; redo = true; } });
+    if (state.comboOpen && !e.target.closest(".combo")) { state.comboOpen = false; redo = true; }
+    if (redo && state.tab === "editor") renderEditor();
+    return;
+  }
+  if (btn.dataset.tab) return setTab(btn.dataset.tab);
+  if (btn.id === "btn-new-rule") { loadDraft(null); setTab("editor"); return; }
+  if (btn.id === "btn-reroll") { state.seed++; renderPanes(); return; }
+  if (btn.id === "btn-add-slot") {
+    if (state.slots.length >= 3) return;
+    const used = new Set(state.slots.map((s) => s.dispatchId));
+    const next = DISPATCHES.find((d) => !used.has(d._id));
+    if (next) { state.slots.push({ dispatchId: next._id, locked: false, mode: "after", popOpen: false }); renderPanes(); }
+    return;
+  }
+  if (btn.id === "btn-add-tx") {
+    state.draft.configs.forEach((c) => (c.open = false));
+    state.draft.configs.push({ _id: null, libraryId: null, name: "New transformation", field: "narrative", strategy: "static_value", params: { value: "Details withheld." }, open: true });
+    state.dirty = true; renderEditor(); return;
+  }
+  if (btn.id === "btn-save") { state.dirty = false; $("#dirty-pill").hidden = true; btn.textContent = "Saved ✓"; setTimeout(() => (btn.textContent = "Save rule"), 1200); return; }
+  if (btn.id === "btn-cancel") { setTab("overview"); return; }
+  if (btn.id === "btn-new-tx") return;
+
+  const act = btn.dataset.act, i = +btn.dataset.i;
+  switch (act) {
+    case "toggle": {
+      const r = state.rules.find((x) => x._id === btn.dataset.id);
+      r.enabled = !r.enabled; renderTable(); break;
+    }
+    case "edit": loadDraft(btn.dataset.id); setTab("editor"); break;
+    case "del": {
+      const row = btn.closest("tr");
+      if (row) { row.style.opacity = 0.25; row.style.pointerEvents = "none"; }
+      break; /* real app: existing delete confirmation dialog */
+    }
+    case "tx-toggle": state.draft.configs.forEach((c, j) => (c.open = j === i ? !c.open : c.open)); renderForm(); break;
+    case "tx-remove": state.draft.configs.splice(i, 1); state.dirty = true; renderEditor(); break;
+    case "tx-detach": {
+      const c = state.draft.configs[i];
+      c.libraryId = null; c.name += " (copy)"; state.dirty = true; renderForm(); break;
+    }
+    case "kw-del": state.draft.keywords.splice(i, 1); state.dirty = true; renderEditor(); break;
+    case "rx-toggle": state.rxSamplesOpen = !state.rxSamplesOpen; $("#rx-fb").innerHTML = regexFeedback(); break;
+    case "combo-open-box": state.comboOpen = true; renderForm(); $("#f-combo")?.focus(); break;
+    case "combo-pick": {
+      const id = btn.dataset.id, arr = state.draft.dispatchTypes;
+      arr.includes(id) ? arr.splice(arr.indexOf(id), 1) : arr.push(id);
+      state.dirty = true; state.comboQuery = "";
+      renderForm(); renderPanes();
+      state.comboOpen = true; /* keep open for multi-pick */
+      const el = $("#f-combo"); if (el) el.focus();
+      break;
+    }
+    case "combo-del": {
+      const arr = state.draft.dispatchTypes;
+      arr.splice(arr.indexOf(btn.dataset.id), 1);
+      state.dirty = true; renderForm(); renderPanes(); break;
+    }
+    case "slot-lock": state.slots[i].locked = !state.slots[i].locked; state.dirty = true; renderPanes(); $("#dirty-pill").hidden = false; break;
+    case "slot-shuffle": {
+      const used = new Set(state.slots.map((s) => s.dispatchId));
+      for (let k = 1; k <= DISPATCHES.length; k++) {
+        const cand = DISPATCHES[(DISPATCHES.findIndex((d) => d._id === state.slots[i].dispatchId) + k) % DISPATCHES.length];
+        if (!used.has(cand._id)) { state.slots[i].dispatchId = cand._id; state.slots[i].locked = false; break; }
+      }
+      renderPanes(); break;
+    }
+    case "slot-search": state.slots.forEach((s, j) => (s.popOpen = j === i ? !s.popOpen : false)); renderPanes(); break;
+    case "slot-pick": state.slots[i].dispatchId = btn.dataset.d; state.slots[i].popOpen = false; state.slots[i].locked = true; state.dirty = true; renderPanes(); $("#dirty-pill").hidden = false; break;
+    case "slot-remove": state.slots.splice(i, 1); renderPanes(); break;
+    case "pane-mode": state.slots[i].mode = btn.dataset.m; renderPanes(); break;
+    case "pick-field": state.selectedField = btn.dataset.f; renderFields(); break;
+  }
+});
+
+/* live inputs — update state + dependent regions only (keeps typing focus) */
+document.addEventListener("input", (e) => {
+  const t = e.target;
+  if (!state.draft) return;
+  let touched = false;
+  if (t.id === "f-name") { state.draft.name = t.value; touched = true; }
+  else if (t.id === "f-regex") {
+    state.draft.dispatchTypeRegex = t.value; touched = true;
+    const { error } = compileSafeRegex(t.value);
+    t.classList.toggle("invalid", !!error);
+    $("#rx-fb").innerHTML = regexFeedback();
+    renderPanes();
+  }
+  else if (t.id === "f-enabled") { state.draft.enabled = t.checked; touched = true; renderForm(); }
+  else if (t.id === "f-combo") { state.comboQuery = t.value; state.comboOpen = true; renderForm(); const el = $("#f-combo"); el.focus(); el.setSelectionRange(el.value.length, el.value.length); }
+  else if (t.dataset.cfg !== undefined) {
+    const c = state.draft.configs[+t.dataset.cfg]; const p = t.dataset.p;
+    touched = true;
+    if (p === "__field") {
+      c.field = t.value;
+      const allowed = allowedStrategies(c.field);
+      if (!allowed.includes(c.strategy)) { c.strategy = allowed[0]; c.params = c.strategy === "static_value" ? { value: "REDACTED" } : c.strategy === "random_offset" ? { minOffset: -0.002, maxOffset: 0.002 } : {}; }
+      renderForm();
+    } else if (p === "__strategy") {
+      c.strategy = t.value;
+      c.params = c.strategy === "static_value" ? { value: "REDACTED" } : c.strategy === "random_offset" ? { minOffset: -0.002, maxOffset: 0.002 } : c.strategy === "random_string" ? { length: 8 } : c.strategy === "merge_data" ? { template: "{city} area" } : {};
+      renderForm();
+    } else {
+      c.params[p] = t.type === "number" ? parseFloat(t.value) || 0 : t.value;
+    }
+    renderPanes();
+  }
+  if (touched) { state.dirty = true; $("#dirty-pill").hidden = false; }
+});
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Enter" && e.target.id === "f-kw") {
+    e.preventDefault();
+    const v = e.target.value.trim();
+    if (v) { state.draft.keywords.push(v); state.dirty = true; renderEditor(); $("#f-kw")?.focus(); }
+  }
+  if (e.key === "Escape" && state.comboOpen) { state.comboOpen = false; renderForm(); }
+});
+
+/* boot */
+setTab("overview");
+</script>
