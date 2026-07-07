@@ -24,7 +24,11 @@ for (const key of [
   }
 }
 for (const key of ['webHostname', 'listenerHostname']) {
-  if (config[key] && !config[key].endsWith(`.${config.zoneName}`)) {
+  if (
+    config[key] &&
+    config[key] !== config.zoneName &&
+    !config[key].endsWith(`.${config.zoneName}`)
+  ) {
     fail(`"${key}" (${config[key]}) is not under zone ${config.zoneName}`)
   }
 }

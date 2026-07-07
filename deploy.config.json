@@ -1,8 +1,8 @@
 {
-  "zoneName": "alertdashboard.com",
+  "zoneName": "mfdalertdashboard.com",
   "webWorkerName": "alertdashboard",
   "listenerWorkerName": "firstdue-listener",
-  "webHostname": "mfd.alertdashboard.com",
-  "listenerHostname": "listener.alertdashboard.com",
-  "clerkInstanceSlug": "083ah0f8xra3"
+  "webHostname": "mfdalertdashboard.com",
+  "listenerHostname": "listener.mfdalertdashboard.com",
+  "clerkInstanceSlug": "g6fa3egr21kb"
 }

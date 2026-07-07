@@ -235,11 +235,11 @@ covers changing all of these for a new account/domain.
 
 | Thing | Value | Defined at |
 |---|---|---|
-| DNS zone | `alertdashboard.com` | `deploy.config.json` |
-| Web hostname | `mfd.alertdashboard.com` | `deploy.config.json` |
-| Listener hostname | `listener.alertdashboard.com` | `deploy.config.json` |
+| DNS zone | `mfdalertdashboard.com` | `deploy.config.json` |
+| Web hostname | `mfdalertdashboard.com` | `deploy.config.json` |
+| Listener hostname | `listener.mfdalertdashboard.com` | `deploy.config.json` |
 | Web Worker name | `alertdashboard` | `deploy.config.json` + `apps/web/wrangler.jsonc` (checked for drift in CI) |
 | Listener Worker name | `firstdue-listener` | `deploy.config.json` + `apps/firstdue-listener/wrangler.jsonc` |
-| Clerk instance slug | `083ah0f8xra3` | `deploy.config.json` (DKIM/mail CNAME targets) |
+| Clerk instance slug | `g6fa3egr21kb` | `deploy.config.json` (DKIM/mail CNAME targets) |
 | Prod Convex deployment | `unique-grasshopper-23` | encoded in `CONVEX_DEPLOY_KEY`; URL derived at deploy time |
 | Weather location | Manhattan, KS | `apps/firstdue-listener/wrangler.jsonc` `vars` |

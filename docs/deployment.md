@@ -20,8 +20,8 @@ Four independently deployed pieces:
 
 | Piece                    | Path                     | Runs on                                             | Public host (current)         |
 | ------------------------ | ------------------------ | --------------------------------------------------- | ----------------------------- |
-| Web dashboard            | `apps/web`               | Cloudflare Workers (OpenNext-built Next 16 app)     | `mfd.alertdashboard.com`      |
-| FirstDue listener        | `apps/firstdue-listener` | Cloudflare Container + supervisor Worker            | `listener.alertdashboard.com` |
+| Web dashboard            | `apps/web`               | Cloudflare Workers (OpenNext-built Next 16 app)     | `mfdalertdashboard.com`      |
+| FirstDue listener        | `apps/firstdue-listener` | Cloudflare Container + supervisor Worker            | `listener.mfdalertdashboard.com` |
 | Convex backend           | `apps/convex`            | Convex cloud                                        | `unique-grasshopper-23.convex.cloud` |
 | Custom domains (infra)   | `infra/`                 | OpenTofu → Cloudflare (state in R2)                 | —                             |
 
@@ -31,7 +31,7 @@ Four independently deployed pieces:
                           browser
                              │  HTTPS
                              ▼
-              mfd.alertdashboard.com  (web Worker)
+              mfdalertdashboard.com  (web Worker)
               ┌───────────────────────────────────┐
               │ OpenNext-built Next 16 app         │
               │ · placement: smart                 │
@@ -49,7 +49,7 @@ Four independently deployed pieces:
                               │ CONVEX_API_KEY-authed
                               │ mutations (push data in)
                               │
-        listener.alertdashboard.com  (supervisor Worker)
+        listener.mfdalertdashboard.com  (supervisor Worker)
         ┌────────────────────────────────────────────┐
         │ fetch()  → getContainer(LISTENER).fetch()   │  proxies HTTP + WS
         │ scheduled() cron */5 * * * * → /health probe│  restarts container
